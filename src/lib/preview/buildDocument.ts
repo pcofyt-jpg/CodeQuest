@@ -128,8 +128,29 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
 
   if (!cfg.checks) return;
 
+  // Проверка не должна зависеть от таймеров: браузер может сильно замедлять их
+  // в невидимых фреймах (энергосбережение, фоновая вкладка). Обработчики кликов
+  // срабатывают сразу, поэтому текст читаем без ожидания, а «уступить ход»
+  // браузеру помогает MessageChannel — его не замедляют как setTimeout.
+  function yieldTask() {
+    return new Promise(function (r) {
+      var ch = new MessageChannel();
+      ch.port1.onmessage = function () { r(); };
+      ch.port2.postMessage(0);
+    });
+  }
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function textOf(sel) { var el = document.querySelector(sel); return el ? (el.textContent || "").trim() : null; }
+  /** Ждёт, пока текст изменится: сразу, после хода браузера и, в крайнем случае, после короткого таймера. */
+  async function textAfterClick(sel, before) {
+    var t = textOf(sel);
+    if (t !== before) return t;
+    await yieldTask();
+    t = textOf(sel);
+    if (t !== before) return t;
+    await wait(50); // для обработчиков, которые сами меняют текст через setTimeout
+    return textOf(sel);
+  }
   async function runOne(c) {
     var el;
     switch (c.kind) {
@@ -150,14 +171,15 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
         el = document.querySelector(c.click);
         var before = textOf(c.watch);
         if (!el || before === null) return false;
-        el.click(); await wait(30);
-        return textOf(c.watch) !== before;
+        el.click();
+        return (await textAfterClick(c.watch, before)) !== before;
       case "clickSequence":
         el = document.querySelector(c.click);
         if (!el) return false;
         for (var i = 0; i < c.expect.length; i++) {
-          el.click(); await wait(20);
-          if (textOf(c.watch) !== c.expect[i]) return false;
+          var prev = textOf(c.watch);
+          el.click();
+          if ((await textAfterClick(c.watch, prev)) !== c.expect[i]) return false;
         }
         return true;
       case "clickDistinct":
@@ -165,23 +187,25 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
         if (!el) return false;
         var seen = {}, n = 0;
         for (var j = 0; j < c.clicks; j++) {
-          el.click(); await wait(5);
+          el.click();
           var s = textOf(c.watch);
           if (s && !seen[s]) { seen[s] = true; n++; }
+          if (n >= c.minDistinct) break;
+          if (j % 10 === 9) await yieldTask();
         }
         return n >= c.minDistinct;
     }
     return false;
   }
   window.addEventListener("load", function () {
-    setTimeout(async function () {
+    yieldTask().then(async function () {
       var results = [];
       for (var k = 0; k < cfg.checks.length; k++) {
         try { results.push(await runOne(cfg.checks[k])); }
         catch (e) { results.push(false); }
       }
       send({ type: "checks", results: results });
-    }, 60);
+    });
   });
 })(${jsonForScript(config)});`;
 }

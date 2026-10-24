@@ -5,7 +5,7 @@ import type { Check, CheckResult, ProjectFiles } from "@/content/lessons/types";
 import { buildPreviewDocument, isDomCheck, isPreviewMessage } from "@/lib/preview/buildDocument";
 import { combineResults } from "@/lib/checks/sourceChecks";
 
-const CHECK_TIMEOUT_MS = 5000;
+const CHECK_TIMEOUT_MS = 10000;
 
 type Run = { token: string; html: string; files: ProjectFiles; checks: Check[] };
 
@@ -66,7 +66,8 @@ export function useCheckRunner() {
       () =>
         finish({
           status: "failed",
-          reason: "Проверка не успела закончиться. Возможно, код зависает — загляни в консоль.",
+          reason:
+            "Проверка не успела закончиться. Нажми «Проверить» ещё раз. Если сообщение повторяется, загляни в консоль: возможно, в коде есть бесконечный цикл.",
         }),
       CHECK_TIMEOUT_MS,
     );
@@ -86,10 +87,14 @@ export function useCheckRunner() {
       sandbox="allow-scripts"
       referrerPolicy="no-referrer"
       srcDoc={run.html}
+      // Фрейм в пределах экрана, но невидимый: браузеры сильнее замедляют
+      // фреймы за пределами экрана, а проверке нужна обычная скорость.
       style={{
         position: "fixed",
-        left: "-10000px",
+        left: 0,
         top: 0,
+        zIndex: -1,
+        visibility: "visible",
         width: "800px",
         height: "600px",
         opacity: 0,
