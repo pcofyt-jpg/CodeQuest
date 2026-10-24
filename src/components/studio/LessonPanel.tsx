@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Lesson } from "@/content/lessons/types";
+import { getTerm } from "@/content/glossary";
+import { TermCard } from "@/components/glossary/Glossary";
+import type { QuizScore } from "@/lib/progress/store";
 import type { CheckOutcome } from "./useCheckRunner";
+import { QuizBlock } from "./QuizBlock";
 import { RichText } from "./RichText";
 
 type Props = {
@@ -16,6 +20,10 @@ type Props = {
   outcome: CheckOutcome;
   onCheck: () => void;
   onReset: () => void;
+  /** взять рабочую версию прошлого урока; null — если контрольной точки нет */
+  onCheckpoint: (() => void) | null;
+  quizScore: QuizScore | undefined;
+  onQuizFinish: (score: QuizScore) => void;
 };
 
 export function LessonPanel({
@@ -28,8 +36,13 @@ export function LessonPanel({
   outcome,
   onCheck,
   onReset,
+  onCheckpoint,
+  quizScore,
+  onQuizFinish,
 }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmCheckpoint, setConfirmCheckpoint] = useState(false);
+  const newTerms = lesson.newTerms.map(getTerm).filter((t) => t !== undefined);
   const hintsLeft = lesson.hints.length - hintsShown;
   const justPassed = outcome.status === "done" && outcome.passed;
 
@@ -43,6 +56,11 @@ export function LessonPanel({
           </p>
           <h1 className="mt-1 text-2xl leading-tight font-bold text-ink">{lesson.title}</h1>
           <p className="mt-2 text-[17px] leading-snug text-ink">{lesson.goal}</p>
+          {lesson.track === "practice" && (
+            <p className="mt-3 inline-flex rounded-full bg-paper px-3 py-1 text-sm font-semibold text-muted">
+              Тренировка на чужом коде — твой сайт она не меняет
+            </p>
+          )}
         </header>
 
         {lesson.plannedWithMentor && (
@@ -59,6 +77,22 @@ export function LessonPanel({
             </p>
           ))}
         </div>
+
+        {newTerms.length > 0 && (
+          <section aria-labelledby="terms-title">
+            <h2 id="terms-title" className="text-lg font-bold text-ink">
+              Новое в этом уроке
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Все эти карточки потом будут в шпаргалке. Слова с пунктирным подчёркиванием можно нажать.
+            </p>
+            <div className="mt-3 space-y-3">
+              {newTerms.map((t) => (
+                <TermCard key={t.id} term={t} compact />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section aria-labelledby="task-title">
           <h2 id="task-title" className="text-lg font-bold text-ink">
@@ -125,9 +159,17 @@ export function LessonPanel({
                   <span aria-hidden="true" className={r.ok ? "text-mint" : "text-coral"}>
                     {r.ok ? "✓" : "✗"}
                   </span>
-                  <span className={r.ok ? "text-ink" : "font-medium text-coral"}>
-                    <span className="sr-only">{r.ok ? "Выполнено: " : "Не выполнено: "}</span>
-                    {r.message}
+                  <span>
+                    <span className={r.ok ? "text-ink" : "font-medium text-coral"}>
+                      <span className="sr-only">{r.ok ? "Выполнено: " : "Не выполнено: "}</span>
+                      {r.message}
+                    </span>
+                    {!r.ok && (
+                      <span className="mt-1 block rounded-lg bg-paper px-3 py-2 text-ink">
+                        <span className="font-semibold">Что сделать: </span>
+                        <RichText text={r.fix} />
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -151,14 +193,55 @@ export function LessonPanel({
               ))}
             </ul>
             {nextLesson ? (
+              <>
+              {lesson.track === "project" && nextLesson.track === "project" && (
+                <p className="mt-3 text-[15px]">Следующий урок продолжит твой сайт с того места, где ты остановился.</p>
+              )}
               <Link
                 href={`/learn/${nextLesson.slug}`}
                 className="mt-4 inline-flex rounded-xl bg-ink px-5 py-3 font-semibold text-white"
               >
                 Следующий урок: {nextLesson.title}
               </Link>
+              </>
             ) : (
               <p className="mt-3 font-semibold">Ты прошёл весь маршрут. Это настоящий результат!</p>
+            )}
+          </section>
+        )}
+
+        {(justPassed || completed) && (
+          <QuizBlock key={lesson.slug} questions={lesson.quiz} previous={quizScore} onFinish={onQuizFinish} />
+        )}
+
+        {onCheckpoint && (
+          <section className="rounded-xl border border-dashed border-line px-4 py-3 text-sm leading-relaxed">
+            <p className="font-semibold text-ink">Код сломался и не получается найти ошибку?</p>
+            {confirmCheckpoint ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span>Твой код этого урока заменится на рабочую версию прошлого урока с заданием этого.</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCheckpoint();
+                    setConfirmCheckpoint(false);
+                  }}
+                  className="rounded-lg px-2 py-1 font-semibold text-coral"
+                >
+                  Заменить
+                </button>
+                <button type="button" onClick={() => setConfirmCheckpoint(false)} className="rounded-lg px-2 py-1 font-semibold">
+                  Оставить мой код
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmCheckpoint(true)}
+                className="mt-1 font-semibold text-route underline-offset-4 hover:underline"
+              >
+                Взять рабочую версию прошлого урока
+              </button>
             )}
           </section>
         )}
@@ -175,7 +258,7 @@ export function LessonPanel({
         </button>
         {confirmReset ? (
           <span className="flex flex-wrap items-center gap-2 text-sm">
-            <span>Код вернётся к началу урока.</span>
+            <span>Твои изменения в этом уроке пропадут.</span>
             <button
               type="button"
               onClick={() => {

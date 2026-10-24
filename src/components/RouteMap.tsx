@@ -36,9 +36,15 @@ export function RouteMap() {
           до своего проекта
         </h1>
         <p className="mt-4 max-w-md text-[17px] leading-relaxed text-ink">
-          Десять коротких уроков. В каждом ты пишешь настоящий код и сразу видишь, что получилось.
-          Следующий урок открывается, когда пройден предыдущий.
+          Ты построишь свой собственный сайт — на любую тему. В каждом уроке добавляешь к нему что-то
+          новое и сразу видишь результат. Следующий урок открывается, когда пройден предыдущий.
         </p>
+        <Link
+          href="/shpargalka"
+          className="mt-4 inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
+        >
+          Шпаргалка
+        </Link>
       </section>
 
       <nav aria-label="Маршрут уроков" className="mt-10">
@@ -83,6 +89,9 @@ export function RouteMap() {
                     >
                       <span className="sr-only">Урок {lesson.number}: </span>
                       {lesson.title}
+                      {lesson.track === "practice" && (
+                        <span className="ml-2 align-middle text-xs font-semibold text-muted">тренировка</span>
+                      )}
                       {done && <span className="sr-only"> (пройден)</span>}
                     </Link>
                   ) : (

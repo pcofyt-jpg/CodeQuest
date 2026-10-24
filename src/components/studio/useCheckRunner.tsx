@@ -12,7 +12,7 @@ type Run = { token: string; html: string; files: ProjectFiles; checks: Check[] }
 export type CheckOutcome =
   | { status: "idle" }
   | { status: "running" }
-  | { status: "done"; results: CheckResult[]; passed: boolean }
+  | { status: "done"; results: CheckResult[]; passed: boolean; files: ProjectFiles }
   | { status: "failed"; reason: string };
 
 /**
@@ -58,7 +58,7 @@ export function useCheckRunner() {
       if (msg.type === "console" && msg.level === "error") errorsRef.current += 1;
       if (msg.type === "checks") {
         const results = combineResults(run.checks, msg.results, run.files, errorsRef.current);
-        finish({ status: "done", results, passed: results.every((r) => r.ok) });
+        finish({ status: "done", results, passed: results.every((r) => r.ok), files: run.files });
       }
     };
     window.addEventListener("message", handler);

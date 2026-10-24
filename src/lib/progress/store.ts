@@ -13,21 +13,35 @@ import type { ProjectFiles } from "@/content/lessons/types";
 
 export type Draft = { files: ProjectFiles; savedAt: number };
 
+export type QuizScore = { correct: number; total: number };
+
 export type ProgressData = {
-  version: 1;
+  version: 2;
   completed: string[];
+  /** незаконченный код урока */
   drafts: Record<string, Draft>;
+  /** код ребёнка в момент прохождения урока — с него начинается следующий урок проекта */
+  results: Record<string, Draft>;
+  /** результат теста после урока: сколько ответов верны с первой попытки */
+  quiz: Record<string, QuizScore>;
 };
 
-export const STORAGE_KEY = "codequest:progress:v1";
+/** v2: сквозной проект. Данные v1 (отдельные страницы на урок) не переносятся. */
+export const STORAGE_KEY = "codequest:progress:v2";
 /** Ограничение на размер одного файла, чтобы не переполнить хранилище. */
 export const MAX_FILE_CHARS = 50_000;
 
 export const EMPTY_PROGRESS: ProgressData = Object.freeze({
-  version: 1,
+  version: 2,
   completed: [],
   drafts: {},
+  results: {},
+  quiz: {},
 }) as ProgressData;
+
+function emptyProgress(): ProgressData {
+  return { version: 2, completed: [], drafts: {}, results: {}, quiz: {} };
+}
 
 function isFiles(v: unknown): v is ProjectFiles {
   if (typeof v !== "object" || v === null) return false;
@@ -37,25 +51,43 @@ function isFiles(v: unknown): v is ProjectFiles {
   );
 }
 
+function parseDrafts(v: unknown): Record<string, Draft> {
+  const out: Record<string, Draft> = {};
+  if (typeof v !== "object" || v === null) return out;
+  for (const [slug, d] of Object.entries(v as Record<string, unknown>)) {
+    const draft = d as Record<string, unknown> | null;
+    if (draft && isFiles(draft.files) && typeof draft.savedAt === "number") {
+      out[slug] = { files: draft.files, savedAt: draft.savedAt };
+    }
+  }
+  return out;
+}
+
 /** Разбирает сохранённые данные, отбрасывая всё, что не похоже на прогресс. */
 export function parseProgress(raw: string | null): ProgressData {
   if (!raw) return EMPTY_PROGRESS;
   try {
     const data = JSON.parse(raw) as Record<string, unknown>;
-    if (data.version !== 1) return EMPTY_PROGRESS;
+    if (data.version !== 2) return EMPTY_PROGRESS;
     const completed = Array.isArray(data.completed)
       ? data.completed.filter((s): s is string => typeof s === "string").slice(0, 500)
       : [];
-    const drafts: Record<string, Draft> = {};
-    if (typeof data.drafts === "object" && data.drafts !== null) {
-      for (const [slug, d] of Object.entries(data.drafts as Record<string, unknown>)) {
-        const draft = d as Record<string, unknown> | null;
-        if (draft && isFiles(draft.files) && typeof draft.savedAt === "number") {
-          drafts[slug] = { files: draft.files, savedAt: draft.savedAt };
+    const quiz: Record<string, QuizScore> = {};
+    if (typeof data.quiz === "object" && data.quiz !== null) {
+      for (const [slug, q] of Object.entries(data.quiz as Record<string, unknown>)) {
+        const score = q as Record<string, unknown> | null;
+        if (score && Number.isInteger(score.correct) && Number.isInteger(score.total)) {
+          quiz[slug] = { correct: score.correct as number, total: score.total as number };
         }
       }
     }
-    return { version: 1, completed: [...new Set(completed)], drafts };
+    return {
+      version: 2,
+      completed: [...new Set(completed)],
+      drafts: parseDrafts(data.drafts),
+      results: parseDrafts(data.results),
+      quiz,
+    };
   } catch {
     return EMPTY_PROGRESS;
   }
@@ -118,10 +150,16 @@ export const progressStore = {
   getSnapshot: read,
   getServerSnapshot: () => EMPTY_PROGRESS,
 
-  markCompleted(slug: string) {
+  /** Урок пройден: запоминаем и сам факт, и код — с него продолжится проект. */
+  markCompleted(slug: string, files: ProjectFiles) {
     const cur = read();
-    if (cur.completed.includes(slug)) return;
-    write({ ...cur, completed: [...cur.completed, slug] });
+    const completed = cur.completed.includes(slug) ? cur.completed : [...cur.completed, slug];
+    const results = isFiles(files) ? { ...cur.results, [slug]: { files, savedAt: Date.now() } } : cur.results;
+    write({ ...cur, completed, results });
+  },
+  saveQuiz(slug: string, score: QuizScore) {
+    const cur = read();
+    write({ ...cur, quiz: { ...cur.quiz, [slug]: score } });
   },
   saveDraft(slug: string, files: ProjectFiles) {
     if (!isFiles(files)) return;
@@ -136,6 +174,6 @@ export const progressStore = {
     write({ ...cur, drafts });
   },
   resetAll() {
-    write({ version: 1, completed: [], drafts: {} });
+    write(emptyProgress());
   },
 };

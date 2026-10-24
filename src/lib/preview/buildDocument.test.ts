@@ -37,7 +37,7 @@ describe("buildPreviewDocument", () => {
   it("экранирует токен и проверки внутри скрипта", () => {
     const built = buildPreviewDocument(files, {
       token: "</script>",
-      checks: [{ kind: "exists", selector: "h1", message: "</script>" }],
+      checks: [{ kind: "exists", selector: "h1", message: "</script>", fix: "</script>" }],
     });
     const scripts = built.html.match(/<\/script>/g) ?? [];
     expect(scripts.length).toBe(2); // только наши два закрывающих тега

@@ -6,8 +6,10 @@ import { getLessonIndex, lessons } from "@/content/lessons/catalog";
 import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
 import { buildPreviewDocument, errorLine, type PreviewMessage } from "@/lib/preview/buildDocument";
 import { explainError } from "@/lib/preview/explainError";
-import { isUnlocked, progressStore } from "@/lib/progress/store";
+import { isUnlocked, progressStore, type QuizScore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
+import { lessonCheckpoint, lessonStarter } from "@/lib/lessons/projectFlow";
+import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
 import { CodeEditor } from "./CodeEditor";
 import { ConsolePanel, type ConsoleEntry } from "./ConsolePanel";
 import { LessonPanel } from "./LessonPanel";
@@ -57,13 +59,19 @@ export function Studio({ slug }: { slug: string }) {
     );
   }
 
+  const results = Object.fromEntries(Object.entries(progress.results).map(([k, v]) => [k, v.files]));
+  const starter = lessonStarter(lessons, index, results);
+
   return (
     <Workspace
       key={slug}
       lesson={lesson}
       index={index}
       completedSlugs={progress.completed}
-      initialFiles={progress.drafts[slug]?.files ?? lesson.starter}
+      starter={starter}
+      checkpoint={lessonCheckpoint(lessons, index)}
+      initialFiles={progress.drafts[slug]?.files ?? starter}
+      quizScore={progress.quiz[slug]}
     />
   );
 }
@@ -72,10 +80,28 @@ type WorkspaceProps = {
   lesson: Lesson;
   index: number;
   completedSlugs: string[];
+  /** стартовый код урока: для сквозного проекта — продолжение прошлого урока */
+  starter: ProjectFiles;
+  checkpoint: ProjectFiles | null;
   initialFiles: ProjectFiles;
+  quizScore: QuizScore | undefined;
 };
 
-function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspaceProps) {
+function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initialFiles, quizScore }: WorkspaceProps) {
+  // Стартовый код фиксируем при открытии урока: он не должен меняться,
+  // пока ребёнок работает (например, после сохранения результата этого же урока).
+  const [lessonStart] = useState(starter);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [glossaryTerm, setGlossaryTerm] = useState<string | null>(null);
+  const glossaryApi = useMemo(
+    () => ({
+      openTerm: (id: string) => {
+        setGlossaryTerm(id);
+        setGlossaryOpen(true);
+      },
+    }),
+    [],
+  );
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
   const [activeFile, setActiveFile] = useState<CodeFile>(lesson.focusFile);
   const [preview, setPreview] = useState(() => ({ files: initialFiles, token: crypto.randomUUID() }));
@@ -102,17 +128,17 @@ function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspacePro
   // Сохраняем черновик в этом браузере.
   useEffect(() => {
     const t = window.setTimeout(() => {
-      const unchanged = (Object.keys(files) as CodeFile[]).every((k) => files[k] === lesson.starter[k]);
+      const unchanged = (Object.keys(files) as CodeFile[]).every((k) => files[k] === lessonStart[k]);
       if (unchanged) progressStore.clearDraft(lesson.slug);
       else progressStore.saveDraft(lesson.slug, files);
     }, DRAFT_DELAY_MS);
     return () => window.clearTimeout(t);
-  }, [files, lesson]);
+  }, [files, lesson, lessonStart]);
 
   // Засчитываем урок, когда все проверки пройдены.
   useEffect(() => {
     if (runner.outcome.status === "done" && runner.outcome.passed) {
-      progressStore.markCompleted(lesson.slug);
+      progressStore.markCompleted(lesson.slug, runner.outcome.files);
     }
   }, [runner.outcome, lesson.slug]);
 
@@ -160,14 +186,20 @@ function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspacePro
     setFiles((f) => (f[file] === value ? f : { ...f, [file]: value }));
   }, []);
 
-  const handleReset = () => {
-    setFiles(lesson.starter);
-    setPreview({ files: lesson.starter, token: crypto.randomUUID() });
+  const replaceCode = (next: ProjectFiles) => {
+    setFiles(next);
+    setPreview({ files: next, token: crypto.randomUUID() });
     setActiveFile(lesson.focusFile);
     setResetKey((k) => k + 1);
     runner.reset();
+  };
+
+  const handleReset = () => {
+    replaceCode(lessonStart);
     progressStore.clearDraft(lesson.slug);
   };
+
+  const handleCheckpoint = checkpoint ? () => replaceCode(checkpoint) : null;
 
   const handleCheck = () => {
     runner.start(files, lesson.checks);
@@ -186,8 +218,16 @@ function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspacePro
   const nextLesson = lessons[index + 1] ?? null;
 
   return (
+    <GlossaryProvider value={glossaryApi}>
     <div className="flex h-dvh flex-col bg-paper">
-      <StudioHeader currentIndex={index} completed={completedSlugs} />
+      <StudioHeader
+        currentIndex={index}
+        completed={completedSlugs}
+        onOpenGlossary={() => {
+          setGlossaryTerm(null);
+          setGlossaryOpen(true);
+        }}
+      />
 
       <main className="grid min-h-0 flex-1 grid-rows-1 gap-3 p-2 pb-[calc(4.75rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)_minmax(0,1fr)] lg:pb-3">
         <section aria-label="Урок" className={panel("lesson")}>
@@ -201,6 +241,9 @@ function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspacePro
             outcome={runner.outcome}
             onCheck={handleCheck}
             onReset={handleReset}
+            onCheckpoint={handleCheckpoint}
+            quizScore={quizScore}
+            onQuizFinish={(score) => progressStore.saveQuiz(lesson.slug, score)}
           />
         </section>
 
@@ -277,6 +320,14 @@ function Workspace({ lesson, index, completedSlugs, initialFiles }: WorkspacePro
       </nav>
 
       {runner.frame}
+
+      <GlossaryDrawer
+        open={glossaryOpen}
+        onClose={() => setGlossaryOpen(false)}
+        completed={completedSlugs}
+        highlight={glossaryTerm}
+      />
     </div>
+    </GlossaryProvider>
   );
 }

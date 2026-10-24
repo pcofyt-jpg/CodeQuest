@@ -7,9 +7,9 @@ import { Logo } from "@/components/Logo";
 
 const slugs = lessons.map((l) => l.slug);
 
-type Props = { currentIndex: number; completed: string[] };
+type Props = { currentIndex: number; completed: string[]; onOpenGlossary?: () => void };
 
-export function StudioHeader({ currentIndex, completed }: Props) {
+export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props) {
   const prev = lessons[currentIndex - 1];
   const next = lessons[currentIndex + 1];
   const nextOpen = next ? isUnlocked(currentIndex + 1, slugs, completed) : false;
@@ -71,6 +71,15 @@ export function StudioHeader({ currentIndex, completed }: Props) {
       </nav>
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
+        {onOpenGlossary && (
+          <button
+            type="button"
+            onClick={onOpenGlossary}
+            className="mr-1 rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-paper"
+          >
+            Шпаргалка
+          </button>
+        )}
         <span className="mr-1 text-sm font-semibold text-muted md:hidden">
           {currentIndex + 1} / {lessons.length}
         </span>

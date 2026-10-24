@@ -38,6 +38,6 @@ export function combineResults(
     } else {
       ok = errorCount === 0;
     }
-    return { ok, message: check.message };
+    return { ok, message: check.message, fix: check.fix };
   });
 }
