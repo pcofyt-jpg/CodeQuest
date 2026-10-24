@@ -13,6 +13,8 @@ import { useGlossary } from "@/components/glossary/Glossary";
 const CODE_SOURCES = [
   String.raw`<\/?[a-zA-Z][a-zA-Z0-9]*(?:\s[^<>]*)?>`, // теги
   String.raw`[.#]?[a-zA-Z][\w-]*(?::[a-z]+)?\s*\{[^}]*\}`, // правила CSS
+  String.raw`[a-z][a-z-]*:\s*[^;"\n]+;`, // свойство CSS целиком: padding: 20px;
+  String.raw`(?<![\w.])\d+px\b`, // число с единицей: 20px
   String.raw`[a-zA-Z_$.#:][\w$.\-#:]*(?:\([^)]*\))?(?:\s*=\s*"[^"]*";?)?`, // слова кода
 ];
 

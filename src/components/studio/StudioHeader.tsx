@@ -80,7 +80,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
             Шпаргалка
           </button>
         )}
-        <span className="mr-1 text-sm font-semibold text-muted md:hidden">
+        <span className="mr-1 hidden text-sm font-semibold whitespace-nowrap text-muted sm:inline md:hidden">
           {currentIndex + 1} / {lessons.length}
         </span>
         {prev ? (

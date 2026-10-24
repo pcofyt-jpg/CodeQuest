@@ -20,4 +20,4 @@ def check(pg):
 
 def unlock_until(pg, n_completed, slugs):
     pg.goto(BASE + "/")
-    pg.evaluate("""(s) => localStorage.setItem('codequest:progress:v1', JSON.stringify({version:1, completed:s, drafts:{}}))""", slugs[:n_completed])
+    pg.evaluate("""(s) => localStorage.setItem('codequest:progress:v2', JSON.stringify({version:2, completed:s, drafts:{}, results:{}, quiz:{}}))""", slugs[:n_completed])

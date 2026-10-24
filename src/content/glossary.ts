@@ -169,7 +169,7 @@ export const glossary: GlossaryTerm[] = [
     what: "Единица размера: пиксель — одна крошечная точка экрана. 20px — это 20 таких точек. Число и px пишутся слитно, без пробела.",
     example: "padding: 20px;\nfont-size: 18px;",
     note: "Правильно: 20px. Неправильно: 20 px (с пробелом) или просто 20 — без px браузер такое значение не поймёт.",
-    aliases: ["px", "20px", "16px"],
+    aliases: ["px", "20px", "16px", "40px", "4px"],
     introducedIn: "kartochka",
   },
   {

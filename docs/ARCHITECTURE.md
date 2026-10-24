@@ -31,10 +31,12 @@
 
 | Модуль | Назначение |
 |---|---|
-| `content/lessons` | Уроки как данные: цель, объяснение, шаги, стартовый код, подсказки, проверки, итог |
+| `content/lessons` | Уроки как данные: цель, объяснение, понятия, шаги, заготовка, подсказки, проверки с подсказкой «что сделать», тест, эталон |
+| `content/glossary.ts` | Шпаргалка: понятие, объяснение, пример, живое демо (только HTML/CSS, sandbox без скриптов) |
+| `lib/lessons/projectFlow.ts` | Сквозной проект: стартовый код = результат прошлого урока проекта + заготовка; контрольная точка |
 | `lib/preview` | Сборка изолированного документа, защита циклов, мост сообщений, объяснение ошибок |
 | `lib/checks` | Проверки исходного кода и сведение результатов |
-| `lib/progress` | Прогресс и черновики. Сейчас это localStorage, интерфейс хранилища готов к замене на сервер |
+| `lib/progress` | Прогресс, черновики, результаты уроков (с них продолжается проект), итоги тестов. Сейчас localStorage (ключ v2), интерфейс готов к замене на сервер |
 | `components/studio` | Студия: редактор CodeMirror 6, предпросмотр, консоль, панель урока, проверка |
 
 ## Предварительная модель данных (этап 5, не реализована)
@@ -44,7 +46,8 @@ parent_account   id, email, password_hash / внешний вход, created_at,
 child_profile    id, parent_id → parent_account, nickname, created_at   (без ФИО и контактов)
 project          id, child_id, lesson_slug?, title, created_at, updated_at
 project_version  id, project_id, files_json, source ('child' | 'ai_accepted' | 'reset'), created_at
-lesson_progress  child_id, lesson_slug, status, completed_at, verified_by_server
+lesson_progress  child_id, lesson_slug, status, completed_at, verified_by_server, result_version_id → project_version
+quiz_result      child_id, lesson_slug, correct_first_try, total, created_at
 subscription     id, parent_id, plan, status, current_period_end, provider_ref
 payment_event    provider_event_id (UNIQUE — защита от повторной обработки), payload_hash, processed_at
 ai_usage         id, child_id, mode, tokens_in, tokens_out, cost_estimate, created_at  (без текста запроса)

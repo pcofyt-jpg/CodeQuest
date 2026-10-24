@@ -30,6 +30,16 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Без лигатур: <!-- и --> должны выглядеть так, как их печатают, а не стрелками. */
+code,
+pre,
+kbd,
+.font-mono,
+.cm-editor {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-route);
   outline-offset: 2px;
