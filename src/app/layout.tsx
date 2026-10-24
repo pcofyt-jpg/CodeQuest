@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/onest";
 import "@fontsource-variable/jetbrains-mono";
 import "./globals.css";
+import { APP_CSP } from "@/lib/security";
 
 export const metadata: Metadata = {
   title: "CodeQuest — учимся делать сайты",
@@ -19,6 +20,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
+      <head>
+        {/* Работает и без заголовков сервера (GitHub Pages). См. src/lib/security.ts */}
+        <meta httpEquiv="Content-Security-Policy" content={APP_CSP} />
+        <meta name="referrer" content="no-referrer" />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );

@@ -24,6 +24,10 @@ npm run build
 npm start
 ```
 
+## Выкладка
+
+Закрытый пилот на GitHub Pages: пошагово в `docs/DEPLOY.md`.
+
 ## Проверки
 
 ```bash
@@ -54,7 +58,9 @@ src/
     checks/                  проверки исходного кода
     lessons/projectFlow.ts   сквозной проект: стартовый код урока и контрольная точка
     progress/                прогресс и черновики (пока в браузере)
+.github/workflows/pages.yml  сборка и выкладка на GitHub Pages
 docs/
+  DEPLOY.md                  как выложить сайт
   ARCHITECTURE.md            архитектура MVP и план этапов
   RISKS.md                   риски и вопросы к юристам и специалистам
   adr/                       записанные архитектурные решения

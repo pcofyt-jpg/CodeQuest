@@ -6,7 +6,7 @@ with sync_playwright() as p:
     errs=[]; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(BASE + "/"); pg.wait_for_timeout(800)
     pg.get_by_role("link", name="Начать первый урок").click()
-    pg.wait_for_url("**/learn/zagolovok"); pg.wait_for_selector(".cm-content")
+    pg.wait_for_url("**/learn/zagolovok**"); pg.wait_for_selector(".cm-content")
     # стартовый код не должен проходить проверку
     check(pg)
     print("starter fails:", "Почти получилось" in pg.inner_text("body"))
@@ -17,7 +17,7 @@ with sync_playwright() as p:
     body = pg.inner_text("body")
     print("passed:", "Все проверки пройдены" in body, "| learned shown:", "Чему ты научился" in body)
     pg.get_by_role("link", name="Следующий урок: Описание под заголовком").last.click()
-    pg.wait_for_url("**/learn/opisanie"); pg.wait_for_selector(".cm-content")
+    pg.wait_for_url("**/learn/opisanie**"); pg.wait_for_selector(".cm-content")
     print("lesson2 open:", "Описание под заголовком" in pg.inner_text("body"))
     # черновик сохраняется после перезагрузки
     set_code(pg, "HTML", "<h1>Космос</h1>\n<p>Черновик сохраняется сам</p>")

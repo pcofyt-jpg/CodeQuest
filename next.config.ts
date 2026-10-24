@@ -1,27 +1,20 @@
 import type { NextConfig } from "next";
+import { APP_CSP } from "./src/lib/security";
 
 /**
- * Заголовки безопасности основного приложения.
+ * Два режима сборки.
  *
- * frame-src 'none' — главный барьер для предпросмотра: фрейм с кодом ребёнка
- * не сможет перейти на внешний сайт (проверено в Chromium, см. docs/adr/0001).
- * Сам srcdoc-предпросмотр этим правилом не блокируется.
+ * Обычный (npm run dev / build / start): заголовки безопасности отдаёт сервер Next.js.
  *
- * Важно: srcdoc-документ наследует CSP родителя. Поэтому script-src здесь
- * пока не задаём — строгий script-src основного приложения появится вместе
- * с отдельным доменом для выполнения проектов (этап 2, docs/adr/0001).
+ * Статический (STATIC_EXPORT=1, для GitHub Pages): все страницы собираются в папку out/.
+ * GitHub Pages не позволяет задавать свои HTTP-заголовки, поэтому главная политика
+ * (frame-src 'none' и др.) дублируется в <meta> в src/app/layout.tsx — она работает
+ * в обоих режимах. Что теряется без заголовков — см. docs/DEPLOY.md.
  */
+const isStaticExport = process.env.STATIC_EXPORT === "1";
+
 const securityHeaders = [
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "frame-src 'none'",
-      "frame-ancestors 'none'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
-  },
+  { key: "Content-Security-Policy", value: `${APP_CSP}; frame-ancestors 'none'` },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "no-referrer" },
   {
@@ -30,11 +23,19 @@ const securityHeaders = [
   },
 ];
 
-const nextConfig: NextConfig = {
-  poweredByHeader: false,
-  async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
-  },
-};
+const nextConfig: NextConfig = isStaticExport
+  ? {
+      output: "export",
+      // Сайт на GitHub Pages живёт по адресу вида https://имя.github.io/репозиторий/
+      basePath: process.env.BASE_PATH || "",
+      trailingSlash: true,
+      poweredByHeader: false,
+    }
+  : {
+      poweredByHeader: false,
+      async headers() {
+        return [{ source: "/:path*", headers: securityHeaders }];
+      },
+    };
 
 export default nextConfig;
