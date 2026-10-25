@@ -1,26 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getLessonIndex, lessons } from "@/content/lessons/catalog";
 import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
-import { buildPreviewDocument, errorLine, type PreviewMessage } from "@/lib/preview/buildDocument";
-import { explainError } from "@/lib/preview/explainError";
+import { downloadSite } from "@/lib/export/site";
 import { isUnlocked, progressStore, type QuizScore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { lessonCheckpoint, lessonStarter } from "@/lib/lessons/projectFlow";
 import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
 import { CodeEditor } from "./CodeEditor";
-import { ConsolePanel, type ConsoleEntry } from "./ConsolePanel";
+import { ResultPanel } from "./ResultPanel";
+import { usePreviewSession } from "./usePreviewSession";
 import { LessonPanel } from "./LessonPanel";
-import { PreviewFrame } from "./PreviewFrame";
 import { StudioHeader } from "./StudioHeader";
 import { useCheckRunner } from "./useCheckRunner";
 
 const slugs = lessons.map((l) => l.slug);
-const PREVIEW_DELAY_MS = 450;
 const DRAFT_DELAY_MS = 800;
-const MAX_CONSOLE_ENTRIES = 200;
 
 type MobileView = "lesson" | "code" | "result";
 
@@ -104,26 +101,12 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   );
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
   const [activeFile, setActiveFile] = useState<CodeFile>(lesson.focusFile);
-  const [preview, setPreview] = useState(() => ({ files: initialFiles, token: crypto.randomUUID() }));
-  const [log, setLog] = useState<{ token: string; entries: ConsoleEntry[] }>({ token: "", entries: [] });
   const [hintsShown, setHintsShown] = useState(0);
   const [mobileView, setMobileView] = useState<MobileView>("lesson");
   const [resetKey, setResetKey] = useState(0);
   const [jumpTo, setJumpTo] = useState<{ file: CodeFile; line: number; nonce: number } | null>(null);
-  const entryId = useRef(0);
   const runner = useCheckRunner();
-
-  const built = useMemo(
-    () => buildPreviewDocument(preview.files, { token: preview.token }),
-    [preview],
-  );
-
-  // Обновляем предпросмотр, когда ребёнок перестал печатать.
-  useEffect(() => {
-    if (files === preview.files) return;
-    const t = window.setTimeout(() => setPreview({ files, token: crypto.randomUUID() }), PREVIEW_DELAY_MS);
-    return () => window.clearTimeout(t);
-  }, [files, preview.files]);
+  const session = usePreviewSession(files);
 
   // Сохраняем черновик в этом браузере.
   useEffect(() => {
@@ -142,53 +125,13 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
     }
   }, [runner.outcome, lesson.slug]);
 
-  const pushEntry = useCallback(
-    (token: string, entry: Omit<ConsoleEntry, "id">) => {
-      setLog((prev) => {
-        const base = prev.token === token ? prev.entries : [];
-        const entries = [...base, { ...entry, id: entryId.current++ }].slice(-MAX_CONSOLE_ENTRIES);
-        return { token, entries };
-      });
-    },
-    [],
-  );
-
-  const handleMessage = (msg: PreviewMessage) => {
-    if (msg.type === "console") {
-      pushEntry(preview.token, { level: msg.level, text: msg.text });
-    } else if (msg.type === "error") {
-      pushEntry(preview.token, {
-        level: "error",
-        text: msg.message,
-        explanation: explainError(msg.message),
-        line: errorLine(built, msg.message, msg.line),
-      });
-    }
-  };
-
-  const entries: ConsoleEntry[] = useMemo(() => {
-    const live = log.token === preview.token ? log.entries : [];
-    if (!built.syntaxError) return live;
-    const e = built.syntaxError;
-    return [
-      {
-        id: -1,
-        level: "error",
-        text: `SyntaxError: ${e.message} (символ ${e.column})`,
-        explanation: `${explainError(e.message)} JavaScript не запустился, пока ошибка не исправлена.`,
-        line: e.line,
-      },
-      ...live,
-    ];
-  }, [log, preview.token, built.syntaxError]);
-
   const handleChange = useCallback((file: CodeFile, value: string) => {
     setFiles((f) => (f[file] === value ? f : { ...f, [file]: value }));
   }, []);
 
   const replaceCode = (next: ProjectFiles) => {
     setFiles(next);
-    setPreview({ files: next, token: crypto.randomUUID() });
+    session.restart(next);
     setActiveFile(lesson.focusFile);
     setResetKey((k) => k + 1);
     runner.reset();
@@ -259,31 +202,23 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
         </section>
 
         <section aria-label="Результат" className={panel("result")}>
-          <div className="flex items-center justify-between border-b border-line px-4 py-2">
-            <h2 className="text-sm font-semibold text-muted">Результат</h2>
-            <button
-              type="button"
-              onClick={() => setPreview({ files, token: crypto.randomUUID() })}
-              className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
-            >
-              Перезапустить
-            </button>
-          </div>
-          <PreviewFrame
-            key={preview.token}
-            html={built.html}
-            token={preview.token}
+          <ResultPanel
+            session={session}
             title={`Результат урока ${lesson.number}`}
-            onMessage={handleMessage}
-            onNavigationBlocked={() =>
-              pushEntry(preview.token, {
-                level: "warn",
-                text: "Страница попробовала перейти по другому адресу. В предпросмотре работает только твоя страница, поэтому она открыта заново.",
-              })
+            onRestart={() => session.restart(files)}
+            onJumpToLine={jumpToJsLine}
+            actions={
+              lesson.track === "project" ? (
+                <button
+                  type="button"
+                  onClick={() => downloadSite("Мой сайт", files)}
+                  className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
+                >
+                  Скачать сайт
+                </button>
+              ) : null
             }
-            className="min-h-0 w-full flex-1 bg-white"
           />
-          <ConsolePanel entries={entries} onJumpToLine={jumpToJsLine} />
         </section>
       </main>
 
@@ -311,7 +246,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
               className={`rounded-full px-4 py-1.5 ${mobileView === view ? "bg-route-soft" : ""}`}
             >
               {label}
-              {view === "result" && entries.some((e) => e.level === "error") && (
+              {view === "result" && session.entries.some((e) => e.level === "error") && (
                 <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-coral align-middle" aria-label="есть ошибки" />
               )}
             </span>

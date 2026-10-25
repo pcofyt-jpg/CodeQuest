@@ -176,4 +176,8 @@ export const progressStore = {
   resetAll() {
     write(emptyProgress());
   },
+  /** Заменить всё (загрузка резервной копии); данные уже проверены parseProgress. */
+  replaceAll(data: ProgressData) {
+    write(data);
+  },
 };

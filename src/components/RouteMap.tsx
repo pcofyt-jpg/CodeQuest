@@ -6,6 +6,8 @@ import { lessons } from "@/content/lessons/catalog";
 import { isUnlocked, nextLessonIndex, progressStore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { Logo } from "./Logo";
+import { BackupControls } from "./BackupControls";
+import { courses } from "@/content/courses";
 
 const slugs = lessons.map((l) => l.slug);
 
@@ -39,15 +41,26 @@ export function RouteMap() {
           Ты построишь свой собственный сайт — на любую тему. В каждом уроке добавляешь к нему что-то
           новое и сразу видишь результат. Следующий урок открывается, когда пройден предыдущий.
         </p>
-        <Link
-          href="/shpargalka"
-          className="mt-4 inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
-        >
-          Шпаргалка
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href="/proekty/"
+            className="inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
+          >
+            Мои проекты
+          </Link>
+          <Link
+            href="/shpargalka/"
+            className="inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
+          >
+            Шпаргалка
+          </Link>
+        </div>
       </section>
 
-      <nav aria-label="Маршрут уроков" className="mt-10">
+      <h2 className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
+        Курс {courses[0]!.number} · {courses[0]!.title}
+      </h2>
+      <nav aria-label="Маршрут уроков" className="mt-4">
         <ol className={hydrated ? "" : "opacity-0"}>
           {lessons.map((lesson, i) => {
             const done = completed.includes(lesson.slug);
@@ -124,8 +137,23 @@ export function RouteMap() {
         </p>
       )}
 
+      <section aria-label="Следующие курсы" className="mt-10 space-y-3">
+        {courses
+          .filter((c) => c.status === "soon")
+          .map((c) => (
+            <article key={c.id} className="rounded-2xl border border-dashed border-line px-5 py-4">
+              <p className="text-sm font-bold tracking-wide text-muted uppercase">
+                Курс {c.number} · готовится
+              </p>
+              <h2 className="mt-1 text-lg font-bold text-ink">{c.title}</h2>
+              <p className="mt-1 text-[15px] leading-relaxed text-ink">{c.description}</p>
+            </article>
+          ))}
+      </section>
+
       <footer className="mt-auto pt-12 text-sm leading-relaxed text-muted">
         <p>Демо-версия: прогресс и код хранятся только в этом браузере и никуда не отправляются.</p>
+        {hydrated && <BackupControls />}
         {hydrated && doneCount + Object.keys(progress.drafts).length > 0 && (
           <div className="mt-2">
             {confirmReset ? (
