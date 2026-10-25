@@ -121,3 +121,19 @@ describe("ИИ-наставник: диагностика настройки", (
     expect(res.headers["Access-Control-Allow-Origin"]).toBe(ORIGIN);
   });
 });
+
+describe("ИИ-наставник: настройки в файле", () => {
+  it("берёт настройки из блока CONFIG, если переменных окружения нет", async () => {
+    const config = { ...env, MODEL: "", ALLOW_MODEL_CHOICE: "" };
+    const fetch = modelOk();
+    const res = await handler(event(body()), context, { env: {}, config, fetch });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toBe("gpt://b1gtestfolder/yandexgpt-lite/latest");
+  });
+
+  it("переменная окружения важнее настройки в файле", async () => {
+    const fetch = modelOk();
+    await handler(event(body()), context, { env: { FOLDER_ID: "b1genv" }, config: env, fetch });
+    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toContain("gpt://b1genv/");
+  });
+});

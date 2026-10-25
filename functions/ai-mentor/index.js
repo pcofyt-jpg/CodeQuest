@@ -23,6 +23,21 @@
  */
 import { createHash, timingSafeEqual } from "node:crypto";
 
+/**
+ * ===== НАСТРОЙКИ =====
+ * Можно заполнить здесь, а можно задать переменными окружения функции
+ * (переменная окружения важнее, если задано и то и другое).
+ * Значения — строки в кавычках. Файл с заполненными настройками НЕ публикуйте в GitHub.
+ */
+export const CONFIG = {
+  FOLDER_ID: "",
+  ACCESS_CODES_SHA256: "",
+  ALLOWED_ORIGINS: "",
+  MODEL: "",
+  DAILY_LIMIT: "",
+  ALLOW_MODEL_CHOICE: "",
+};
+
 const MODES = new Set(["explain-error", "check-help"]);
 const MODELS = new Set(["yandexgpt-lite", "yandexgpt"]);
 export const LIMITS = { body: 60_000, file: 15_000, text: 700, checks: 10, answer: 1500 };
@@ -120,7 +135,13 @@ function json(status, body, origin) {
 
 const fail = (status, error, message, origin) => json(status, { error, message }, origin);
 
-function readEnv(env) {
+function readEnv(rawEnv, config = CONFIG) {
+  // Переменная окружения важнее настройки в файле.
+  const env = {};
+  for (const key of [...Object.keys(config), "API_URL"]) {
+    const v = rawEnv[key];
+    env[key] = typeof v === "string" && v.trim() !== "" ? v : config[key];
+  }
   return {
     folderId: env.FOLDER_ID ?? "",
     rawCodes: (env.ACCESS_CODES_SHA256 ?? "").trim() !== "",
@@ -155,7 +176,7 @@ export async function handler(event, context, deps = {}) {
 }
 
 async function handle(event, context, deps) {
-  const env = readEnv(deps.env ?? process.env);
+  const env = readEnv(deps.env ?? process.env, deps.config ?? CONFIG);
   const fetchFn = deps.fetch ?? fetch;
   const now = deps.now ?? Date.now();
   const headers = Object.fromEntries(Object.entries(event?.headers ?? {}).map(([k, v]) => [k.toLowerCase(), v]));
