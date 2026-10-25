@@ -39,6 +39,19 @@ jobs:
       - id: pages
         uses: actions/configure-pages@v6
 
+      - name: Проверка настройки ИИ-наставника
+        env:
+          MENTOR_URL: ${{ vars.AI_MENTOR_URL || secrets.AI_MENTOR_URL }}
+        run: |
+          url="$(echo "$MENTOR_URL" | tr -d '[:space:]"'"'"'')"
+          if [ -z "$url" ]; then
+            echo "::warning title=ИИ-наставник НЕ подключён::Не найден AI_MENTOR_URL (Settings → Secrets and variables → Actions → Variables). Сайт соберётся без наставника."
+          elif [ "${url#https://}" = "$url" ]; then
+            echo "::warning title=ИИ-наставник НЕ подключён::AI_MENTOR_URL должен начинаться с https://"
+          else
+            echo "::notice title=ИИ-наставник подключён::Адрес наставника найден, кнопка «Спросить наставника» будет на сайте."
+          fi
+
       - name: Статическая сборка
         run: npx next build
         env:
@@ -46,7 +59,8 @@ jobs:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
           # Адрес функции ИИ-наставника (Settings → Secrets and variables → Actions → Variables).
           # Это не секрет: браузер всё равно обращается по нему. Если не задан — наставник скрыт.
-          NEXT_PUBLIC_AI_MENTOR_URL: ${{ vars.AI_MENTOR_URL }}
+          # Берём из Variables, а если его положили в Secrets — оттуда.
+          NEXT_PUBLIC_AI_MENTOR_URL: ${{ vars.AI_MENTOR_URL || secrets.AI_MENTOR_URL }}
 
       - uses: actions/upload-pages-artifact@v5
         with:

@@ -4,8 +4,17 @@ import type { ProjectFiles } from "@/content/lessons/types";
  * Клиент ИИ-наставника. Адрес функции задаётся при сборке (NEXT_PUBLIC_AI_MENTOR_URL).
  * Если адреса нет, наставник в студии не показывается вовсе.
  */
-export const MENTOR_URL = process.env.NEXT_PUBLIC_AI_MENTOR_URL ?? "";
-export const mentorEnabled = /^https:\/\/|^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(MENTOR_URL);
+/** Прощает лишние пробелы и кавычки вокруг адреса, скопированного из консоли. */
+export function normalizeMentorUrl(raw: string | undefined): string {
+  return (raw ?? "").trim().replace(/^["'«]+|["'»]+$/g, "").trim();
+}
+
+export function isMentorUrl(url: string): boolean {
+  return /^https:\/\/[^\s"'<>]+$|^http:\/\/(localhost|127\.0\.0\.1)[:/][^\s"'<>]*$/.test(url);
+}
+
+export const MENTOR_URL = normalizeMentorUrl(process.env.NEXT_PUBLIC_AI_MENTOR_URL);
+export const mentorEnabled = isMentorUrl(MENTOR_URL);
 
 export type MentorRequest =
   | { mode: "explain-error"; files: ProjectFiles; lesson?: { title: string; goal: string }; error: { message: string; line?: number | null } }
