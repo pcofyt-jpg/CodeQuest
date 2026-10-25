@@ -66,7 +66,7 @@ node scripts/mentor-codes.mjs 3
      | `FOLDER_ID` | ID каталога `codequest` (строка `b1g…`) |
      | `ACCESS_CODES_SHA256` | строка хешей из шага 1 |
      | `ALLOWED_ORIGINS` | `https://pcofyt-jpg.github.io,http://localhost:3000` |
-     | `MODEL` | `yandexgpt-lite` |
+     | `MODEL` | `yandexgpt` (Pro — выбран по сравнению, см. ADR 0002) |
      | `DAILY_LIMIT` | `30` |
      | `ALLOW_MODEL_CHOICE` | `1` — временно, для сравнения моделей; потом удалить |
 6. «Сохранить изменения» — создастся версия функции.
@@ -81,6 +81,7 @@ $env:MENTOR_URL="ссылка_для_вызова"; $env:MENTOR_CODE="один_�
 ```
 Скрипт задаст обеим моделям 5 настоящих ошибок из уроков и напечатает ответы.
 Пришлите вывод — код доступа в нём не печатается. После выбора модели удалите `ALLOW_MODEL_CHOICE`.
+Проверить только выбранную модель: `$env:EVAL_MODELS="yandexgpt"` перед запуском.
 
 ## 4. Подключите наставника к сайту
 

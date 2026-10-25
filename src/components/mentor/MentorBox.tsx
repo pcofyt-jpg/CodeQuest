@@ -4,6 +4,24 @@ import { useState } from "react";
 import { askMentor, mentorEnabled, type MentorRequest } from "@/lib/mentor/client";
 import { mentorCode, useMentorCode } from "@/lib/mentor/codeStore";
 
+/** Фрагменты в обратных кавычках (`addEventListener`) показываем как код, а не как символы. */
+function MentorText({ text }: { text: string }) {
+  const parts = text.split(/`([^`\n]{1,200})`/g);
+  return (
+    <p className="whitespace-pre-wrap">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <code key={i} className="rounded bg-surface px-1 py-px font-mono text-[0.92em]">
+            {part}
+          </code>
+        ) : (
+          part
+        ),
+      )}
+    </p>
+  );
+}
+
 type State =
   | { s: "idle" }
   | { s: "need-code"; note?: string }
@@ -88,7 +106,7 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
       {state.s === "answer" && (
         <div role="status" className="rounded-xl border border-route/30 bg-route-soft px-3 py-2.5 text-sm leading-relaxed text-ink">
           <p className="mb-1 font-semibold text-route">Наставник</p>
-          <p className="whitespace-pre-wrap">{state.text}</p>
+          <MentorText text={state.text} />
           <p className="mt-2 text-xs text-muted">
             Наставник — это ИИ и может ошибаться: проверяй его советы в окне результата.
             {state.left !== null && ` Вопросов на сегодня осталось: ${state.left}.`}

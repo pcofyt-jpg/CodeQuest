@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ProjectFiles } from "@/content/lessons/types";
 import { buildPreviewDocument, errorLine, type PreviewMessage } from "@/lib/preview/buildDocument";
 import { explainError } from "@/lib/preview/explainError";
+import { analyzeBrackets, describeBrackets } from "@/lib/preview/brackets";
 import type { ConsoleEntry } from "./ConsolePanel";
 
 const PREVIEW_DELAY_MS = 450;
@@ -58,17 +59,21 @@ export function usePreviewSession(files: ProjectFiles) {
     const live = log.token === preview.token ? log.entries : [];
     if (!built.syntaxError) return live;
     const e = built.syntaxError;
+    // Скобки проверяем точно, программой: это частая причина и тут нельзя ошибиться.
+    const brackets = analyzeBrackets(preview.files.js);
     return [
       {
         id: -1,
         level: "error",
         text: `SyntaxError: ${e.message} (символ ${e.column})`,
-        explanation: `${explainError(e.message)} JavaScript не запустился, пока ошибка не исправлена.`,
-        line: e.line,
+        explanation: brackets
+          ? `${describeBrackets(brackets)} JavaScript не запустился, пока ошибка не исправлена.`
+          : `${explainError(e.message)} JavaScript не запустился, пока ошибка не исправлена.`,
+        line: brackets ? brackets.line : e.line,
       },
       ...live,
     ];
-  }, [log, preview.token, built.syntaxError]);
+  }, [log, preview.token, preview.files.js, built.syntaxError]);
 
   /** Перезапуск: с текущим кодом или сразу с новым (сброс, контрольная точка). */
   const restart = useCallback((next: ProjectFiles) => setPreview({ files: next, token: crypto.randomUUID() }), []);

@@ -50,7 +50,7 @@ describe("ИИ-наставник: функция", () => {
     expect(init.headers["x-data-logging-enabled"]).toBe("false");
     expect(init.headers["x-folder-id"]).toBe("b1gtestfolder");
     const sent = JSON.parse(init.body);
-    expect(sent.modelUri).toBe("gpt://b1gtestfolder/yandexgpt-lite/latest");
+    expect(sent.modelUri).toBe("gpt://b1gtestfolder/yandexgpt/latest"); // Pro по умолчанию
     expect(sent.messages[0].role).toBe("system");
     expect(sent.messages[1].text).toContain("1: const b");
     expect(sent.messages[1].text).not.toContain(CODE); // код доступа в модель не уходит
@@ -78,10 +78,10 @@ describe("ИИ-наставник: функция", () => {
 
   it("выбор модели работает только при ALLOW_MODEL_CHOICE=1", async () => {
     const fetch = modelOk();
-    await handler(event(body({ model: "yandexgpt" })), context, { env, fetch });
-    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toContain("/yandexgpt-lite/");
-    await handler(event(body({ model: "yandexgpt" })), context, { env: { ...env, ALLOW_MODEL_CHOICE: "1" }, fetch });
-    expect(JSON.parse(fetch.mock.calls[1][1].body).modelUri).toContain("/yandexgpt/latest");
+    await handler(event(body({ model: "yandexgpt-lite" })), context, { env, fetch });
+    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toContain("/yandexgpt/latest");
+    await handler(event(body({ model: "yandexgpt-lite" })), context, { env: { ...env, ALLOW_MODEL_CHOICE: "1" }, fetch });
+    expect(JSON.parse(fetch.mock.calls[1][1].body).modelUri).toContain("/yandexgpt-lite/latest");
   });
 
   it("понятно сообщает о сбоях модели и настройки", async () => {
@@ -128,12 +128,32 @@ describe("ИИ-наставник: настройки в файле", () => {
     const fetch = modelOk();
     const res = await handler(event(body()), context, { env: {}, config, fetch });
     expect(res.statusCode).toBe(200);
-    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toBe("gpt://b1gtestfolder/yandexgpt-lite/latest");
+    expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toBe("gpt://b1gtestfolder/yandexgpt/latest");
   });
 
   it("переменная окружения важнее настройки в файле", async () => {
     const fetch = modelOk();
     await handler(event(body()), context, { env: { FOLDER_ID: "b1genv" }, config: env, fetch });
     expect(JSON.parse(fetch.mock.calls[0][1].body).modelUri).toContain("gpt://b1genv/");
+  });
+});
+
+describe("ИИ-наставник: точная проверка скобок", () => {
+  it("та же логика, что в студии: незакрытая «(» из строки 1", async () => {
+    const { analyzeBrackets, describeBrackets } = await import("./index.js");
+    const code = 'document.querySelector("#go").addEventListener("click", function () {\n  document.querySelector("#out").textContent = "Привет";\n}\n';
+    expect(describeBrackets(analyzeBrackets(code))).toBe("Не закрыта скобка «(» из строки 1 — ей нужна пара «)».");
+    expect(analyzeBrackets('const s = "(((";\n// )))\n/* { */ f(\'}\');')).toBeNull();
+    expect(analyzeBrackets("a();\n}")).toEqual({ kind: "extra", found: "}", line: 2 });
+  });
+
+  it("при синтаксической ошибке передаёт модели факт о скобках, и Pro — модель по умолчанию", async () => {
+    const fetch = modelOk();
+    const js = 'document.querySelector("#go").addEventListener("click", function () {\n  x();\n}\n';
+    await handler(event(body({ files: { ...files, js }, error: { message: "SyntaxError: Unexpected token (символ 1)", line: 3 } })), context, { env: { ...env, MODEL: "" }, fetch });
+    const sent = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(sent.modelUri).toBe("gpt://b1gtestfolder/yandexgpt/latest");
+    expect(sent.messages[1].text).toContain("Точная проверка скобок: Не закрыта скобка «(» из строки 1");
+    expect(sent.messages[0].text).toContain("найди ошибку");
   });
 });

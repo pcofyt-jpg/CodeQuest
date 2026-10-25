@@ -65,7 +65,8 @@ let hinted = false;
 
 for (const c of cases) {
   console.log("\n" + "=".repeat(70) + "\n" + c.name);
-  for (const model of ["yandexgpt-lite", "yandexgpt"]) {
+  // EVAL_MODELS="yandexgpt" — проверить только Pro (после выбора модели).
+  for (const model of (process.env.EVAL_MODELS || "yandexgpt-lite,yandexgpt").split(",")) {
     const t = Date.now();
     try {
       const res = await fetch(URL_, {
