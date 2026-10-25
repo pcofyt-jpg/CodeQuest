@@ -100,3 +100,24 @@ describe("ИИ-наставник: функция", () => {
     expect(msgs[1].text).toContain("строка 2");
   });
 });
+
+describe("ИИ-наставник: диагностика настройки", () => {
+  it("называет, какой настройки не хватает", async () => {
+    const run = async (e) => JSON.parse((await handler(event(body()), context, { env: { ...env, ...e }, fetch: modelOk() })).body).error;
+    expect(await run({ FOLDER_ID: "" })).toBe("config_folder_id");
+    expect(await run({ ACCESS_CODES_SHA256: "" })).toBe("config_codes_missing");
+    expect(await run({ ACCESS_CODES_SHA256: "kot-raketa-123" })).toBe("config_codes_not_hashes");
+    expect(JSON.parse((await handler(event(body()), {}, { env, fetch: modelOk() })).body).error).toBe("config_service_account");
+  });
+
+  it("не выдаёт наружу подробности неожиданной ошибки", async () => {
+    const brokenEnv = { ...env };
+    Object.defineProperty(brokenEnv, "FOLDER_ID", { get() { throw new ReferenceError("b1gxxx is not defined"); } });
+    const res = await handler(event(body()), context, { env: brokenEnv, fetch: modelOk() });
+    expect(res.statusCode).toBe(500);
+    expect(res.body).not.toContain("b1gxxx");
+    expect(res.body).not.toContain("stack");
+    expect(JSON.parse(res.body).error).toBe("internal");
+    expect(res.headers["Access-Control-Allow-Origin"]).toBe(ORIGIN);
+  });
+});

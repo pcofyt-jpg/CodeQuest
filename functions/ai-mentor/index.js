@@ -123,6 +123,7 @@ const fail = (status, error, message, origin) => json(status, { error, message }
 function readEnv(env) {
   return {
     folderId: env.FOLDER_ID ?? "",
+    rawCodes: (env.ACCESS_CODES_SHA256 ?? "").trim() !== "",
     hashes: (env.ACCESS_CODES_SHA256 ?? "").split(",").map((s) => s.trim().toLowerCase()).filter((s) => /^[0-9a-f]{64}$/.test(s)),
     origins: (env.ALLOWED_ORIGINS ?? "").split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean),
     model: MODELS.has(env.MODEL) ? env.MODEL : "yandexgpt-lite",
@@ -132,7 +133,28 @@ function readEnv(env) {
   };
 }
 
+/**
+ * Точка входа. Любая неожиданная ошибка превращается в общий ответ без подробностей:
+ * иначе среда выполнения вернула бы наружу текст ошибки и номера строк кода.
+ */
 export async function handler(event, context, deps = {}) {
+  try {
+    return await handle(event, context, deps);
+  } catch (e) {
+    console.error(JSON.stringify({ event: "unexpected", name: e?.name }));
+    let origin = null;
+    try {
+      const allowed = String((deps.env ?? process.env).ALLOWED_ORIGINS ?? "").split(",").map((x) => x.trim().replace(/\/+$/, ""));
+      const o = String(event?.headers?.Origin ?? event?.headers?.origin ?? "").replace(/\/+$/, "");
+      origin = allowed.includes(o) && o ? o : null;
+    } catch {
+      origin = null;
+    }
+    return fail(500, "internal", "Наставник сейчас не отвечает. Попробуй чуть позже.", origin);
+  }
+}
+
+async function handle(event, context, deps) {
   const env = readEnv(deps.env ?? process.env);
   const fetchFn = deps.fetch ?? fetch;
   const now = deps.now ?? Date.now();
@@ -157,9 +179,16 @@ export async function handler(event, context, deps = {}) {
   // Запросы приходят только с сайта студии (это не защита, а порядок: защита — код доступа).
   if (!origin) return fail(403, "origin", "Запрос пришёл не с сайта студии.", null);
   if (event?.httpMethod !== "POST") return fail(405, "method", "Нужен POST-запрос.", origin);
-  if (!env.folderId || env.hashes.length === 0) {
-    console.error(JSON.stringify({ event: "misconfigured" }));
-    return fail(500, "config", "Наставник ещё не настроен.", origin);
+  const configProblem = !env.folderId
+    ? "config_folder_id" // не задана переменная FOLDER_ID
+    : env.hashes.length === 0
+      ? env.rawCodes
+        ? "config_codes_not_hashes" // в ACCESS_CODES_SHA256 не хеши (часто — вставлены сами коды)
+        : "config_codes_missing" // не задана переменная ACCESS_CODES_SHA256
+      : null;
+  if (configProblem) {
+    console.error(JSON.stringify({ event: "misconfigured", problem: configProblem }));
+    return fail(500, configProblem, "Наставник ещё не настроен.", origin);
   }
 
   let raw = event.body ?? "";
@@ -186,7 +215,7 @@ export async function handler(event, context, deps = {}) {
   const token = context?.token?.access_token;
   if (!token) {
     console.error(JSON.stringify({ event: "no_service_account" }));
-    return fail(500, "config", "Наставник ещё не настроен.", origin);
+    return fail(500, "config_service_account", "Наставник ещё не настроен.", origin);
   }
 
   const model = env.allowModelChoice && MODELS.has(req.model) ? req.model : env.model;

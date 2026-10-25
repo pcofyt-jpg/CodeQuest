@@ -53,6 +53,16 @@ const cases = [
   },
 ];
 
+const HINTS = {
+  config_folder_id: "Не задана переменная окружения FOLDER_ID (ID каталога codequest).",
+  config_codes_missing: "Не задана переменная окружения ACCESS_CODES_SHA256.",
+  config_codes_not_hashes: "В ACCESS_CODES_SHA256 не хеши. Вставьте строку, которую печатает scripts/mentor-codes.mjs, а не сами коды.",
+  config_service_account: "Функции не назначен сервисный аккаунт ai-mentor.",
+  code: "Код доступа не подходит: проверьте MENTOR_CODE и что его хеш есть в ACCESS_CODES_SHA256.",
+  origin: "В ALLOWED_ORIGINS нет http://localhost:3000.",
+};
+let hinted = false;
+
 for (const c of cases) {
   console.log("\n" + "=".repeat(70) + "\n" + c.name);
   for (const model of ["yandexgpt-lite", "yandexgpt"]) {
@@ -64,8 +74,12 @@ for (const c of cases) {
         body: JSON.stringify({ ...c.req, code: CODE, model }),
       });
       const data = await res.json().catch(() => ({}));
+      if (!hinted && data.error && HINTS[data.error]) {
+        console.log(`\n>>> Что исправить: ${HINTS[data.error]}`);
+        hinted = true;
+      }
       console.log(`\n--- ${model} (${res.status}, ${((Date.now() - t) / 1000).toFixed(1)} с)`);
-      console.log(data.answer ?? data.message ?? JSON.stringify(data));
+      console.log(data.answer ?? (data.error ? `[${data.error}] ${data.message}` : JSON.stringify(data)));
     } catch (e) {
       console.log(`\n--- ${model}: ошибка соединения — ${e.message}`);
     }
