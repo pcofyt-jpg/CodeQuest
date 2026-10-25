@@ -1,6 +1,7 @@
 "use client";
 
-import { ConsolePanel } from "./ConsolePanel";
+import type { MentorRequest } from "@/lib/mentor/client";
+import { ConsolePanel, type ConsoleEntry } from "./ConsolePanel";
 import { PreviewFrame } from "./PreviewFrame";
 import type { PreviewSession } from "./usePreviewSession";
 
@@ -11,10 +12,11 @@ type Props = {
   onJumpToLine: (line: number) => void;
   /** дополнительные кнопки в шапке панели (например, «Скачать сайт») */
   actions?: React.ReactNode;
+  mentorRequest?: (entry: ConsoleEntry) => MentorRequest;
 };
 
 /** Окно результата с консолью: одно и то же для уроков и своих проектов. */
-export function ResultPanel({ session, title, onRestart, onJumpToLine, actions }: Props) {
+export function ResultPanel({ session, title, onRestart, onJumpToLine, actions, mentorRequest }: Props) {
   return (
     <>
       <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2">
@@ -39,7 +41,7 @@ export function ResultPanel({ session, title, onRestart, onJumpToLine, actions }
         onNavigationBlocked={session.onNavigationBlocked}
         className="min-h-0 w-full flex-1 bg-white"
       />
-      <ConsolePanel entries={session.entries} onJumpToLine={onJumpToLine} />
+      <ConsolePanel entries={session.entries} onJumpToLine={onJumpToLine} mentorRequest={mentorRequest} />
     </>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { MentorBox } from "@/components/mentor/MentorBox";
+import type { MentorRequest } from "@/lib/mentor/client";
+
 export type ConsoleEntry = {
   id: number;
   level: "log" | "info" | "warn" | "error" | "alert";
@@ -21,9 +24,11 @@ const levelStyle: Record<ConsoleEntry["level"], string> = {
 type Props = {
   entries: ConsoleEntry[];
   onJumpToLine: (line: number) => void;
+  /** запрос к наставнику для записи с ошибкой; без него кнопки наставника нет */
+  mentorRequest?: (entry: ConsoleEntry) => MentorRequest;
 };
 
-export function ConsolePanel({ entries, onJumpToLine }: Props) {
+export function ConsolePanel({ entries, onJumpToLine, mentorRequest }: Props) {
   return (
     <section aria-label="Консоль" className="flex max-h-[40%] min-h-[96px] flex-col border-t border-line">
       <h2 className="px-4 pt-2 pb-1 text-sm font-semibold text-muted">Консоль</h2>
@@ -55,6 +60,9 @@ export function ConsolePanel({ entries, onJumpToLine }: Props) {
                   </>
                 )}
               </p>
+              {e.level === "error" && mentorRequest && (
+                <MentorBox label="Спросить наставника" buildRequest={() => mentorRequest(e)} />
+              )}
             </li>
           ))
         )}

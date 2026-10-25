@@ -7,6 +7,9 @@ import { getTerm } from "@/content/glossary";
 import { TermCard } from "@/components/glossary/Glossary";
 import type { QuizScore } from "@/lib/progress/store";
 import type { CheckOutcome } from "./useCheckRunner";
+import type { CheckResult } from "@/content/lessons/types";
+import type { MentorRequest } from "@/lib/mentor/client";
+import { MentorBox } from "@/components/mentor/MentorBox";
 import { QuizBlock } from "./QuizBlock";
 import { RichText } from "./RichText";
 
@@ -24,6 +27,7 @@ type Props = {
   onCheckpoint: (() => void) | null;
   quizScore: QuizScore | undefined;
   onQuizFinish: (score: QuizScore) => void;
+  mentorCheckRequest?: (failed: CheckResult[]) => MentorRequest;
 };
 
 export function LessonPanel({
@@ -39,6 +43,7 @@ export function LessonPanel({
   onCheckpoint,
   quizScore,
   onQuizFinish,
+  mentorCheckRequest,
 }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmCheckpoint, setConfirmCheckpoint] = useState(false);
@@ -174,6 +179,13 @@ export function LessonPanel({
                 </li>
               ))}
             </ul>
+            {!outcome.passed && mentorCheckRequest && (
+              <MentorBox
+                key={outcome.results.map((r) => (r.ok ? 1 : 0)).join("")}
+                label="Спросить наставника, что не так"
+                buildRequest={() => mentorCheckRequest(outcome.results.filter((r) => !r.ok))}
+              />
+            )}
           </section>
         )}
 

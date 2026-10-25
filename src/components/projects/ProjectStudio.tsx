@@ -121,6 +121,11 @@ function ProjectWorkspace({ project }: { project: Project }) {
               session={session}
               title={`Результат проекта ${project.name}`}
               onRestart={() => session.restart(files)}
+              mentorRequest={(entry) => ({
+                mode: "explain-error",
+                files,
+                error: { message: entry.text, line: entry.line },
+              })}
               onJumpToLine={(line) => {
                 setActiveFile("js");
                 setJumpTo({ file: "js", line, nonce: Date.now() });

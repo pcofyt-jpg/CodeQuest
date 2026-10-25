@@ -1,0 +1,7 @@
+{
+  "name": "codequest-ai-mentor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ИИ-наставник CodeQuest: функция Yandex Cloud Functions (Node.js 22), без внешних зависимостей"
+}

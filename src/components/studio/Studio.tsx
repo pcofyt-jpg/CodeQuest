@@ -187,6 +187,12 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             onCheckpoint={handleCheckpoint}
             quizScore={quizScore}
             onQuizFinish={(score) => progressStore.saveQuiz(lesson.slug, score)}
+            mentorCheckRequest={(failed) => ({
+              mode: "check-help",
+              files,
+              lesson: { title: lesson.title, goal: lesson.goal },
+              failedChecks: failed.map((r) => ({ message: r.message })),
+            })}
           />
         </section>
 
@@ -207,6 +213,12 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             title={`Результат урока ${lesson.number}`}
             onRestart={() => session.restart(files)}
             onJumpToLine={jumpToJsLine}
+            mentorRequest={(entry) => ({
+              mode: "explain-error",
+              files,
+              lesson: { title: lesson.title, goal: lesson.goal },
+              error: { message: entry.text, line: entry.line },
+            })}
             actions={
               lesson.track === "project" ? (
                 <button
