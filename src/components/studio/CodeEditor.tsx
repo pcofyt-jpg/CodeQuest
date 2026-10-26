@@ -82,9 +82,11 @@ type Props = {
   resetKey: number;
   /** строка с ошибкой, к которой нужно перейти */
   jumpTo: { file: CodeFile; line: number; nonce: number } | null;
+  /** кнопки справа от вкладок (например, «Картинки») */
+  toolbar?: React.ReactNode;
 };
 
-export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, jumpTo }: Props) {
+export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, jumpTo, toolbar }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const statesRef = useRef<Partial<Record<CodeFile, EditorState>>>({});
@@ -160,6 +162,7 @@ export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, 
             {labels[file]}
           </button>
         ))}
+        {toolbar && <div className="ml-auto flex items-center pb-1">{toolbar}</div>}
       </div>
       <div ref={hostRef} className="min-h-0 flex-1 overflow-hidden" />
     </div>

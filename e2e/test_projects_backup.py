@@ -50,10 +50,10 @@ with sync_playwright() as p:
     data = json.load(open(backup_path, encoding="utf-8"))
     report("в файле прогресс и проект", data.get("kind") == "codequest-backup" and len(data["projects"]) == 1)
     pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(500)
-    report("после очистки прогресса нет", "Пройдено 0 из 10" in pg.inner_text("body"))
+    report("после очистки прогресса нет", re.search(r"Пройдено 0 из \d+", pg.inner_text("body")) is not None)
     pg.locator('input[type="file"]').set_input_files(backup_path)
     pg.get_by_role("button", name="Заменить").click(); pg.wait_for_timeout(300)
-    report("прогресс восстановлен из файла", "Пройдено 3 из 10" in pg.inner_text("body"))
+    report("прогресс восстановлен из файла", re.search(r"Пройдено 3 из \d+", pg.inner_text("body")) is not None)
     pg.goto(BASE + "/proekty/")
     report("проект восстановлен из файла", pg.get_by_role("link", name="Моя игра").count() == 1)
 
@@ -76,7 +76,7 @@ with sync_playwright() as p:
 
     # --- курсы на главной
     pg.goto(BASE + "/"); body = pg.inner_text("body")
-    report("на главной курсы 2 и 3 «готовится»", "Настоящий сайт" in body and "Интерактив и мини-игры" in body and "готовится" in body.lower())
+    report("на главной курс 2 открыт, курс 3 «готовится»", "КУРС 2 · НАСТОЯЩИЙ САЙТ" in body.upper() and "Интерактив и мини-игры" in body and "КУРС 3 · ГОТОВИТСЯ" in body.upper())
     report("ошибок страницы нет", not [e for e in errs if "addEventListner" not in e])
     print("ALL OK:", ok_all)
     b.close()

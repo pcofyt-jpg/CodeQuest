@@ -57,16 +57,29 @@ export function RouteMap() {
         </div>
       </section>
 
-      <h2 className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
-        Курс {courses[0]!.number} · {courses[0]!.title}
+      {courses
+        .filter((c) => c.status === "ready")
+        .map((course) => {
+          const items = lessons.map((lesson, i) => ({ lesson, i })).filter((x) => x.lesson.course === course.id);
+          const lastIndex = items[items.length - 1]?.i;
+          const courseDone = items.filter((x) => completed.includes(x.lesson.slug)).length;
+          return (
+      <section key={course.id} aria-labelledby={`course-${course.id}`}>
+      <h2 id={`course-${course.id}`} className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
+        Курс {course.number} · {course.title}
+        {hydrated && (
+          <span className="ml-2 font-semibold normal-case">
+            — пройдено {courseDone} из {items.length}
+          </span>
+        )}
       </h2>
-      <nav aria-label="Маршрут уроков" className="mt-4">
+      <nav aria-label={`Уроки курса ${course.number}`} className="mt-4">
         <ol className={hydrated ? "" : "opacity-0"}>
-          {lessons.map((lesson, i) => {
+          {items.map(({ lesson, i }) => {
             const done = completed.includes(lesson.slug);
             const open = isUnlocked(i, slugs, completed);
             const current = i === currentIndex && !allDone;
-            const last = i === lessons.length - 1;
+            const last = i === lastIndex;
             const lineDone = done && !last;
 
             return (
@@ -120,7 +133,7 @@ export function RouteMap() {
                         href={`/learn/${lesson.slug}`}
                         className="mt-4 inline-flex rounded-xl bg-route px-6 py-3 font-semibold text-white"
                       >
-                        {doneCount === 0 ? "Начать первый урок" : "Продолжить"}
+                        {doneCount === 0 ? "Начать первый урок" : lesson.number === 1 ? "Начать курс" : "Продолжить"}
                       </Link>
                     </>
                   )}
@@ -130,10 +143,14 @@ export function RouteMap() {
           })}
         </ol>
       </nav>
+      </section>
+          );
+        })}
 
       {allDone && (
         <p className="mt-8 rounded-2xl border-2 border-sun bg-sun-soft p-5 text-[17px] font-semibold">
-          Весь маршрут пройден. Можно вернуться к любому уроку и улучшить свои проекты.
+          Все готовые курсы пройдены! Можно вернуться к любому уроку, улучшить свои сайты
+          или сделать что-то новое в «Моих проектах». Следующий курс скоро появится.
         </p>
       )}
 

@@ -18,6 +18,16 @@ export type Check = CheckBase &
     | { kind: "clickDistinct"; click: string; watch: string; clicks: number; minDistinct: number }
     | { kind: "source"; file: CodeFile; pattern: string; flags?: string; minMatches?: number }
     | { kind: "noErrors" }
+    /** элементов не меньше min */
+    | { kind: "count"; selector: string; min: number }
+    /** вычисленный CSS-стиль равен одному из значений */
+    | { kind: "styleIs"; selector: string; property: string; values: string[] }
+    /** у элемента есть атрибут: не короче minLength и/или подходит под pattern */
+    | { kind: "attr"; selector: string; attribute: string; minLength?: number; pattern?: string }
+    /** ссылок вида href="#…" внутри selector не меньше min, и каждая ведёт на существующий id */
+    | { kind: "anchorsResolve"; selector: string; min: number }
+    /** страница не вылезает за край по ширине (проверяется на ширине checkWidth урока) */
+    | { kind: "noOverflow" }
   );
 
 export type CodeFile = "html" | "css" | "js";
@@ -35,7 +45,10 @@ export type QuizQuestion = {
 };
 
 type LessonBase = {
+  /** курс (см. src/content/courses.ts) */
+  course: string;
   slug: string;
+  /** номер урока внутри курса */
   number: number;
   title: string;
   /** одна фраза: что получится в конце */
@@ -58,6 +71,8 @@ type LessonBase = {
   reference: ProjectFiles;
   /** урок задуман вместе с ИИ-наставником, которого пока нет */
   plannedWithMentor?: boolean;
+  /** ширина проверочного фрейма, px (например 360 — как телефон); по умолчанию 800 */
+  checkWidth?: number;
 };
 
 /**
@@ -65,10 +80,16 @@ type LessonBase = {
  * и дописывает в конец файлов заготовки (additions).
  * Первый урок проекта начинается со starter.
  */
+/** Вставка заготовки перед тегом (например, перед </main>); если тега нет — в конец файла. */
+export type Insertion = { before: string; text: string };
+export type Addition = string | Insertion | Insertion[];
+
 export type ProjectLesson = LessonBase & {
   track: "project";
   starter?: ProjectFiles;
-  additions?: Partial<ProjectFiles>;
+  additions?: Partial<Record<CodeFile, Addition>>;
+  /** проект с чистого листа: не продолжает прошлый урок, начинается со starter */
+  freshStart?: boolean;
 };
 
 /** Тренировка на отдельном коде, не меняет проект ребёнка. */

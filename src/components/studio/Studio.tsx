@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getLessonIndex, lessons } from "@/content/lessons/catalog";
+import { courseLessons, getLessonIndex, lessons } from "@/content/lessons/catalog";
+import { ImagesDrawer } from "@/components/images/ImagesDrawer";
 import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
 import { downloadSite } from "@/lib/export/site";
 import { isUnlocked, progressStore, type QuizScore } from "@/lib/progress/store";
@@ -89,6 +90,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   // пока ребёнок работает (например, после сохранения результата этого же урока).
   const [lessonStart] = useState(starter);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [imagesOpen, setImagesOpen] = useState(false);
   const [glossaryTerm, setGlossaryTerm] = useState<string | null>(null);
   const glossaryApi = useMemo(
     () => ({
@@ -145,7 +147,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   const handleCheckpoint = checkpoint ? () => replaceCode(checkpoint) : null;
 
   const handleCheck = () => {
-    runner.start(files, lesson.checks);
+    runner.start(files, lesson.checks, lesson.checkWidth);
     setMobileView("lesson");
   };
 
@@ -176,7 +178,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
         <section aria-label="Урок" className={panel("lesson")}>
           <LessonPanel
             lesson={lesson}
-            total={lessons.length}
+            total={courseLessons(lesson.course).length}
             completed={completedSlugs.includes(lesson.slug)}
             nextLesson={nextLesson}
             hintsShown={hintsShown}
@@ -204,6 +206,15 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             onChange={handleChange}
             resetKey={resetKey}
             jumpTo={jumpTo}
+            toolbar={
+                <button
+                  type="button"
+                  onClick={() => setImagesOpen(true)}
+                  className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
+                >
+                  Картинки
+                </button>
+              }
           />
         </section>
 
@@ -267,6 +278,8 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
       </nav>
 
       {runner.frame}
+
+      <ImagesDrawer open={imagesOpen} onClose={() => setImagesOpen(false)} />
 
       <GlossaryDrawer
         open={glossaryOpen}

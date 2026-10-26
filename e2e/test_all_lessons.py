@@ -12,7 +12,12 @@ from playwright.sync_api import sync_playwright
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REF = json.load(open(os.path.join(ROOT, "src/content/lessons/references.json"), encoding="utf-8"))
 SLUGS = list(REF)
-PROJECT = ["zagolovok", "opisanie", "cveta", "kartochka", "knopka", "dizajn", "schetchik", "moj-proekt"]
+# Уроки проекта, которые продолжают сайт прошлого урока того же курса, и чем этот сайт узнать.
+CONTINUES = {
+    **{s: "Мой кот Барсик" for s in ["opisanie", "cveta", "kartochka", "knopka", "dizajn", "schetchik", "moj-proekt"]},
+    **{s: "Мой футбол" for s in ["spiski", "menyu", "kartinki", "otstupy", "ramki", "ryad", "centr", "telefon"]},
+}
+FRESH = {"karkas": "Барсик", "sayt-s-nulya": "Мой футбол"}  # начинаются с чистого листа: чужого сайта быть не должно
 TABS = {"html": "HTML", "css": "CSS", "js": "JavaScript"}
 
 def editor_text(pg, tab):
@@ -32,8 +37,10 @@ with sync_playwright() as p:
         print(f"== {i+1}. {slug}")
         pg.goto(BASE + "/learn/" + slug); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(700)
         # продолжение проекта: в стартовом HTML есть заголовок из прошлого урока проекта
-        if slug in PROJECT and PROJECT.index(slug) > 0:
-            report("продолжает сайт из прошлого урока", "Мой кот Барсик" in editor_text(pg, "HTML"))
+        if slug in CONTINUES:
+            report("продолжает сайт из прошлого урока курса", CONTINUES[slug] in editor_text(pg, "HTML"))
+        if slug in FRESH:
+            report("начинается с чистого листа", FRESH[slug] not in editor_text(pg, "HTML"))
         check(pg)
         body = pg.inner_text("body")
         report("стартовый код не проходит", "Все проверки пройдены" not in body)

@@ -7,7 +7,7 @@ import { combineResults } from "@/lib/checks/sourceChecks";
 
 const CHECK_TIMEOUT_MS = 10000;
 
-type Run = { token: string; html: string; files: ProjectFiles; checks: Check[] };
+type Run = { token: string; html: string; files: ProjectFiles; checks: Check[]; width: number };
 
 export type CheckOutcome =
   | { status: "idle" }
@@ -29,7 +29,7 @@ export function useCheckRunner() {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const errorsRef = useRef(0);
 
-  const start = useCallback((files: ProjectFiles, checks: Check[]) => {
+  const start = useCallback((files: ProjectFiles, checks: Check[], width = 800) => {
     const token = crypto.randomUUID();
     const built = buildPreviewDocument(files, { token, checks: checks.filter(isDomCheck) });
     if (built.syntaxError) {
@@ -41,7 +41,7 @@ export function useCheckRunner() {
     }
     errorsRef.current = 0;
     setOutcome({ status: "running" });
-    setRun({ token, html: built.html, files, checks });
+    setRun({ token, html: built.html, files, checks, width });
   }, []);
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export function useCheckRunner() {
         top: 0,
         zIndex: -1,
         visibility: "visible",
-        width: "800px",
+        width: `${run.width}px`,
         height: "600px",
         opacity: 0,
         pointerEvents: "none",

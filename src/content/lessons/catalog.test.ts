@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { lessons } from "./catalog";
+import { courseLessons, lessons } from "./catalog";
+import { courses } from "@/content/courses";
 import { glossary, findTermId } from "@/content/glossary";
 import { protectLoops } from "@/lib/preview/loopProtect";
 import { runSourceCheck } from "@/lib/checks/sourceChecks";
@@ -11,11 +12,17 @@ const starterFromReferences = (i: number) =>
   lessonStarter(lessons, i, Object.fromEntries(lessons.map((l) => [l.slug, l.reference])));
 
 describe("каталог уроков", () => {
-  it("10 уроков с уникальными адресами и номерами по порядку", () => {
-    expect(lessons).toHaveLength(10);
-    expect(new Set(slugs).size).toBe(10);
-    lessons.forEach((l, i) => expect(l.number).toBe(i + 1));
+  it("курсы 1 и 2: уникальные адреса, номера по порядку внутри курса", () => {
+    expect(courseLessons("pervyj-sajt")).toHaveLength(10);
+    expect(courseLessons("nastoyashchij-sajt")).toHaveLength(12);
+    expect(new Set(slugs).size).toBe(lessons.length);
+    for (const c of courses.filter((x) => x.status === "ready")) {
+      courseLessons(c.id).forEach((l, i) => expect(l.number, l.slug).toBe(i + 1));
+    }
     lessons.forEach((l) => expect(l.slug).toMatch(/^[a-z0-9-]+$/));
+    // уроки одного курса идут подряд
+    const order = lessons.map((l) => l.course);
+    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["pervyj-sajt", "nastoyashchij-sajt"]);
   });
 
   it("у каждого урока есть всё необходимое", () => {
@@ -44,16 +51,29 @@ describe("каталог уроков", () => {
     }
   });
 
-  it("подсказок не становится больше от урока к уроку", () => {
-    for (let i = 1; i < lessons.length; i++) {
-      expect(lessons[i]!.hints.length).toBeLessThanOrEqual(lessons[i - 1]!.hints.length);
+  it("внутри курса подсказок не становится больше от урока к уроку", () => {
+    for (const c of courses.filter((x) => x.status === "ready")) {
+      const ls = courseLessons(c.id);
+      for (let i = 1; i < ls.length; i++) {
+        expect(ls[i]!.hints.length, ls[i]!.slug).toBeLessThanOrEqual(ls[i - 1]!.hints.length);
+      }
     }
   });
 
-  it("сквозной проект: первый урок с заготовкой, тренировки — со своим кодом", () => {
-    const first = lessons[0]!;
-    expect(first.track).toBe("project");
-    expect(first.track === "project" && first.starter).toBeTruthy();
+  it("сквозной проект: первый урок каждого курса с заготовкой, тренировки — со своим кодом", () => {
+    for (const c of courses.filter((x) => x.status === "ready")) {
+      const first = courseLessons(c.id)[0]!;
+      expect(first.track, c.id).toBe("project");
+      expect(first.track === "project" && first.starter, c.id).toBeTruthy();
+      expect(lessonCheckpoint(lessons, lessons.indexOf(first)), c.id).toBeNull();
+    }
+    // курс 2 не продолжает сайт из курса 1
+    expect(starterFromReferences(slugs.indexOf("karkas")).html).not.toContain("Барсик");
+    // финал курса 2 — с чистого листа
+    expect(starterFromReferences(slugs.indexOf("sayt-s-nulya")).html).not.toContain("Мой футбол");
+    expect(lessonCheckpoint(lessons, slugs.indexOf("sayt-s-nulya"))).toBeNull();
+    // урок 2 курса 2 вставляет заготовку внутрь <main>
+    expect(starterFromReferences(slugs.indexOf("spiski")).html).toMatch(/Урок 2[^]*<\/main>/);
     for (const l of lessons) if (l.track === "practice") expect(l.starter, l.slug).toBeTruthy();
     expect(lessonCheckpoint(lessons, 0)).toBeNull();
     expect(lessonCheckpoint(lessons, slugs.indexOf("oshibka"))).toBeNull();
@@ -112,6 +132,8 @@ describe("шпаргалка", () => {
     expect(findTermId("document.querySelector")).toBe("querySelector");
     expect(findTermId("message.textContent")).toBe("textContent");
     expect(findTermId("функция")).toBe("function");
+    expect(findTermId("@media (max-width: 600px) { … }")).toBe("media");
+    expect(findTermId("padding: 20px;")).toBe("padding");
     expect(findTermId("что-то-неизвестное")).toBeNull();
   });
 });
@@ -122,5 +144,18 @@ describe("applyAdditions", () => {
     expect(out.html).toBe("<h1>x</h1>\n\n<p>y</p>\n");
     expect(out.css).toBe("b {}\n");
     expect(out.js).toBe("a();\n");
+  });
+});
+
+describe("applyAdditions: вставка перед тегом", () => {
+  it("вставляет перед последним </main>, а без тега — в конец", () => {
+    const base = { html: "<main>\n  <p>a</p>\n</main>\n<footer></footer>\n", css: "", js: "" };
+    const out = applyAdditions(base, { html: { before: "</main>", text: "  <!-- сюда -->\n" } });
+    expect(out.html).toBe("<main>\n  <p>a</p>\n  <!-- сюда -->\n</main>\n<footer></footer>\n");
+    const noMain = applyAdditions({ html: "<p>x</p>", css: "", js: "" }, { html: { before: "</main>", text: "<!-- y -->\n" } });
+    expect(noMain.html).toBe("<p>x</p>\n<!-- y -->\n");
+    const many = applyAdditions(base, { html: [{ before: "</main>", text: "1" }, { before: "</footer>", text: "2" }] });
+    expect(many.html).toContain("1</main>");
+    expect(many.html).toContain("2</footer>");
   });
 });

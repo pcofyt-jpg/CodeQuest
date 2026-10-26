@@ -1,4 +1,5 @@
 import type { ProjectFiles } from "@/content/lessons/types";
+import { resolveLibraryImages } from "@/content/images";
 
 /**
  * «Скачать мой сайт»: собирает код ребёнка в один HTML-файл, который открывается
@@ -7,8 +8,10 @@ import type { ProjectFiles } from "@/content/lessons/types";
  */
 export function buildStandaloneHtml(title: string, files: ProjectFiles): string {
   const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-  const css = files.css.replace(/<\/style/gi, "<\\/style");
-  const js = files.js.replace(/<\/script/gi, "<\\/script");
+  // Картинки из библиотеки встраиваются в файл — сайт работает без студии и без интернета.
+  const css = resolveLibraryImages(files.css).replace(/<\/style/gi, "<\\/style");
+  const js = resolveLibraryImages(files.js).replace(/<\/script/gi, "<\\/script");
+  const html = resolveLibraryImages(files.html);
   return `<!doctype html>
 <html lang="ru">
 <head>
@@ -20,7 +23,7 @@ ${css}
 </style>
 </head>
 <body>
-${files.html}
+${html}
 <script>
 ${js}
 </script>

@@ -1,5 +1,6 @@
 import type { Check, ProjectFiles } from "@/content/lessons/types";
 import { INFINITE_LOOP_MARKER, loopRuntime, parseLoopError, protectLoops } from "./loopProtect";
+import { resolveLibraryImages } from "@/content/images";
 
 /**
  * Собирает HTML-документ, который загружается в изолированный iframe.
@@ -182,6 +183,31 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
           if ((await textAfterClick(c.watch, prev)) !== c.expect[i]) return false;
         }
         return true;
+      case "count":
+        return document.querySelectorAll(c.selector).length >= c.min;
+      case "styleIs":
+        el = document.querySelector(c.selector);
+        if (!el) return false;
+        return c.values.indexOf(getComputedStyle(el).getPropertyValue(c.property).trim()) !== -1;
+      case "attr":
+        el = document.querySelector(c.selector);
+        if (!el) return false;
+        var val = (el.getAttribute(c.attribute) || "").trim();
+        if (c.minLength && val.length < c.minLength) return false;
+        if (c.pattern && !new RegExp(c.pattern).test(val)) return false;
+        return val.length > 0;
+      case "anchorsResolve":
+        var box = document.querySelector(c.selector);
+        if (!box) return false;
+        var links = box.querySelectorAll('a[href^="#"]');
+        if (links.length < c.min) return false;
+        for (var a = 0; a < links.length; a++) {
+          var id = decodeURIComponent((links[a].getAttribute("href") || "").slice(1));
+          if (!id || !document.getElementById(id)) return false;
+        }
+        return true;
+      case "noOverflow":
+        return document.documentElement.scrollWidth <= window.innerWidth + 1;
       case "clickDistinct":
         el = document.querySelector(c.click);
         if (!el) return false;
@@ -211,9 +237,16 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
 }
 
 export function buildPreviewDocument(
-  files: ProjectFiles,
+  rawFiles: ProjectFiles,
   options: { token: string; checks?: DomCheck[]; loopLimitMs?: number },
 ): BuiltPreview {
+  // Картинки из библиотеки студии: kartinki/kot.svg → data:image/svg+xml;base64,…
+  // (переводов строк не добавляет, поэтому номера строк в ошибках не сдвигаются)
+  const files: ProjectFiles = {
+    html: resolveLibraryImages(rawFiles.html),
+    css: resolveLibraryImages(rawFiles.css),
+    js: resolveLibraryImages(rawFiles.js),
+  };
   const protectedJs = protectLoops(files.js);
   const userJs = protectedJs.ok ? escapeClosingTag(protectedJs.code, "script") : "";
 
@@ -242,7 +275,7 @@ export function buildPreviewDocument(
   return {
     html,
     jsStartLine,
-    jsLineCount: files.js.split("\n").length,
+    jsLineCount: rawFiles.js.split("\n").length,
     loopLines: protectedJs.ok ? protectedJs.loopLines : [],
     syntaxError: protectedJs.ok ? null : protectedJs.error,
   };

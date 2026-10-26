@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
 import { CodeEditor } from "@/components/studio/CodeEditor";
+import { ImagesDrawer } from "@/components/images/ImagesDrawer";
 import { ResultPanel } from "@/components/studio/ResultPanel";
 import { usePreviewSession } from "@/components/studio/usePreviewSession";
 import type { CodeFile, ProjectFiles } from "@/content/lessons/types";
@@ -50,6 +51,7 @@ function ProjectWorkspace({ project }: { project: Project }) {
   const [mobileView, setMobileView] = useState<"code" | "result">("code");
   const [jumpTo, setJumpTo] = useState<{ file: CodeFile; line: number; nonce: number } | null>(null);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [imagesOpen, setImagesOpen] = useState(false);
   const [glossaryTerm, setGlossaryTerm] = useState<string | null>(null);
   const session = usePreviewSession(files);
 
@@ -114,6 +116,15 @@ function ProjectWorkspace({ project }: { project: Project }) {
               onChange={handleChange}
               resetKey={0}
               jumpTo={jumpTo}
+              toolbar={
+                <button
+                  type="button"
+                  onClick={() => setImagesOpen(true)}
+                  className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
+                >
+                  Картинки
+                </button>
+              }
             />
           </section>
           <section aria-label="Результат" className={panel("result")}>
@@ -167,6 +178,8 @@ function ProjectWorkspace({ project }: { project: Project }) {
             </button>
           ))}
         </nav>
+
+        <ImagesDrawer open={imagesOpen} onClose={() => setImagesOpen(false)} />
 
         <GlossaryDrawer
           open={glossaryOpen}

@@ -11,6 +11,7 @@ import { useGlossary } from "@/components/glossary/Glossary";
  * React экранирует текст, поэтому теги показываются как текст, а не как HTML.
  */
 const CODE_SOURCES = [
+  String.raw`@[a-z-]+(?:\s*\([^)]*\))?(?:\s*\{[^}]*\})?`, // @media (max-width: 600px) { … }
   String.raw`<\/?[a-zA-Z][a-zA-Z0-9]*(?:\s[^<>]*)?>`, // теги
   String.raw`[.#]?[a-zA-Z][\w-]*(?::[a-z]+)?\s*\{[^}]*\}`, // правила CSS
   String.raw`[a-z][a-z-]*:\s*[^;"\n]+;`, // свойство CSS целиком: padding: 20px;

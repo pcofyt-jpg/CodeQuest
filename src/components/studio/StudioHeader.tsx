@@ -7,9 +7,17 @@ import { Logo } from "@/components/Logo";
 
 const slugs = lessons.map((l) => l.slug);
 
-type Props = { currentIndex: number; completed: string[]; onOpenGlossary?: () => void };
+type Props = {
+  currentIndex: number;
+  completed: string[];
+  onOpenGlossary?: () => void;
+};
 
 export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props) {
+  // В шапке — маршрут текущего курса.
+  const course = lessons[currentIndex]?.course;
+  const items = lessons.map((l, i) => ({ l, i })).filter((x) => x.l.course === course);
+  const posInCourse = items.findIndex((x) => x.i === currentIndex);
   const prev = lessons[currentIndex - 1];
   const next = lessons[currentIndex + 1];
   const nextOpen = next ? isUnlocked(currentIndex + 1, slugs, completed) : false;
@@ -22,7 +30,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
 
       <nav aria-label="Маршрут уроков" className="hidden min-w-0 flex-1 justify-center md:flex">
         <ol className="flex items-center">
-          {lessons.map((l, i) => {
+          {items.map(({ l, i }, k) => {
             const done = completed.includes(l.slug);
             const open = isUnlocked(i, slugs, completed);
             const current = i === currentIndex;
@@ -43,10 +51,10 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
             );
             return (
               <li key={l.slug} className="flex items-center">
-                {i > 0 && (
+                {k > 0 && (
                   <span
                     aria-hidden="true"
-                    className={`h-0.5 w-3 lg:w-5 ${completed.includes(lessons[i - 1]!.slug) ? "bg-ink" : "bg-line"}`}
+                    className={`h-0.5 w-2 lg:w-4 ${completed.includes(lessons[i - 1]!.slug) ? "bg-ink" : "bg-line"}`}
                   />
                 )}
                 {open ? (
@@ -81,7 +89,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
           </button>
         )}
         <span className="mr-1 hidden text-sm font-semibold whitespace-nowrap text-muted sm:inline md:hidden">
-          {currentIndex + 1} / {lessons.length}
+          {posInCourse + 1} / {items.length}
         </span>
         {prev ? (
           <Link

@@ -1,5 +1,6 @@
 import type { Lesson, ProjectFiles } from "./types";
 import referencesJson from "./references.json";
+import { course2 } from "./course2";
 
 /**
  * Учебный маршрут MVP.
@@ -43,9 +44,10 @@ button {
 }
 `;
 
-export const lessons: Lesson[] = [
+const course1: Lesson[] = [
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "zagolovok",
     number: 1,
     title: "Первый заголовок",
@@ -117,6 +119,7 @@ export const lessons: Lesson[] = [
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "opisanie",
     number: 2,
     title: "Описание под заголовком",
@@ -175,6 +178,7 @@ export const lessons: Lesson[] = [
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "cveta",
     number: 3,
     title: "Цвета и оформление",
@@ -259,6 +263,7 @@ h1 {
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "kartochka",
     number: 4,
     title: "Карточка",
@@ -358,6 +363,7 @@ h1 {
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "knopka",
     number: 5,
     title: "Кнопка, которая работает",
@@ -443,6 +449,7 @@ button.addEventListener("click", function () {
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "dizajn",
     number: 6,
     title: "Улучшаем дизайн",
@@ -522,6 +529,7 @@ button.addEventListener("click", function () {
   },
   {
     track: "practice",
+    course: "pervyj-sajt",
     slug: "oshibka",
     number: 7,
     title: "Тренировка: найди ошибку",
@@ -596,6 +604,7 @@ button.addEventListner("click", function () {
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "schetchik",
     number: 8,
     title: "Счётчик лайков",
@@ -673,6 +682,7 @@ const plusButton = document.querySelector("#plus");
   },
   {
     track: "practice",
+    course: "pervyj-sajt",
     slug: "svoya-versiya",
     number: 9,
     title: "Тренировка: переделай чужой проект",
@@ -787,6 +797,7 @@ button.addEventListener("click", function () {
   },
   {
     track: "project",
+    course: "pervyj-sajt",
     slug: "moj-proekt",
     number: 10,
     title: "Своя функция для сайта",
@@ -864,6 +875,14 @@ button.addEventListener("click", function () {
     reference: ref("moj-proekt"),
   },
 ];
+
+/** Все уроки маршрута по порядку: курс 1, затем курс 2. */
+export const lessons: Lesson[] = [...course1, ...course2];
+
+/** Уроки одного курса. */
+export function courseLessons(course: string): Lesson[] {
+  return lessons.filter((l) => l.course === course);
+}
 
 export function getLesson(slug: string): Lesson | undefined {
   return lessons.find((l) => l.slug === slug);
