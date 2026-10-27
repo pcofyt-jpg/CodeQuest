@@ -8,6 +8,7 @@ import { lessons } from "@/content/lessons/catalog";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { MAX_PROJECTS, projectsStore } from "@/lib/projects/store";
 import { useProjects } from "@/lib/projects/useProjects";
+import { templates } from "@/content/templates";
 
 const BLANK = {
   html: "<!-- Здесь начинается твой проект -->\n<h1>Новый проект</h1>\n",
@@ -74,6 +75,28 @@ export function ProjectsPage() {
           </button>
         )}
       </div>
+      <section aria-labelledby="templates-title" className="mt-8">
+        <h2 id="templates-title" className="text-lg font-bold">
+          Начать с шаблона
+        </h2>
+        <p className="mt-1 text-[15px] text-muted">Готовая рабочая заготовка — переделай её под себя.</p>
+        <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          {templates.map((t) => (
+            <li key={t.id} className="flex flex-col rounded-2xl border border-line bg-surface p-4">
+              <p className="font-bold">{t.title}</p>
+              <p className="mt-1 flex-1 text-sm leading-relaxed text-muted">{t.description}</p>
+              <button
+                type="button"
+                onClick={() => create(t.title, t.files)}
+                className="mt-3 rounded-lg border border-route px-3 py-1.5 text-sm font-semibold text-route hover:bg-route-soft"
+              >
+                Начать «{t.title}»
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {error && (
         <p role="alert" className="mt-3 text-coral">
           {error}

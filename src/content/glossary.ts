@@ -32,6 +32,38 @@ export const groupTitles: Record<TermGroup, string> = {
 };
 
 export const glossary: GlossaryTerm[] = [
+  // ---------- Старт ----------
+  {
+    id: "html-css-js",
+    term: "HTML, CSS, JavaScript",
+    group: "html",
+    what: "Три языка сайта. HTML — что на странице (стены и комнаты дома), CSS — как это выглядит (обои и мебель), JavaScript — как страница реагирует на действия (электричество: нажал выключатель — загорелся свет).",
+    example: "<button>Нажми</button>          ← HTML\nbutton { color: red; }         ← CSS\nbutton.addEventListener(…)     ← JavaScript",
+    aliases: ["браузер", "браузера"],
+    introducedIn: "kak-ustroen-sajt",
+  },
+  {
+    id: "raskladka",
+    term: "Раскладка и символы кода",
+    group: "html",
+    what: "Код печатают в английской раскладке (EN). Переключение: Windows — Alt+Shift или Win+Пробел, Mac — обычно Ctrl+Пробел, телефон — кнопка с глобусом. Текст внутри тегов можно писать по-русски.",
+    example: "<  >   Shift + Б  Ю\n/      клавиша справа от Ю\n{  }   Shift + Х  Ъ\n#      Shift + 3\n\"      Shift + Э\n;      клавиша Ж",
+    note: "Если вместо < печатается «Б» — включена русская раскладка.",
+    aliases: ["раскладка", "раскладку", "раскладке"],
+    introducedIn: "klaviatura",
+  },
+  {
+    id: "nesting",
+    term: "Вложенность тегов",
+    group: "html",
+    what: "Теги можно класть друг в друга, как коробки или матрёшки. Закрывают в обратном порядке: сначала внутренний, потом внешний. Внутренние теги пишут с отступом.",
+    example: "<div>\n  <h2>Заголовок</h2>\n  <p>Текст</p>\n</div>",
+    note: "Ошибка: <div><p>Текст</div></p> — теги перепутаны.",
+    demo: { html: '<div style="border:3px dashed #4dabf7;padding:10px"><h2 style="margin:0 0 6px">Заголовок</h2><p style="margin:0">Текст внутри коробки</p></div>' },
+    aliases: ["вложенность", "вложенные", "атрибут", "атрибуты"],
+    introducedIn: "tegi",
+  },
+
   // ---------- HTML ----------
   {
     id: "tag",

@@ -1,5 +1,6 @@
 import type { Lesson, ProjectFiles } from "./types";
 import referencesJson from "./references.json";
+import { course0 } from "./course0";
 import { course2 } from "./course2";
 
 /**
@@ -80,6 +81,29 @@ const course1: Lesson[] = [
       "Закрывающий тег отличается от открывающего только косой чертой: </h1>.",
       "Готовая строка выглядит так: <h1>Сайт про котов</h1>. Поменяй текст на свою тему.",
     ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Допиши закрывающий тег заголовка.",
+        before: "<h1>Мой сайт",
+        after: "",
+        answers: ["</h1>"],
+        explain: "Закрывающий тег — тот же тег с косой чертой.",
+      },
+      {
+        kind: "choice",
+        question: "Какой из них — закрывающий тег?",
+        options: ["<h1>", "</h1>", "h1"],
+        correct: 1,
+        explain: "Косая черта / после < означает «здесь тег заканчивается».",
+      },
+      {
+        kind: "type",
+        prompt: "Напечатай заголовок целиком.",
+        target: "<h1>Мой сайт</h1>",
+        explain: "Теги — в английской раскладке, текст — в любой.",
+      },
+    ],
     checks: [
       {
         kind: "exists",
@@ -142,6 +166,24 @@ const course1: Lesson[] = [
       "Абзац устроен как заголовок, только тег другой: <p> и </p>.",
       "Текст абзаца пишется между <p> и </p>, а строка — после комментария, не внутри него.",
       "Например: <p>Барсику три года. Он любит спать на клавиатуре.</p>",
+    ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Что покажет браузер?",
+        code: "<p>Привет</p>\n<p>Пока</p>",
+        options: ["Два абзаца: «Привет» и ниже «Пока»", "Одну строку «ПриветПока»", "Ничего"],
+        correct: 0,
+        explain: "Каждый <p> — отдельный абзац, браузер ставит их друг под другом.",
+      },
+      {
+        kind: "fill",
+        prompt: "Допиши открывающий тег абзаца.",
+        before: "",
+        after: "Мой кот любит спать.</p>",
+        answers: ["<p>"],
+        explain: "Абзац начинается тегом <p>.",
+      },
     ],
     checks: [
       {
@@ -213,6 +255,22 @@ h1 {
       "Цвет фона задаёт свойство background-color, а цвет текста — свойство color.",
       "Заменяй только слово перед точкой с запятой: background-color: lavender;",
       "Попробуй так: в body напиши background-color: midnightblue; и color: white; а в h1 — color: gold;",
+    ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Какое свойство меняет цвет текста?",
+        before: "h1 { ",
+        after: ": tomato; }",
+        answers: ["color"],
+        explain: "color — цвет текста, background-color — цвет фона.",
+      },
+      {
+        kind: "order",
+        prompt: "Собери правило CSS, которое делает заголовок золотым.",
+        lines: ["h1 {", "  color: gold;", "}"],
+        explain: "Сначала кого оформляем и {, потом свойство, потом }.",
+      },
     ],
     checks: [
       {
@@ -289,6 +347,29 @@ h1 {
       "Сначала HTML: <div class=\"card\"> … </div>, а внутри — <h2> и <p>.",
       "В CSS правило для класса начинается с точки: .card { }. Свойства пишутся внутри фигурных скобок.",
       "Внутрь правила .card напиши: background-color: white; padding: 20px; border-radius: 16px;",
+    ],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери карточку: блок с классом card, внутри заголовок и абзац.",
+        lines: ['<div class="card">', "  <h2>Барсик</h2>", "  <p>Любит спать.</p>", "</div>"],
+        explain: "Коробка открывается, внутри лежат заголовок и абзац, коробка закрывается.",
+      },
+      {
+        kind: "fill",
+        prompt: "Допиши единицу размера.",
+        before: ".card { padding: 20",
+        after: "; }",
+        answers: ["px"],
+        explain: "Размеры пишут в пикселях: число и px слитно — 20px.",
+      },
+      {
+        kind: "choice",
+        question: "Как обратиться в CSS к элементу с class=\"card\"?",
+        options: [".card", "#card", "card"],
+        correct: 0,
+        explain: "Класс в CSS пишется через точку.",
+      },
     ],
     checks: [
       {
@@ -404,6 +485,35 @@ button.addEventListener("click", function () {
       "Строка начинается с message.textContent = и заканчивается текстом в кавычках и точкой с запятой.",
       "Вот так: message.textContent = \"Спасибо за лайк!\";",
     ],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери код: найти кнопку и оживить её.",
+        lines: [
+          'const button = document.querySelector("#like-button");',
+          'button.addEventListener("click", function () {',
+          '  message.textContent = "Ура!";',
+          "});",
+        ],
+        explain: "Сначала находим кнопку, потом говорим ей, что делать при нажатии.",
+      },
+      {
+        kind: "fill",
+        prompt: "Чем поменять текст элемента?",
+        before: "message.",
+        after: ' = "Привет!";',
+        answers: ["textContent"],
+        explain: "textContent — текст внутри элемента. Буква C в середине — заглавная.",
+      },
+      {
+        kind: "choice",
+        question: "Когда выполнится строка внутри фигурных скобок?",
+        code: 'button.addEventListener("click", function () {\n  message.textContent = "Ура!";\n});',
+        options: ["Сразу при открытии страницы", "Каждый раз при нажатии на кнопку", "Никогда"],
+        correct: 1,
+        explain: "addEventListener(\"click\", …) запускает функцию при каждом нажатии.",
+      },
+    ],
     checks: [
       {
         kind: "clickChangesText",
@@ -474,6 +584,23 @@ button.addEventListener("click", function () {
     hints: [
       "Тень: box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); Шрифт: font-family: Verdana, sans-serif;",
       "Кнопка: button { background-color: tomato; } а ниже — button:hover { background-color: gold; }",
+    ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Допиши правило для кнопки под курсором.",
+        before: "button:",
+        after: " { background-color: gold; }",
+        answers: ["hover"],
+        explain: ":hover — пока курсор над элементом.",
+      },
+      {
+        kind: "choice",
+        question: "Что делает box-shadow?",
+        options: ["Добавляет тень", "Меняет шрифт", "Скругляет углы"],
+        correct: 0,
+        explain: "box-shadow — тень блока.",
+      },
     ],
     checks: [
       {
@@ -566,6 +693,24 @@ button.addEventListner("click", function () {
       "Сравни id кнопки во вкладке HTML с тем, что написано в querySelector.",
       "Внимательно прочитай по буквам название addEventListener — в коде одна буква пропущена.",
     ],
+    practice: [
+      {
+        kind: "choice",
+        question: "В какой строке ошибка?",
+        code: '1: const button = document.querySelector("#start-button");\n2: button.addEventListner("click", function () {\n3:   alert("Старт!");\n4: });',
+        options: ["В строке 1", "В строке 2", "В строке 4"],
+        correct: 1,
+        explain: "addEventListner — пропущена буква e: правильно addEventListener.",
+      },
+      {
+        kind: "fill",
+        prompt: "У кнопки id=\"start-button\". Как её найти?",
+        before: 'document.querySelector("',
+        after: '")',
+        answers: ["#start-button"],
+        explain: "Решётка # и id — до буквы как в HTML.",
+      },
+    ],
     checks: [
       {
         kind: "clickChangesText",
@@ -642,6 +787,24 @@ const plusButton = document.querySelector("#plus");
     hints: [
       "Обработчик пишется так же, как в уроке 5: plusButton.addEventListener(\"click\", function () { … });",
       "Внутри функции две строки: count = count + 1; и countText.textContent = count;",
+    ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Что будет в count после трёх нажатий?",
+        code: "let count = 0;\n// при каждом нажатии:\ncount = count + 1;",
+        options: ["1", "3", "0"],
+        correct: 1,
+        explain: "Каждое нажатие прибавляет 1: 0 → 1 → 2 → 3.",
+      },
+      {
+        kind: "fill",
+        prompt: "Допиши знак, чтобы счёт увеличивался.",
+        before: "count = count ",
+        after: " 1;",
+        answers: ["+"],
+        explain: "Плюс прибавляет единицу к старому значению.",
+      },
     ],
     checks: [
       {
@@ -745,6 +908,24 @@ button.addEventListener("click", function () {
     hints: [
       "Новый факт — строка в кавычках с запятой после неё, например: \"У улитки тысячи зубов.\", — добавь её внутрь квадратных скобок.",
     ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Что такое facts[0]?",
+        code: 'const facts = ["Кот", "Пёс", "Хомяк"];',
+        options: ["«Кот»", "«Пёс»", "Ошибка"],
+        correct: 0,
+        explain: "Элементы массива нумеруются с нуля: facts[0] — первый.",
+      },
+      {
+        kind: "fill",
+        prompt: "Чего не хватает между элементами массива?",
+        before: '["Кот"',
+        after: ' "Пёс"]',
+        answers: [","],
+        explain: "Элементы массива разделяют запятыми.",
+      },
+    ],
     checks: [
       {
         kind: "text",
@@ -823,6 +1004,20 @@ button.addEventListener("click", function () {
     hints: [
       "Загляни в уроки 5, 8 и 9 и в шпаргалку: там есть готовые приёмы для кнопок, счётчиков и случайного выбора.",
     ],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери рецепт новой кнопки, которая меняет заголовок.",
+        lines: [
+          'const titleButton = document.querySelector("#title-button");',
+          'const title = document.querySelector("h1");',
+          'titleButton.addEventListener("click", function () {',
+          '  title.textContent = "Новый заголовок";',
+          "});",
+        ],
+        explain: "Найти кнопку → найти, что менять → сказать кнопке, что делать при нажатии.",
+      },
+    ],
     checks: [
       {
         kind: "text",
@@ -876,8 +1071,8 @@ button.addEventListener("click", function () {
   },
 ];
 
-/** Все уроки маршрута по порядку: курс 1, затем курс 2. */
-export const lessons: Lesson[] = [...course1, ...course2];
+/** Все уроки маршрута по порядку: «Старт», курс 1, курс 2. */
+export const lessons: Lesson[] = [...course0, ...course1, ...course2];
 
 /** Уроки одного курса. */
 export function courseLessons(course: string): Lesson[] {

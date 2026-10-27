@@ -1,4 +1,24 @@
 {
+  "kak-ustroen-sajt": {
+    "html": "<h1>Всем привет, я учусь кодить!</h1>\n<p>Это моя первая страница.</p>\n",
+    "css": "h1 {\n  color: tomato;\n}\n",
+    "js": ""
+  },
+  "klaviatura": {
+    "html": "<p>Я умею печатать код!</p>\n",
+    "css": "",
+    "js": ""
+  },
+  "tegi": {
+    "html": "<div>\n  <h2>Мой питомец</h2>\n  <p>Его зовут Барсик.</p>\n</div>\n",
+    "css": "div {\n  border: 3px dashed #4dabf7;\n  padding: 12px;\n}\n",
+    "js": ""
+  },
+  "studiya": {
+    "html": "<h1>Студия</h1>\n<p>Загляни в консоль под окном результата.</p>\n",
+    "css": "",
+    "js": "console.log(\"Я в студии!\");\n"
+  },
   "zagolovok": {
     "html": "<h1>Мой кот Барсик</h1>\n",
     "css": "",

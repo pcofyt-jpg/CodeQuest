@@ -6,7 +6,9 @@ import { courseLessons, getLessonIndex, lessons } from "@/content/lessons/catalo
 import { ImagesDrawer } from "@/components/images/ImagesDrawer";
 import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
 import { downloadSite } from "@/lib/export/site";
-import { isUnlocked, progressStore, type QuizScore } from "@/lib/progress/store";
+import { progressStore, type QuizScore } from "@/lib/progress/store";
+import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
+import { courses } from "@/content/courses";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { lessonCheckpoint, lessonStarter } from "@/lib/lessons/projectFlow";
 import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
@@ -17,7 +19,6 @@ import { LessonPanel } from "./LessonPanel";
 import { StudioHeader } from "./StudioHeader";
 import { useCheckRunner } from "./useCheckRunner";
 
-const slugs = lessons.map((l) => l.slug);
 const DRAFT_DELAY_MS = 800;
 
 type MobileView = "lesson" | "code" | "result";
@@ -36,15 +37,20 @@ export function Studio({ slug }: { slug: string }) {
     );
   }
 
-  if (!isUnlocked(index, slugs, progress.completed)) {
-    const prev = lessons[index - 1]!;
+  if (!isLessonOpen(index, progress.completed)) {
+    // Первый урок курса ждёт весь предыдущий курс, остальные — предыдущий урок.
+    const firstInCourse = lessons[index - 1]?.course !== lesson.course;
+    const prev = firstInCourse ? lessons[currentLessonIndex(progress.completed)]! : lessons[index - 1]!;
+    const needCourse = courses.find((c) => c.id === courses.find((x) => x.id === lesson.course)?.requires);
     return (
       <div className="flex h-dvh flex-col bg-paper">
         <StudioHeader currentIndex={index} completed={progress.completed} />
         <main className="m-auto max-w-md p-6 text-center">
           <h1 className="text-2xl font-bold">Урок {lesson.number} пока закрыт</h1>
           <p className="mt-3 text-[17px]">
-            Он откроется, когда ты пройдёшь урок {prev.number} «{prev.title}».
+            {firstInCourse && needCourse
+              ? `Этот курс откроется, когда ты пройдёшь курс «${needCourse.title}».`
+              : `Он откроется, когда ты пройдёшь урок ${prev.number} «${prev.title}».`}
           </p>
           <Link
             href={`/learn/${prev.slug}`}

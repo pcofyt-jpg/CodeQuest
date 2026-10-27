@@ -93,19 +93,6 @@ export function parseProgress(raw: string | null): ProgressData {
   }
 }
 
-/** Урок открыт, если это первый урок или предыдущий пройден. */
-export function isUnlocked(index: number, slugs: string[], completed: string[]): boolean {
-  if (index <= 0) return true;
-  const prev = slugs[index - 1];
-  return prev !== undefined && completed.includes(prev);
-}
-
-/** Первый непройденный открытый урок — «куда продолжить». */
-export function nextLessonIndex(slugs: string[], completed: string[]): number {
-  const i = slugs.findIndex((s) => !completed.includes(s));
-  return i === -1 ? slugs.length - 1 : i;
-}
-
 // ---- Хранилище в браузере с подпиской для React (useSyncExternalStore) ----
 
 type Listener = () => void;

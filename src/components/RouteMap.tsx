@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { lessons } from "@/content/lessons/catalog";
-import { isUnlocked, nextLessonIndex, progressStore } from "@/lib/progress/store";
+import { progressStore } from "@/lib/progress/store";
+import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { Logo } from "./Logo";
 import { BackupControls } from "./BackupControls";
@@ -16,7 +17,7 @@ export function RouteMap() {
   const hydrated = useHydrated();
   const [confirmReset, setConfirmReset] = useState(false);
   const { completed } = progress;
-  const currentIndex = nextLessonIndex(slugs, completed);
+  const currentIndex = currentLessonIndex(completed);
   const doneCount = completed.filter((s) => slugs.includes(s)).length;
   const allDone = doneCount === lessons.length;
 
@@ -66,18 +67,26 @@ export function RouteMap() {
           return (
       <section key={course.id} aria-labelledby={`course-${course.id}`}>
       <h2 id={`course-${course.id}`} className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
-        Курс {course.number} · {course.title}
+        {course.number === 0 ? course.title : `Курс ${course.number} · ${course.title}`}
         {hydrated && (
           <span className="ml-2 font-semibold normal-case">
             — пройдено {courseDone} из {items.length}
           </span>
         )}
       </h2>
+      {hydrated && course.number > 0 && courseDone === items.length && (
+        <Link
+          href={`/sertifikat/?kurs=${course.id}`}
+          className="mt-2 inline-flex rounded-xl border-2 border-sun bg-sun-soft px-4 py-2 text-[15px] font-semibold text-ink"
+        >
+          Получить сертификат курса
+        </Link>
+      )}
       <nav aria-label={`Уроки курса ${course.number}`} className="mt-4">
         <ol className={hydrated ? "" : "opacity-0"}>
           {items.map(({ lesson, i }) => {
             const done = completed.includes(lesson.slug);
-            const open = isUnlocked(i, slugs, completed);
+            const open = isLessonOpen(i, completed);
             const current = i === currentIndex && !allDone;
             const last = i === lastIndex;
             const lineDone = done && !last;

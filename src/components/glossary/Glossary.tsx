@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { glossary, groupTitles, type GlossaryTerm, type TermGroup } from "@/content/glossary";
 import { lessons } from "@/content/lessons/catalog";
 import { PREVIEW_CSP } from "@/lib/preview/buildDocument";
-import { nextLessonIndex } from "@/lib/progress/store";
+import { isLessonOpen } from "@/lib/lessons/access";
 
 // ---------- какие понятия уже открыты ----------
 
@@ -12,11 +12,7 @@ const lessonIndex = new Map(lessons.map((l, i) => [l.slug, i]));
 
 /** Понятие открыто, если открыт урок, где оно появляется. */
 export function visibleTerms(completed: string[]): GlossaryTerm[] {
-  const maxOpen = nextLessonIndex(
-    lessons.map((l) => l.slug),
-    completed,
-  );
-  return glossary.filter((t) => (lessonIndex.get(t.introducedIn) ?? 0) <= maxOpen);
+  return glossary.filter((t) => isLessonOpen(lessonIndex.get(t.introducedIn) ?? 0, completed));
 }
 
 // ---------- контекст: открыть понятие из любого места студии ----------
@@ -56,14 +52,38 @@ function TermDemo({ demo }: { demo: NonNullable<GlossaryTerm["demo"]> }) {
 
 // ---------- карточка понятия ----------
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {
+          setCopied(false);
+        }
+      }}
+      className="absolute top-1.5 right-1.5 rounded-md bg-surface px-2 py-0.5 font-sans text-xs font-semibold text-route shadow-sm"
+    >
+      {copied ? "Скопировано" : "Скопировать"}
+    </button>
+  );
+}
+
 export function TermCard({ term, compact = false }: { term: GlossaryTerm; compact?: boolean }) {
   return (
     <article id={`term-${term.id}`} className="scroll-mt-4 rounded-xl border border-line bg-surface p-4">
       <h3 className="font-mono text-[15px] font-bold text-route">{term.term}</h3>
       <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{term.what}</p>
-      <pre className="mt-3 overflow-x-auto rounded-lg bg-paper px-3 py-2 font-mono text-[13px] leading-relaxed text-ink">
-        {term.example}
-      </pre>
+      <div className="relative mt-3">
+        <pre className="overflow-x-auto rounded-lg bg-paper px-3 py-2 pr-24 font-mono text-[13px] leading-relaxed text-ink">
+          {term.example}
+        </pre>
+        <CopyButton text={term.example} />
+      </div>
       {term.note && <p className="mt-2 text-sm leading-relaxed text-muted">{term.note}</p>}
       {!compact && term.demo && <TermDemo demo={term.demo} />}
       {compact && term.demo && (

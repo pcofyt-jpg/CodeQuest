@@ -34,6 +34,20 @@ export type CodeFile = "html" | "css" | "js";
 
 export type ProjectFiles = Record<CodeFile, string>;
 
+/**
+ * Короткие задания внутри урока («Попробуй») — до основного задания.
+ * Как у лучших платформ: понять → попробовать → применить, но для детей.
+ */
+export type Exercise =
+  /** выбрать ответ (в том числе «что получится?» и «где ошибка?») */
+  | { kind: "choice"; question: string; code?: string; options: string[]; correct: number; explain: string }
+  /** собрать код из перемешанных строчек; lines — в правильном порядке */
+  | { kind: "order"; prompt: string; lines: string[]; explain: string }
+  /** вставить пропущенное: before[ввод]after; подходит любой из answers (без учёта регистра) */
+  | { kind: "fill"; prompt: string; before: string; after: string; answers: string[]; explain: string }
+  /** напечатать строку точно как в образце — тренировка клавиатуры */
+  | { kind: "type"; prompt: string; target: string; explain: string };
+
 export type QuizQuestion = {
   question: string;
   /** фрагмент кода к вопросу */
@@ -67,6 +81,8 @@ type LessonBase = {
   learned: string[];
   /** короткий тест после урока */
   quiz: QuizQuestion[];
+  /** короткие задания «Попробуй» перед основным заданием */
+  practice?: Exercise[];
   /** эталонное решение: для тестов и как «контрольная точка» следующего урока */
   reference: ProjectFiles;
   /** урок задуман вместе с ИИ-наставником, которого пока нет */

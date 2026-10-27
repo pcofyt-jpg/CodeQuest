@@ -11,6 +11,7 @@ import type { CheckResult } from "@/content/lessons/types";
 import type { MentorRequest } from "@/lib/mentor/client";
 import { MentorBox } from "@/components/mentor/MentorBox";
 import { QuizBlock } from "./QuizBlock";
+import { PracticeBlock } from "./PracticeBlock";
 import { RichText } from "./RichText";
 
 type Props = {
@@ -61,11 +62,23 @@ export function LessonPanel({
           </p>
           <h1 className="mt-1 text-2xl leading-tight font-bold text-ink">{lesson.title}</h1>
           <p className="mt-2 text-[17px] leading-snug text-ink">{lesson.goal}</p>
-          {lesson.track === "practice" && (
+          {lesson.track === "practice" && lesson.course !== "start" && (
             <p className="mt-3 inline-flex rounded-full bg-paper px-3 py-1 text-sm font-semibold text-muted">
               Тренировка на чужом коде — твой сайт она не меняет
             </p>
           )}
+          <ol aria-label="Этапы урока" className="mt-4 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
+            {["Понять", "Попробуй", "Сделай", "Проверь себя"]
+              .filter((step) => step !== "Попробуй" || (lesson.practice?.length ?? 0) > 0)
+              .map((step, i, arr) => (
+                <li key={step} className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-paper px-2.5 py-1">
+                    {i + 1}. {step}
+                  </span>
+                  {i < arr.length - 1 && <span aria-hidden="true">→</span>}
+                </li>
+              ))}
+          </ol>
         </header>
 
         {lesson.plannedWithMentor && (
@@ -99,9 +112,13 @@ export function LessonPanel({
           </section>
         )}
 
+        {lesson.practice && lesson.practice.length > 0 && (
+          <PracticeBlock key={lesson.slug} exercises={lesson.practice} />
+        )}
+
         <section aria-labelledby="task-title">
           <h2 id="task-title" className="text-lg font-bold text-ink">
-            Задание
+            Сделай
           </h2>
           <ol className="mt-2 space-y-2">
             {lesson.steps.map((s, i) => (

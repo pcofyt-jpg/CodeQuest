@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { courseLessons, lessons } from "./catalog";
 import { courses } from "@/content/courses";
+import { templates } from "@/content/templates";
+import { images } from "@/content/images";
 import { glossary, findTermId } from "@/content/glossary";
 import { protectLoops } from "@/lib/preview/loopProtect";
 import { runSourceCheck } from "@/lib/checks/sourceChecks";
@@ -22,7 +24,8 @@ describe("каталог уроков", () => {
     lessons.forEach((l) => expect(l.slug).toMatch(/^[a-z0-9-]+$/));
     // уроки одного курса идут подряд
     const order = lessons.map((l) => l.course);
-    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["pervyj-sajt", "nastoyashchij-sajt"]);
+    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "nastoyashchij-sajt"]);
+    expect(courseLessons("start")).toHaveLength(4);
   });
 
   it("у каждого урока есть всё необходимое", () => {
@@ -61,7 +64,7 @@ describe("каталог уроков", () => {
   });
 
   it("сквозной проект: первый урок каждого курса с заготовкой, тренировки — со своим кодом", () => {
-    for (const c of courses.filter((x) => x.status === "ready")) {
+    for (const c of courses.filter((x) => x.status === "ready" && x.id !== "start")) {
       const first = courseLessons(c.id)[0]!;
       expect(first.track, c.id).toBe("project");
       expect(first.track === "project" && first.starter, c.id).toBeTruthy();
@@ -102,6 +105,46 @@ describe("каталог уроков", () => {
         expect(allPass, `${l.slug}: стартовый код не должен проходить`).toBe(false);
       }
     });
+  });
+});
+
+describe("разминки «Попробуй»", () => {
+  it("корректны во всех уроках, где есть", () => {
+    let total = 0;
+    for (const l of lessons) {
+      for (const ex of l.practice ?? []) {
+        total++;
+        if (ex.kind === "choice") {
+          expect(ex.correct, `${l.slug}: ${ex.question}`).toBeGreaterThanOrEqual(0);
+          expect(ex.correct, `${l.slug}: ${ex.question}`).toBeLessThan(ex.options.length);
+          expect(new Set(ex.options).size, l.slug).toBe(ex.options.length);
+        } else if (ex.kind === "order") {
+          expect(ex.lines.length, `${l.slug}: ${ex.prompt}`).toBeGreaterThanOrEqual(2);
+        } else if (ex.kind === "fill") {
+          expect(ex.answers.length, l.slug).toBeGreaterThan(0);
+          expect(ex.answers.every((a) => a.trim().length > 0), l.slug).toBe(true);
+        } else {
+          expect(ex.target.length, l.slug).toBeGreaterThan(0);
+        }
+        expect(ex.explain.length, l.slug).toBeGreaterThan(10);
+      }
+    }
+    expect(total).toBeGreaterThanOrEqual(35); // защита от случайной потери заданий
+    // у каждого урока «Старта» и курса 1 есть разминка
+    for (const l of [...courseLessons("start"), ...courseLessons("pervyj-sajt")]) {
+      expect((l.practice ?? []).length, l.slug).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("шаблоны «Моих проектов»", () => {
+  it("код разбирается, картинки есть в библиотеке", () => {
+    for (const t of templates) {
+      expect(protectLoops(t.files.js).ok, t.id).toBe(true);
+      for (const m of t.files.html.matchAll(/kartinki\/([a-z0-9-]+)\.svg/g)) {
+        expect(images.some((i) => i.name === m[1]), `${t.id}: ${m[1]}`).toBe(true);
+      }
+    }
   });
 });
 

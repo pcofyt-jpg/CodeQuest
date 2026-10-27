@@ -14,7 +14,7 @@ def preview(pg):
     return pg.frame_locator('iframe[title^="Результат"]')
 
 def check(pg):
-    pg.get_by_role("button", name="Проверить").click()
+    pg.get_by_role("button", name="Проверить", exact=True).click()
     pg.wait_for_function("() => !document.body.innerText.includes('Проверяю…')", timeout=10000)
     time.sleep(0.2)
 

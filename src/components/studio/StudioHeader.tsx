@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { lessons } from "@/content/lessons/catalog";
-import { isUnlocked } from "@/lib/progress/store";
+import { isLessonOpen } from "@/lib/lessons/access";
 import { Logo } from "@/components/Logo";
 
-const slugs = lessons.map((l) => l.slug);
 
 type Props = {
   currentIndex: number;
@@ -20,7 +19,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
   const posInCourse = items.findIndex((x) => x.i === currentIndex);
   const prev = lessons[currentIndex - 1];
   const next = lessons[currentIndex + 1];
-  const nextOpen = next ? isUnlocked(currentIndex + 1, slugs, completed) : false;
+  const nextOpen = next ? isLessonOpen(currentIndex + 1, completed) : false;
 
   return (
     <header className="flex items-center gap-3 border-b border-line bg-surface px-3 py-2 sm:px-4">
@@ -32,7 +31,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
         <ol className="flex items-center">
           {items.map(({ l, i }, k) => {
             const done = completed.includes(l.slug);
-            const open = isUnlocked(i, slugs, completed);
+            const open = isLessonOpen(i, completed);
             const current = i === currentIndex;
             const node = (
               <span
