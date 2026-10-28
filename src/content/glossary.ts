@@ -4,7 +4,7 @@
  * и из раздела «Шпаргалка». Понятие становится видно в шпаргалке,
  * когда открыт урок, в котором оно появляется (introducedIn).
  */
-export type TermGroup = "html" | "css" | "js";
+export type TermGroup = "html" | "css" | "js" | "py";
 
 export type GlossaryTerm = {
   id: string;
@@ -29,6 +29,7 @@ export const groupTitles: Record<TermGroup, string> = {
   html: "HTML — из чего состоит страница",
   css: "CSS — как страница выглядит",
   js: "JavaScript — как страница оживает",
+  py: "Python — программы, игры и робот",
 };
 
 export const glossary: GlossaryTerm[] = [
@@ -558,6 +559,82 @@ export const glossary: GlossaryTerm[] = [
     note: "Фигурные скобки двойные: одни у запроса, другие у правила внутри него.",
     aliases: ["@media", "медиа-запрос"],
     introducedIn: "telefon",
+  },
+
+  // ---------- Python ----------
+  {
+    id: "py-robot",
+    term: "robot.right()",
+    group: "py",
+    what: "Команды робота Кью: right — вправо, left — влево, up — вверх, down — вниз. Точка значит «у робота», скобки — «выполни». Число в скобках — сколько шагов. robot.say(\"…\") — сказать фразу.",
+    example: "robot.right()\nrobot.up(2)\nrobot.say(\"Ура!\")",
+    aliases: ["robot", "robot.right()", "robot.up(2)", "robot.right", "robot.say"],
+    introducedIn: "robot-start",
+  },
+  {
+    id: "py-for",
+    term: "for i in range(5):",
+    group: "py",
+    what: "Цикл for повторяет команды заданное число раз. range(5) — 5 раз. Строка с for заканчивается двоеточием, а повторяемые команды пишутся под ней с отступом.",
+    example: "for i in range(5):\n    robot.right()\n    robot.up()",
+    aliases: ["for", "range", "range(5)", "цикл"],
+    introducedIn: "robot-cikl",
+  },
+  {
+    id: "py-indent",
+    term: "Отступы в Python",
+    group: "py",
+    what: "Python понимает, какие строки внутри for, if или while, по отступу — 4 пробела (или Tab). Строка перед блоком заканчивается двоеточием.",
+    example: "if t > 20:\n    print(\"Тепло\")   ← внутри if\nprint(\"Пока\")      ← после if",
+    note: "Ошибка IndentationError значит, что отступы не на месте.",
+    aliases: ["отступ", "отступа", "отступом", "отступы"],
+    introducedIn: "robot-cikl",
+  },
+  {
+    id: "py-print",
+    term: "print()",
+    group: "py",
+    what: "Выводит сообщение на экран. Текст — в кавычках. Числа и примеры Python считает сам. Части через запятую выводятся через пробел.",
+    example: "print(\"Привет!\")\nprint(2 + 3)          # 5\nprint(\"Мне\", 10, \"лет\")",
+    aliases: ["print", "print()"],
+    introducedIn: "py-print",
+  },
+  {
+    id: "py-variable",
+    term: "Переменная в Python",
+    group: "py",
+    what: "Коробка с именем для значения. = кладёт значение в переменную. Имена — латиницей, без пробелов, слова через подчёркивание.",
+    example: "batteries = 3\nfound = 5\ntotal = batteries + found",
+    aliases: ["batteries", "total"],
+    introducedIn: "py-peremennye",
+  },
+  {
+    id: "py-input",
+    term: "input() и int()",
+    group: "py",
+    what: "input() получает ввод от человека — всегда как текст. int() превращает текст в целое число, чтобы с ним можно было считать.",
+    example: "name = input(\"Как зовут питомца? \")\nn = int(input(\"Введи число: \"))\nprint(n * 2)",
+    note: "В студии ответы пишут заранее в поле «Ввод для программы» — по строке на каждый input().",
+    aliases: ["input", "input()", "int", "int()", "int(input())"],
+    introducedIn: "py-input",
+  },
+  {
+    id: "py-if",
+    term: "if / else",
+    group: "py",
+    what: "if — «если»: команды под ним выполняются, только когда условие верно. else — «иначе». Сравнение: > < == (равно) != (не равно).",
+    example: "if t > 20:\n    print(\"Тепло\")\nelse:\n    print(\"Холодно\")",
+    aliases: ["if", "else", "==", "elif"],
+    introducedIn: "py-esli",
+  },
+  {
+    id: "py-while",
+    term: "while",
+    group: "py",
+    what: "Цикл while повторяет команды, пока условие верно. Внутри условие должно меняться — иначе цикл будет вечным.",
+    example: "guess = int(input())\nwhile guess != 7:\n    guess = int(input())\nprint(\"Угадал!\")",
+    aliases: ["while"],
+    introducedIn: "py-ugadaj",
   },
 ];
 

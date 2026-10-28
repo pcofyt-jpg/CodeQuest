@@ -4,14 +4,16 @@ import { isDomCheck } from "@/lib/preview/buildDocument";
 /** Проверяет исходный код регулярным выражением. Без выполнения кода. */
 export function runSourceCheck(check: Extract<Check, { kind: "source" }>, files: ProjectFiles): boolean {
   // Комментарии не считаются: ребёнок не должен пройти задание кодом в комментарии.
-  const code = stripComments(files[check.file], check.file);
+  const code = stripComments(files[check.file] ?? "", check.file);
   const flags = check.flags?.includes("g") ? check.flags : `${check.flags ?? ""}g`;
   const matches = code.match(new RegExp(check.pattern, flags));
   return (matches?.length ?? 0) >= (check.minMatches ?? 1);
 }
 
-export function stripComments(code: string, file: "html" | "css" | "js"): string {
+export function stripComments(code: string, file: "html" | "css" | "js" | "py"): string {
   if (file === "html") return code.replace(/<!--[\s\S]*?-->/g, "");
+  // Python: комментарий от # до конца строки (# внутри кавычек встречается редко — для проверок достаточно)
+  if (file === "py") return code.replace(/(^|[^"'])#.*$/gm, "$1");
   if (file === "css") return code.replace(/\/\*[\s\S]*?\*\//g, "");
   // Простое удаление комментариев JS. Строки с // внутри кавычек могут
   // обрезаться, но для учебных проверок этого достаточно.

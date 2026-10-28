@@ -67,7 +67,7 @@ export function RouteMap() {
           return (
       <section key={course.id} aria-labelledby={`course-${course.id}`}>
       <h2 id={`course-${course.id}`} className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
-        {course.number === 0 ? course.title : `Курс ${course.number} · ${course.title}`}
+        {course.number === 0 || course.standalone ? course.title : `Курс ${course.number} · ${course.title}`}
         {hydrated && (
           <span className="ml-2 font-semibold normal-case">
             — пройдено {courseDone} из {items.length}

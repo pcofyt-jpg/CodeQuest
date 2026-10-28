@@ -2,6 +2,7 @@ import type { Lesson, ProjectFiles } from "./types";
 import referencesJson from "./references.json";
 import { course0 } from "./course0";
 import { course2 } from "./course2";
+import { coursePython } from "./coursePython";
 
 /**
  * Учебный маршрут MVP.
@@ -1071,8 +1072,8 @@ button.addEventListener("click", function () {
   },
 ];
 
-/** Все уроки маршрута по порядку: «Старт», курс 1, курс 2. */
-export const lessons: Lesson[] = [...course0, ...course1, ...course2];
+/** Все уроки маршрута по порядку: «Старт», курс 1, курс 2, Python. */
+export const lessons: Lesson[] = [...course0, ...course1, ...course2, ...coursePython];
 
 /** Уроки одного курса. */
 export function courseLessons(course: string): Lesson[] {

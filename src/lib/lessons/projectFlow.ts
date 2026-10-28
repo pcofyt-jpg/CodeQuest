@@ -27,8 +27,8 @@ export function applyAdditions(base: ProjectFiles, additions: Partial<Record<Cod
   for (const f of FILES) {
     const add = additions[f];
     if (!add) continue;
-    if (typeof add === "string") out[f] = appendText(out[f], add);
-    else for (const ins of Array.isArray(add) ? add : [add]) out[f] = insertBefore(out[f], ins);
+    if (typeof add === "string") out[f] = appendText(out[f] ?? "", add);
+    else for (const ins of Array.isArray(add) ? add : [add]) out[f] = insertBefore(out[f] ?? "", ins);
   }
   return out;
 }

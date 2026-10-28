@@ -11,6 +11,7 @@ python e2e/test_preview_security.py # попытки кода выбраться
 python e2e/test_all_lessons.py      # все уроки: стартовый код не проходит, эталонное решение проходит
 python e2e/test_projects_backup.py  # «Мои проекты», скачивание сайта, перенос через файл, подсказка при опечатке
 python e2e/test_practice_extras.py  # разминки, подсказка о раскладке, сертификат, шаблоны, «Скопировать»
+python e2e/test_python.py           # Python: робот, вечный цикл, ввод, ошибки, закрытая сеть
 python e2e/test_images.py           # библиотека картинок: панель, копирование кода, предпросмотр, скачивание
 python e2e/test_mentor_ui.py        # ИИ-наставник против имитации функции (нужна сборка с NEXT_PUBLIC_AI_MENTOR_URL)
 ```

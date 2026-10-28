@@ -45,8 +45,13 @@ with sync_playwright() as p:
         body = pg.inner_text("body")
         report("стартовый код не проходит", "Все проверки пройдены" not in body)
         report("показана подсказка «Что сделать»", "Что сделать:" in body)
-        for f, code in REF[slug].items():
-            set_code(pg, TABS[f], code)
+        files = REF[slug]
+        if files.get("py"):  # урок Python: одна вкладка Python
+            set_code(pg, "Python", files["py"])
+        else:
+            for f, code in files.items():
+                if f in TABS:
+                    set_code(pg, TABS[f], code)
         pg.wait_for_timeout(900); check(pg)
         body = pg.inner_text("body")
         report("эталон проходит", "Все проверки пройдены" in body)

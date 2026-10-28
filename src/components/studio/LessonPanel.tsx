@@ -62,7 +62,7 @@ export function LessonPanel({
           </p>
           <h1 className="mt-1 text-2xl leading-tight font-bold text-ink">{lesson.title}</h1>
           <p className="mt-2 text-[17px] leading-snug text-ink">{lesson.goal}</p>
-          {lesson.track === "practice" && lesson.course !== "start" && (
+          {lesson.track === "practice" && lesson.course !== "start" && lesson.lang !== "python" && (
             <p className="mt-3 inline-flex rounded-full bg-paper px-3 py-1 text-sm font-semibold text-muted">
               Тренировка на чужом коде — твой сайт она не меняет
             </p>
@@ -80,6 +80,18 @@ export function LessonPanel({
               ))}
           </ol>
         </header>
+
+        {lesson.story && (
+          <figure className="flex gap-3 rounded-2xl bg-route-soft px-4 py-3">
+            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-route text-xl">
+              🤖
+            </span>
+            <blockquote className="text-[15px] leading-relaxed text-ink">
+              <span className="font-semibold">Кью: </span>
+              {lesson.story}
+            </blockquote>
+          </figure>
+        )}
 
         {lesson.plannedWithMentor && (
           <p className="rounded-xl border border-route/30 bg-route-soft px-4 py-3 text-sm leading-relaxed text-ink">

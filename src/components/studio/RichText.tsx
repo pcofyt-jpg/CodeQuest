@@ -30,7 +30,7 @@ const PATTERN = new RegExp(
   "giu",
 );
 
-const PLAIN_WORDS = new Set(["HTML", "CSS", "JavaScript", "paragraph"]);
+const PLAIN_WORDS = new Set(["HTML", "CSS", "JavaScript", "Python", "paragraph"]);
 
 export function RichText({ text }: { text: string }) {
   const glossaryApi = useGlossary();

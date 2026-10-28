@@ -24,7 +24,7 @@ describe("каталог уроков", () => {
     lessons.forEach((l) => expect(l.slug).toMatch(/^[a-z0-9-]+$/));
     // уроки одного курса идут подряд
     const order = lessons.map((l) => l.course);
-    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "nastoyashchij-sajt"]);
+    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "nastoyashchij-sajt", "python"]);
     expect(courseLessons("start")).toHaveLength(4);
   });
 
@@ -64,7 +64,7 @@ describe("каталог уроков", () => {
   });
 
   it("сквозной проект: первый урок каждого курса с заготовкой, тренировки — со своим кодом", () => {
-    for (const c of courses.filter((x) => x.status === "ready" && x.id !== "start")) {
+    for (const c of courses.filter((x) => x.status === "ready" && x.id !== "start" && !x.standalone)) {
       const first = courseLessons(c.id)[0]!;
       expect(first.track, c.id).toBe("project");
       expect(first.track === "project" && first.starter, c.id).toBeTruthy();

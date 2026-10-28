@@ -23,15 +23,19 @@ const securityHeaders = [
   },
 ];
 
+const basePath = isStaticExport ? process.env.BASE_PATH || "" : "";
+
 const nextConfig: NextConfig = isStaticExport
   ? {
+      env: { NEXT_PUBLIC_BASE_PATH: basePath },
       output: "export",
       // Сайт на GitHub Pages живёт по адресу вида https://имя.github.io/репозиторий/
-      basePath: process.env.BASE_PATH || "",
+      basePath,
       trailingSlash: true,
       poweredByHeader: false,
     }
   : {
+      env: { NEXT_PUBLIC_BASE_PATH: "" },
       poweredByHeader: false,
       async headers() {
         return [{ source: "/:path*", headers: securityHeaders }];

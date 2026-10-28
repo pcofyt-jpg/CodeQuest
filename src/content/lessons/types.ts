@@ -28,11 +28,18 @@ export type Check = CheckBase &
     | { kind: "anchorsResolve"; selector: string; min: number }
     /** страница не вылезает за край по ширине (проверяется на ширине checkWidth урока) */
     | { kind: "noOverflow" }
+    /** Python: робот дошёл до флажка (и собрал все кристаллы, если allGems) */
+    | { kind: "pyRobot"; allGems?: boolean }
+    /** Python: при таком вводе в выводе по порядку есть эти фрагменты */
+    | { kind: "pyOutput"; stdin: string[]; expect: string[] }
+    /** Python: программа выполняется без ошибок */
+    | { kind: "pyNoError"; stdin?: string[] }
   );
 
-export type CodeFile = "html" | "css" | "js";
+export type CodeFile = "html" | "css" | "js" | "py";
 
-export type ProjectFiles = Record<CodeFile, string>;
+/** Файлы проекта. py есть только у уроков Python. */
+export type ProjectFiles = { html: string; css: string; js: string; py?: string };
 
 /**
  * Короткие задания внутри урока («Попробуй») — до основного задания.
@@ -89,6 +96,12 @@ type LessonBase = {
   plannedWithMentor?: boolean;
   /** ширина проверочного фрейма, px (например 360 — как телефон); по умолчанию 800 */
   checkWidth?: number;
+  /** язык урока: веб (по умолчанию) или Python */
+  lang?: "web" | "python";
+  /** поле робота для уроков Python */
+  robot?: import("@/lib/python/prelude").RobotLevel;
+  /** реплика персонажа в начале урока — сюжет, как в Ozaria */
+  story?: string;
 };
 
 /**

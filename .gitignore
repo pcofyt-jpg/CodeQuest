@@ -8,3 +8,6 @@ next-env.d.ts
 .env.*
 !.env.example
 .DS_Store
+
+# Файлы Python (копируются из node_modules при сборке)
+public/pyodide/

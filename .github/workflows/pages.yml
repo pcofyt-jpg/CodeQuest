@@ -52,6 +52,9 @@ jobs:
             echo "::notice title=ИИ-наставник подключён::Адрес наставника найден, кнопка «Спросить наставника» будет на сайте."
           fi
 
+      - name: Файлы Python для сайта
+        run: node scripts/copy-pyodide.mjs
+
       - name: Статическая сборка
         run: npx next build
         env:

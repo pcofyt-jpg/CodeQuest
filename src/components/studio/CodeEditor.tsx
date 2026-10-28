@@ -8,15 +8,17 @@ import { indentWithTab } from "@codemirror/commands";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import type { CodeFile, ProjectFiles } from "@/content/lessons/types";
 
 const languages: Record<CodeFile, () => Extension> = {
   html: () => html({ autoCloseTags: true }),
   css: () => css(),
   js: () => javascript(),
+  py: () => python(),
 };
 
-const labels: Record<CodeFile, string> = { html: "HTML", css: "CSS", js: "JavaScript" };
+const labels: Record<CodeFile, string> = { html: "HTML", css: "CSS", js: "JavaScript", py: "Python" };
 
 const theme = EditorView.theme({
   "&": { height: "100%", fontSize: "15px", backgroundColor: "var(--color-surface)" },
@@ -84,9 +86,20 @@ type Props = {
   jumpTo: { file: CodeFile; line: number; nonce: number } | null;
   /** кнопки справа от вкладок (например, «Картинки») */
   toolbar?: React.ReactNode;
+  /** какие файлы показывать вкладками; по умолчанию HTML, CSS и JavaScript */
+  fileTabs?: CodeFile[];
 };
 
-export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, jumpTo, toolbar }: Props) {
+export function CodeEditor({
+  files,
+  active,
+  onActiveChange,
+  onChange,
+  resetKey,
+  jumpTo,
+  toolbar,
+  fileTabs = ["html", "css", "js"],
+}: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const statesRef = useRef<Partial<Record<CodeFile, EditorState>>>({});
@@ -104,7 +117,7 @@ export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, 
   const stateFor = (file: CodeFile) => {
     let s = statesRef.current[file];
     if (!s) {
-      s = createState(file, filesRef.current[file], emit);
+      s = createState(file, filesRef.current[file] ?? "", emit);
       statesRef.current[file] = s;
     }
     return s;
@@ -146,7 +159,7 @@ export function CodeEditor({ files, active, onActiveChange, onChange, resetKey, 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div role="tablist" aria-label="Файлы проекта" className="flex gap-1 border-b border-line px-2 pt-2">
-        {(Object.keys(labels) as CodeFile[]).map((file) => (
+        {fileTabs.map((file) => (
           <button
             key={file}
             role="tab"

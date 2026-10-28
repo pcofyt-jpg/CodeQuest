@@ -46,6 +46,7 @@ function emptyProgress(): ProgressData {
 function isFiles(v: unknown): v is ProjectFiles {
   if (typeof v !== "object" || v === null) return false;
   const f = v as Record<string, unknown>;
+  if (f.py !== undefined && (typeof f.py !== "string" || f.py.length > MAX_FILE_CHARS)) return false;
   return (["html", "css", "js"] as const).every(
     (k) => typeof f[k] === "string" && (f[k] as string).length <= MAX_FILE_CHARS,
   );

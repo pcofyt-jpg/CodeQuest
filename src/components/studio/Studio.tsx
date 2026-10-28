@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { courseLessons, getLessonIndex, lessons } from "@/content/lessons/catalog";
 import { ImagesDrawer } from "@/components/images/ImagesDrawer";
+import { PythonPanel, usePythonChecks } from "@/components/python/PythonPanel";
 import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
 import { downloadSite } from "@/lib/export/site";
 import { progressStore, type QuizScore } from "@/lib/progress/store";
@@ -108,12 +109,15 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
     [],
   );
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
-  const [activeFile, setActiveFile] = useState<CodeFile>(lesson.focusFile);
+  const isPython = lesson.lang === "python";
+  const [activeFile, setActiveFile] = useState<CodeFile>(isPython ? "py" : lesson.focusFile);
   const [hintsShown, setHintsShown] = useState(0);
   const [mobileView, setMobileView] = useState<MobileView>("lesson");
   const [resetKey, setResetKey] = useState(0);
   const [jumpTo, setJumpTo] = useState<{ file: CodeFile; line: number; nonce: number } | null>(null);
-  const runner = useCheckRunner();
+  const webChecks = useCheckRunner();
+  const pyChecks = usePythonChecks(lesson.robot ?? null);
+  const runner = isPython ? { ...pyChecks, frame: null } : webChecks;
   const session = usePreviewSession(files);
 
   // Сохраняем черновик в этом браузере.
@@ -140,7 +144,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   const replaceCode = (next: ProjectFiles) => {
     setFiles(next);
     session.restart(next);
-    setActiveFile(lesson.focusFile);
+    setActiveFile(isPython ? "py" : lesson.focusFile);
     setResetKey((k) => k + 1);
     runner.reset();
   };
@@ -153,7 +157,8 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   const handleCheckpoint = checkpoint ? () => replaceCode(checkpoint) : null;
 
   const handleCheck = () => {
-    runner.start(files, lesson.checks, lesson.checkWidth);
+    if (isPython) void pyChecks.start(files, lesson.checks);
+    else webChecks.start(files, lesson.checks, lesson.checkWidth);
     setMobileView("lesson");
   };
 
@@ -195,7 +200,7 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             onCheckpoint={handleCheckpoint}
             quizScore={quizScore}
             onQuizFinish={(score) => progressStore.saveQuiz(lesson.slug, score)}
-            mentorCheckRequest={(failed) => ({
+            mentorCheckRequest={isPython ? undefined : (failed) => ({
               mode: "check-help",
               files,
               lesson: { title: lesson.title, goal: lesson.goal },
@@ -212,7 +217,9 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             onChange={handleChange}
             resetKey={resetKey}
             jumpTo={jumpTo}
+            fileTabs={isPython ? ["py"] : undefined}
             toolbar={
+              isPython ? null : (
                 <button
                   type="button"
                   onClick={() => setImagesOpen(true)}
@@ -220,34 +227,49 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
                 >
                   Картинки
                 </button>
-              }
+              )
+            }
           />
         </section>
 
         <section aria-label="Результат" className={panel("result")}>
-          <ResultPanel
-            session={session}
-            title={`Результат урока ${lesson.number}`}
-            onRestart={() => session.restart(files)}
-            onJumpToLine={jumpToJsLine}
-            mentorRequest={(entry) => ({
-              mode: "explain-error",
-              files,
-              lesson: { title: lesson.title, goal: lesson.goal },
-              error: { message: entry.text, line: entry.line },
-            })}
-            actions={
-              lesson.track === "project" ? (
-                <button
-                  type="button"
-                  onClick={() => downloadSite("Мой сайт", files)}
-                  className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
-                >
-                  Скачать сайт
-                </button>
-              ) : null
-            }
-          />
+          {isPython ? (
+            <PythonPanel
+              code={files.py ?? ""}
+              level={lesson.robot ?? null}
+              needsInput={lesson.checks.some((c) => c.kind === "pyOutput" && c.stdin.length > 0)}
+              defaultInput={(lesson.checks.find((c) => c.kind === "pyOutput" && c.stdin.length > 0) as { stdin?: string[] } | undefined)?.stdin?.join("\n") ?? ""}
+              onJumpToLine={(line) => {
+                setActiveFile("py");
+                setJumpTo({ file: "py", line, nonce: Date.now() });
+                setMobileView("code");
+              }}
+            />
+          ) : (
+            <ResultPanel
+              session={session}
+              title={`Результат урока ${lesson.number}`}
+              onRestart={() => session.restart(files)}
+              onJumpToLine={jumpToJsLine}
+              mentorRequest={(entry) => ({
+                mode: "explain-error",
+                files,
+                lesson: { title: lesson.title, goal: lesson.goal },
+                error: { message: entry.text, line: entry.line },
+              })}
+              actions={
+                lesson.track === "project" ? (
+                  <button
+                    type="button"
+                    onClick={() => downloadSite("Мой сайт", files)}
+                    className="rounded-lg px-2 py-1 text-sm font-semibold text-route hover:bg-route-soft"
+                  >
+                    Скачать сайт
+                  </button>
+                ) : null
+              }
+            />
+          )}
         </section>
       </main>
 
