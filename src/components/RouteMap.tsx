@@ -39,8 +39,8 @@ export function RouteMap() {
           до своего проекта
         </h1>
         <p className="mt-4 max-w-md text-[17px] leading-relaxed text-ink">
-          Ты построишь свой собственный сайт — на любую тему. В каждом уроке добавляешь к нему что-то
-          новое и сразу видишь результат. Следующий урок открывается, когда пройден предыдущий.
+          Сайты и игры на настоящем коде — HTML, CSS, JavaScript и Python. В каждом уроке ты пишешь код сам
+          и сразу видишь результат. Новичкам — начать со «Старта»: он учит с самых азов.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
@@ -124,7 +124,7 @@ export function RouteMap() {
                     >
                       <span className="sr-only">Урок {lesson.number}: </span>
                       {lesson.title}
-                      {lesson.track === "practice" && (
+                      {lesson.track === "practice" && lesson.course !== "start" && lesson.lang !== "python" && (
                         <span className="ml-2 align-middle text-xs font-semibold text-muted">тренировка</span>
                       )}
                       {done && <span className="sr-only"> (пройден)</span>}
