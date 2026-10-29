@@ -3,9 +3,9 @@ import { lessonOpen, nextIndex } from "./access";
 import type { Course } from "@/content/courses";
 
 const courses: Course[] = [
-  { id: "s", number: 0, title: "Старт", description: "", status: "ready" },
-  { id: "c1", number: 1, title: "Курс 1", description: "", status: "ready" },
-  { id: "c2", number: 2, title: "Курс 2", description: "", status: "ready", requires: "c1" },
+  { id: "s", number: 0, title: "Старт", description: "", status: "ready", planet: "#000" },
+  { id: "c1", number: 1, title: "Курс 1", description: "", status: "ready", planet: "#000" },
+  { id: "c2", number: 2, title: "Курс 2", description: "", status: "ready", requires: "c1", planet: "#000" },
 ];
 const items = [
   { slug: "s1", course: "s" },

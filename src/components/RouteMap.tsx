@@ -2,186 +2,282 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { courseLabel, courses, type Course } from "@/content/courses";
 import { lessons } from "@/content/lessons/catalog";
-import { progressStore } from "@/lib/progress/store";
 import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
+import { progressStore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
-import { Logo } from "./Logo";
+import { useProjects } from "@/lib/projects/useProjects";
 import { BackupControls } from "./BackupControls";
-import { courses } from "@/content/courses";
+import { Logo } from "./Logo";
 
-const slugs = lessons.map((l) => l.slug);
+type Stat = { done: number; total: number; open: boolean };
 
+/** Главная «Ночная миссия»: текущий урок, Кью на связи, карта миссий, этапы, проекты. */
 export function RouteMap() {
   const progress = useProgress();
+  const projects = useProjects();
   const hydrated = useHydrated();
   const [confirmReset, setConfirmReset] = useState(false);
   const { completed } = progress;
+
   const currentIndex = currentLessonIndex(completed);
-  const doneCount = completed.filter((s) => slugs.includes(s)).length;
-  const allDone = doneCount === lessons.length;
+  const current = lessons[currentIndex]!;
+  const currentCourse = courses.find((c) => c.id === current.course)!;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = courses.find((c) => c.id === (selectedId ?? current.course)) ?? currentCourse;
+
+  const doneCount = completed.filter((s) => lessons.some((l) => l.slug === s)).length;
+  const stat = (c: Course): Stat => {
+    const items = lessons.map((l, i) => ({ l, i })).filter((x) => x.l.course === c.id);
+    return {
+      done: items.filter((x) => completed.includes(x.l.slug)).length,
+      total: items.length,
+      open: items.length > 0 && isLessonOpen(items[0]!.i, completed),
+    };
+  };
+  const cur = stat(currentCourse);
+  const allReadyDone = courses.filter((c) => c.status === "ready").every((c) => {
+    const s = stat(c);
+    return s.done === s.total;
+  });
+  const ring = cur.total ? cur.done / cur.total : 0;
+
+  const statusOf = (c: Course): { text: string; color: string } => {
+    if (c.status === "soon") return { text: "Скоро", color: "text-muted" };
+    const s = stat(c);
+    if (s.done === s.total) return { text: "Пройдено ✓", color: "text-mint" };
+    if (s.done > 0) return { text: `Идёт · ${s.done} из ${s.total}`, color: "text-sun" };
+    if (s.open) return { text: "Открыто", color: "text-sky" };
+    const req = courses.find((x) => x.id === c.requires);
+    return { text: req ? `После: ${courseLabel(req).toLowerCase()}` : "Закрыто", color: "text-muted" };
+  };
+
+  const stages = lessons.map((l, i) => ({ l, i })).filter((x) => x.l.course === selected.id);
+  const selStat = stat(selected);
+  const recent = [...projects].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3);
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-8">
-      <header className="flex items-center justify-between">
+    <div className="mx-auto flex min-h-dvh max-w-6xl flex-col gap-10 px-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <Logo size="lg" />
-        {hydrated && (
-          <p className="text-sm font-semibold text-muted">
-            Пройдено {doneCount} из {lessons.length}
-          </p>
-        )}
-      </header>
-
-      <section className="mt-10 sm:mt-14">
-        <h1 className="text-[2rem] leading-[1.1] font-extrabold tracking-tight text-ink sm:text-[2.75rem]">
-          От первого тега
-          <br />
-          до своего проекта
-        </h1>
-        <p className="mt-4 max-w-md text-[17px] leading-relaxed text-ink">
-          Сайты и игры на настоящем коде — HTML, CSS, JavaScript и Python. В каждом уроке ты пишешь код сам
-          и сразу видишь результат. Новичкам — начать со «Старта»: он учит с самых азов.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href="/proekty/"
-            className="inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
-          >
+        <nav aria-label="Главное меню" className="flex flex-wrap items-center gap-1.5">
+          <span aria-current="page" className="rounded-xl border border-line-strong bg-surface px-4 py-2.5 font-semibold">
+            Карта миссий
+          </span>
+          <Link href="/proekty/" className="rounded-xl px-4 py-2.5 font-medium hover:text-route">
             Мои проекты
           </Link>
-          <Link
-            href="/shpargalka/"
-            className="inline-flex rounded-xl border border-line bg-surface px-4 py-2 text-[15px] font-semibold text-ink hover:border-route"
-          >
+          <Link href="/shpargalka/" className="rounded-xl px-4 py-2.5 font-medium hover:text-route">
             Шпаргалка
           </Link>
+          {hydrated && (
+            <span className="ml-1 hidden font-mono text-sm text-muted sm:inline">
+              Пройдено {doneCount} из {lessons.length}
+            </span>
+          )}
+        </nav>
+      </header>
+
+      <section className={`flex flex-wrap items-stretch gap-6 ${hydrated ? "" : "opacity-0"}`}>
+        <div className="flex min-w-0 flex-[999_1_480px] flex-col gap-4 pt-2">
+          <p className="font-mono text-sm font-bold tracking-wide text-route uppercase">
+            {courseLabel(currentCourse)} · урок {current.number} из {cur.total}
+          </p>
+          <h1 className="text-[2.25rem] leading-[1.08] font-extrabold sm:text-[3.25rem]">{current.title}</h1>
+          <p className="max-w-xl text-[18px] leading-relaxed text-ink/80">{current.goal}</p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <Link
+              href={`/learn/${current.slug}`}
+              className="rounded-2xl bg-route px-7 py-4 text-[17px] font-bold text-on-accent hover:brightness-110"
+            >
+              {doneCount === 0 ? "Начать первый урок" : "Продолжить миссию"}
+            </Link>
+            <Link href="/shpargalka/" className="rounded-2xl border border-line-strong px-6 py-4 text-[17px] font-semibold hover:border-route">
+              Шпаргалка
+            </Link>
+          </div>
         </div>
+
+        <aside aria-label="Кью на связи" className="flex min-w-0 flex-[1_1_320px] flex-col gap-4 rounded-3xl border border-line bg-surface p-6">
+          <p className="font-mono text-xs tracking-widest text-muted">КЬЮ НА СВЯЗИ</p>
+          <div className="flex items-center gap-4">
+            <svg width="96" height="96" viewBox="0 0 96 96" role="img" aria-label={`Пройдено ${cur.done} из ${cur.total}`} className="shrink-0">
+              <circle cx="48" cy="48" r="40" stroke="var(--color-line)" strokeWidth="10" fill="none" />
+              {ring > 0 && (
+              <circle
+                cx="48"
+                cy="48"
+                r="40"
+                stroke="var(--color-sun)"
+                strokeWidth="10"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={`${Math.max(ring * 251.3, 6)} 252`}
+                transform="rotate(-90 48 48)"
+              />
+              )}
+              <text x="48" y="54" textAnchor="middle" fontFamily="var(--font-display)" fontSize="19" fontWeight="800" fill="var(--color-ink)">
+                {cur.done}/{cur.total}
+              </text>
+            </svg>
+            <p className="text-[16px] leading-relaxed">
+              {doneCount === 0
+                ? "Привет! Я Кью. Начнём со «Старта» — там всё с самых азов."
+                : cur.done === cur.total
+                  ? "Эта миссия пройдена! Выбирай следующую на карте."
+                  : <>Ещё <b className="text-sun">{cur.total - cur.done}</b> {plural(cur.total - cur.done)} — и миссия «{currentCourse.title}» пройдена.</>}
+            </p>
+          </div>
+          {currentCourse.number > 0 && (
+            <p className="rounded-full bg-raised px-3 py-1.5 text-sm">Сертификат — после последнего урока миссии</p>
+          )}
+        </aside>
       </section>
 
-      {courses
-        .filter((c) => c.status === "ready")
-        .map((course) => {
-          const items = lessons.map((lesson, i) => ({ lesson, i })).filter((x) => x.lesson.course === course.id);
-          const lastIndex = items[items.length - 1]?.i;
-          const courseDone = items.filter((x) => completed.includes(x.lesson.slug)).length;
-          return (
-      <section key={course.id} aria-labelledby={`course-${course.id}`}>
-      <h2 id={`course-${course.id}`} className="mt-12 text-sm font-bold tracking-wide text-muted uppercase">
-        {course.number === 0 || course.standalone ? course.title : `Курс ${course.number} · ${course.title}`}
-        {hydrated && (
-          <span className="ml-2 font-semibold normal-case">
-            — пройдено {courseDone} из {items.length}
-          </span>
-        )}
-      </h2>
-      {hydrated && course.number > 0 && courseDone === items.length && (
-        <Link
-          href={`/sertifikat/?kurs=${course.id}`}
-          className="mt-2 inline-flex rounded-xl border-2 border-sun bg-sun-soft px-4 py-2 text-[15px] font-semibold text-ink"
-        >
-          Получить сертификат курса
-        </Link>
+      {hydrated && allReadyDone && (
+        <p className="rounded-2xl border border-sun bg-sun-soft p-5 text-[17px] font-semibold">
+          Все открытые миссии пройдены! Возвращайся к любому уроку, улучшай свои сайты или делай новое в «Моих проектах».
+        </p>
       )}
-      <nav aria-label={`Уроки курса ${course.number}`} className="mt-4">
-        <ol className={hydrated ? "" : "opacity-0"}>
-          {items.map(({ lesson, i }) => {
-            const done = completed.includes(lesson.slug);
-            const open = isLessonOpen(i, completed);
-            const current = i === currentIndex && !allDone;
-            const last = i === lastIndex;
-            const lineDone = done && !last;
 
+      <section aria-labelledby="map-title" className="flex flex-col gap-5">
+        <h2 id="map-title" className="text-2xl font-bold">
+          Карта миссий
+        </h2>
+        <ul className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
+          {courses.map((c) => {
+            const st = statusOf(c);
+            const s = c.status === "ready" ? stat(c) : null;
+            const active = c.id === selected.id;
             return (
-              <li key={lesson.slug} className="relative flex gap-4 pb-6 last:pb-0">
-                {!last && (
-                  <span
-                    aria-hidden="true"
-                    className={`absolute top-11 bottom-1 left-[21px] w-[3px] rounded-full ${
-                      lineDone ? "bg-ink" : "bg-[repeating-linear-gradient(to_bottom,var(--color-line)_0_6px,transparent_6px_12px)]"
-                    }`}
-                  />
-                )}
-                <span
-                  aria-hidden="true"
-                  className={`relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-bold ${
-                    current
-                      ? "bg-route text-white ring-[6px] ring-route-soft"
-                      : done
-                        ? "bg-ink text-sun"
-                        : open
-                          ? "border-[3px] border-route bg-surface text-route"
-                          : "border-[3px] border-dashed border-line bg-paper text-muted"
+              <li key={c.id} className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled={c.status !== "ready"}
+                  aria-pressed={active}
+                  onClick={() => setSelectedId(c.id)}
+                  className={`flex flex-1 flex-col items-start gap-2.5 rounded-3xl border bg-surface p-5 text-left transition-colors disabled:cursor-default ${
+                    active ? "border-sun" : "border-line hover:border-line-strong"
                   }`}
                 >
-                  {done ? "✓" : lesson.number}
-                </span>
+                  <span
+                    aria-hidden="true"
+                    className="h-16 w-16 rounded-full shadow-[inset_-10px_-8px_0_rgba(0,0,0,0.22)]"
+                    style={{ background: c.planet, outline: active ? "2px dashed var(--color-sun)" : "none", outlineOffset: 5 }}
+                  />
+                  <span className="font-mono text-xs tracking-wide text-muted uppercase">{courseLabel(c)}</span>
+                  <span className="text-[19px] leading-tight font-bold">{c.title}</span>
+                  {hydrated && <span className={`text-sm ${st.color}`}>{st.text}</span>}
+                </button>
+                {hydrated && s && c.number > 0 && s.done === s.total && (
+                  <Link
+                    href={`/sertifikat/?kurs=${c.id}`}
+                    className="rounded-xl border border-sun bg-sun-soft px-3 py-2 text-center text-sm font-semibold"
+                  >
+                    Получить сертификат курса
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
-                <div className={`min-w-0 flex-1 ${current ? "rounded-2xl border border-line bg-surface p-4 sm:p-5" : "pt-2"}`}>
-                  {open ? (
-                    <Link
-                      href={`/learn/${lesson.slug}`}
-                      className={`font-bold underline-offset-4 hover:underline text-ink ${current ? "text-xl" : "text-[17px]"}`}
-                    >
-                      <span className="sr-only">Урок {lesson.number}: </span>
-                      {lesson.title}
-                      {lesson.track === "practice" && lesson.course !== "start" && lesson.lang !== "python" && (
-                        <span className="ml-2 align-middle text-xs font-semibold text-muted">тренировка</span>
-                      )}
-                      {done && <span className="sr-only"> (пройден)</span>}
-                    </Link>
-                  ) : (
-                    <p className="text-[17px] font-semibold text-muted">
-                      <span className="sr-only">Урок {lesson.number}, пока закрыт: </span>
-                      {lesson.title}
-                    </p>
-                  )}
-                  {current && (
-                    <>
-                      <p className="mt-1 text-[15px] leading-relaxed text-ink">{lesson.goal}</p>
-                      <Link
-                        href={`/learn/${lesson.slug}`}
-                        className="mt-4 inline-flex rounded-xl bg-route px-6 py-3 font-semibold text-white"
-                      >
-                        {doneCount === 0 ? "Начать первый урок" : lesson.number === 1 ? "Начать курс" : "Продолжить"}
-                      </Link>
-                    </>
-                  )}
-                </div>
+      <section aria-labelledby="stages-title" className="flex flex-col gap-5 rounded-3xl border border-line bg-surface p-5 sm:p-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="stages-title" className="text-xl font-bold">
+            {courseLabel(selected)} · {selected.title}
+          </h2>
+          {hydrated && (
+            <span className="font-mono text-sm text-sun">
+              ПРОЙДЕНО {selStat.done} ИЗ {selStat.total}
+            </span>
+          )}
+        </div>
+        <p className="-mt-2 text-[15px] text-muted">{selected.description}</p>
+        <ol className={`grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 ${hydrated ? "" : "opacity-0"}`}>
+          {stages.map(({ l, i }) => {
+            const done = completed.includes(l.slug);
+            const open = isLessonOpen(i, completed);
+            const isCurrent = i === currentIndex && !done;
+            const tag = l.track === "practice" && l.course !== "start" && l.lang !== "python";
+            const inner = (
+              <>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold ${
+                    done ? "bg-route text-on-accent" : isCurrent ? "bg-sun text-on-accent" : open ? "bg-raised text-ink" : "bg-deep text-muted"
+                  }`}
+                >
+                  {done ? "✓" : l.number}
+                </span>
+                <span className="min-w-0 text-[15px] leading-snug">
+                  <span className="sr-only">Урок {l.number}: </span>
+                  {l.title}
+                  {tag && <span className="ml-1.5 align-middle font-mono text-[11px] text-muted">тренировка</span>}
+                  {done && <span className="sr-only"> (пройден)</span>}
+                  {!open && <span className="sr-only"> (пока закрыт)</span>}
+                </span>
+              </>
+            );
+            const box = `flex items-center gap-3 rounded-2xl border p-3 ${
+              isCurrent ? "border-sun bg-sun-soft" : open ? "border-line bg-deep/40 hover:border-line-strong" : "border-line/60 bg-deep/30 text-muted"
+            }`;
+            return (
+              <li key={l.slug}>
+                {open ? (
+                  <Link href={`/learn/${l.slug}`} className={box}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <div className={box}>{inner}</div>
+                )}
               </li>
             );
           })}
         </ol>
-      </nav>
-      </section>
-          );
-        })}
-
-      {allDone && (
-        <p className="mt-8 rounded-2xl border-2 border-sun bg-sun-soft p-5 text-[17px] font-semibold">
-          Все готовые курсы пройдены! Можно вернуться к любому уроку, улучшить свои сайты
-          или сделать что-то новое в «Моих проектах». Следующий курс скоро появится.
-        </p>
-      )}
-
-      <section aria-label="Следующие курсы" className="mt-10 space-y-3">
-        {courses
-          .filter((c) => c.status === "soon")
-          .map((c) => (
-            <article key={c.id} className="rounded-2xl border border-dashed border-line px-5 py-4">
-              <p className="text-sm font-bold tracking-wide text-muted uppercase">
-                Курс {c.number} · готовится
-              </p>
-              <h2 className="mt-1 text-lg font-bold text-ink">{c.title}</h2>
-              <p className="mt-1 text-[15px] leading-relaxed text-ink">{c.description}</p>
-            </article>
-          ))}
       </section>
 
-      <footer className="mt-auto pt-12 text-sm leading-relaxed text-muted">
+      <section aria-labelledby="projects-title" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="projects-title" className="text-2xl font-bold">
+            Мои проекты
+          </h2>
+          <Link href="/proekty/" className="font-semibold text-route underline-offset-4 hover:underline">
+            Все проекты и шаблоны
+          </Link>
+        </div>
+        {hydrated && recent.length === 0 ? (
+          <Link href="/proekty/" className="rounded-3xl border border-dashed border-line-strong p-6 text-[16px] hover:border-route">
+            Здесь появятся твои проекты. Начни с шаблона: открытка, викторина или кликер →
+          </Link>
+        ) : (
+          <ul className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+            {recent.map((p) => (
+              <li key={p.id}>
+                <Link href={`/proekt/?id=${p.id}`} className="flex flex-col overflow-hidden rounded-3xl border border-line bg-surface hover:border-line-strong">
+                  <span className="flex h-24 items-center overflow-hidden bg-deep px-4 font-mono text-[13px] whitespace-nowrap text-route">
+                    {firstLine(p.files.html || p.files.py || "")}
+                  </span>
+                  <span className="flex flex-col gap-1 px-4 py-3">
+                    <b className="text-[16px]">{p.name}</b>
+                    <span className="text-sm text-muted">
+                      {new Date(p.updatedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <footer className="mt-auto pt-6 text-sm leading-relaxed text-muted">
         <p>Демо-версия: прогресс и код хранятся только в этом браузере и никуда не отправляются.</p>
         {hydrated && <BackupControls />}
         {hydrated && doneCount + Object.keys(progress.drafts).length > 0 && (
-          <div className="mt-2">
+          <div className="mt-3">
             {confirmReset ? (
               <span className="flex flex-wrap items-center gap-2">
                 <span>Удалить весь прогресс и код из этого браузера?</span>
@@ -209,4 +305,17 @@ export function RouteMap() {
       </footer>
     </div>
   );
+}
+
+function plural(n: number): string {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return "урок";
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "урока";
+  return "уроков";
+}
+
+function firstLine(code: string): string {
+  const line = code.split("\n").find((l) => l.trim() && !l.trim().startsWith("<!--") && !l.trim().startsWith("#"));
+  return (line ?? "Пустой проект").trim().slice(0, 60);
 }

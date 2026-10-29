@@ -29,18 +29,18 @@ export function RobotWorld({ level, state, step }: { level: RobotLevel; state: R
         height={h}
         role="img"
         aria-label={`Поле робота: ${state?.atGoal && finished ? "робот дошёл до флажка" : "робот в пути"}`}
-        className="h-auto max-w-full rounded-xl bg-[#e9f5ec]"
+        className="h-auto max-w-full rounded-xl bg-deep"
       >
         {Array.from({ length: level.height }, (_, y) =>
           Array.from({ length: level.width }, (_, x) => (
-            <rect key={`${x}-${y}`} x={x * CELL} y={y * CELL} width={CELL} height={CELL} fill="none" stroke="#c3e6cb" />
+            <rect key={`${x}-${y}`} x={x * CELL} y={y * CELL} width={CELL} height={CELL} fill="none" stroke="#2c2f63" />
           )),
         )}
         {level.walls.map(([x, y]) => (
-          <rect key={`w${x}-${y}`} x={x * CELL + 2} y={y * CELL + 2} width={CELL - 4} height={CELL - 4} rx={6} fill="#868e96" />
+          <rect key={`w${x}-${y}`} x={x * CELL + 2} y={y * CELL + 2} width={CELL - 4} height={CELL - 4} rx={6} fill="#3a3e7a" />
         ))}
         {shown.slice(0, -1).map(([x, y], i) => (
-          <circle key={`p${i}`} cx={x * CELL + CELL / 2} cy={y * CELL + CELL / 2} r={4} fill="#74c0fc" />
+          <circle key={`p${i}`} cx={x * CELL + CELL / 2} cy={y * CELL + CELL / 2} r={4} fill="#3ef2c6" />
         ))}
         {level.gems
           .filter(([x, y]) => !visited.has(`${x},${y}`))
@@ -48,21 +48,21 @@ export function RobotWorld({ level, state, step }: { level: RobotLevel; state: R
             <path
               key={`g${x}-${y}`}
               d={`M${x * CELL + 22} ${y * CELL + 10} l10 10 l-10 14 l-10 -14 z`}
-              fill="#be4bdb"
-              stroke="#862e9c"
+              fill="#c7a4ff"
+              stroke="#8f7cf5"
               strokeWidth={2}
             />
           ))}
         <g transform={`translate(${level.goal[0] * CELL + 14} ${level.goal[1] * CELL + 8})`}>
-          <path d="M2 2 L2 30" stroke="#495057" strokeWidth={3} />
+          <path d="M2 2 L2 30" stroke="#a9add6" strokeWidth={3} />
           <path d="M3 3 L20 9 L3 15 Z" fill="#fa5252" />
         </g>
         <g transform={`translate(${pos[0] * CELL + CELL / 2} ${pos[1] * CELL + CELL / 2})`}>
-          <rect x={-15} y={-14} width={30} height={26} rx={8} fill={crashed ? "#fa5252" : "#2f5bea"} />
-          <circle cx={-6} cy={-3} r={3.5} fill="white" />
-          <circle cx={6} cy={-3} r={3.5} fill="white" />
-          <path d="M-6 6 Q0 10 6 6" stroke="white" strokeWidth={2} fill="none" />
-          <path d="M0 -14 L0 -20" stroke="#2f5bea" strokeWidth={2} />
+          <rect x={-15} y={-14} width={30} height={26} rx={8} fill={crashed ? "#ff7a8a" : "#3ef2c6"} />
+          <circle cx={-6} cy={-3} r={3.5} fill="#11122b" />
+          <circle cx={6} cy={-3} r={3.5} fill="#11122b" />
+          <path d="M-6 6 Q0 10 6 6" stroke="#11122b" strokeWidth={2} fill="none" />
+          <path d="M0 -14 L0 -20" stroke="#3ef2c6" strokeWidth={2} />
           <circle cx={0} cy={-21} r={2.5} fill="#ffc53d" />
         </g>
       </svg>
@@ -172,7 +172,7 @@ export function PythonPanel({ code, level, needsInput, defaultInput = "", onJump
           type="button"
           onClick={run}
           disabled={running}
-          className="rounded-lg bg-mint px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-lg bg-mint px-4 py-1.5 text-sm font-semibold text-on-accent disabled:opacity-60"
         >
           {running ? "Выполняю…" : "▶ Запустить"}
         </button>

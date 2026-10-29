@@ -59,7 +59,7 @@ export function CertificatePage() {
             ? `Он появится, когда ты пройдёшь все уроки курса «${course.title}». Пройдено ${done.length} из ${items.length}.`
             : "Такого курса нет."}
         </p>
-        <Link href="/" className="rounded-xl bg-route px-6 py-3 font-semibold text-white">
+        <Link href="/" className="rounded-xl bg-route px-6 py-3 font-semibold text-on-accent">
           К маршруту
         </Link>
       </main>
@@ -88,7 +88,7 @@ export function CertificatePage() {
         <button
           type="button"
           onClick={() => window.print()}
-          className="mt-4 rounded-xl bg-route px-6 py-3 font-semibold text-white"
+          className="mt-4 rounded-xl bg-route px-6 py-3 font-semibold text-on-accent"
         >
           Распечатать или сохранить в PDF
         </button>
@@ -96,31 +96,31 @@ export function CertificatePage() {
 
       <article
         aria-label="Сертификат"
-        className="rounded-3xl border-[6px] border-double border-route bg-surface px-8 py-10 text-center shadow-sm print:shadow-none"
+        className="rounded-3xl border-[6px] border-double border-[#2f5bea] bg-white px-8 py-10 text-center text-[#111827] shadow-sm print:shadow-none"
       >
         <div className="flex justify-center">
           <Logo size="lg" />
         </div>
-        <p className="mt-6 text-sm font-bold tracking-[0.3em] text-muted uppercase">Сертификат</p>
-        <h1 className="mt-3 text-3xl font-extrabold text-ink">{name.trim() || "Юный разработчик"}</h1>
+        <p className="mt-6 text-sm font-bold tracking-[0.3em] text-[#4b5563] uppercase">Сертификат</p>
+        <h1 className="mt-3 text-3xl font-extrabold text-[#111827]">{name.trim() || "Юный разработчик"}</h1>
         <p className="mt-3 text-[17px]">прошёл(ла) курс</p>
-        <p className="mt-1 text-2xl font-bold text-route">
+        <p className="mt-1 text-2xl font-bold text-[#2f5bea]">
           «{course.title}» · {items.length} уроков
         </p>
         {course.skills && (
           <div className="mx-auto mt-6 max-w-xl text-left">
-            <p className="text-center text-sm font-semibold text-muted">Теперь умеет:</p>
-            <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-relaxed text-ink">
+            <p className="text-center text-sm font-semibold text-[#4b5563]">Теперь умеет:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-relaxed text-[#111827]">
               {course.skills.map((s) => (
                 <li key={s}>{s}</li>
               ))}
             </ul>
           </div>
         )}
-        <p className="mt-6 text-sm text-muted">
+        <p className="mt-6 text-sm text-[#4b5563]">
           {finishedAt ? new Date(finishedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }) : ""}
         </p>
-        <p className="mt-6 text-xs text-muted">
+        <p className="mt-6 text-xs text-[#4b5563]">
           Документ о прохождении курса в учебной студии CodeQuest, а не государственный документ об образовании.
         </p>
       </article>

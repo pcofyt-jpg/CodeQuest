@@ -1,5 +1,5 @@
 """Студия Python: робот, запуск, бесконечный цикл, ввод, объяснение ошибки, закрытая сеть."""
-import os, sys, time
+import os, re, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from helpers import *
 from playwright.sync_api import sync_playwright
@@ -19,8 +19,9 @@ with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width": 1440, "height": 900})
     fails = []; pg.on("requestfailed", lambda r: fails.append((r.url, r.failure)) if "example.com" in r.url else None)
     pg.goto(BASE + "/"); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(500)
+    pg.get_by_role("button", name=re.compile("Python: первые шаги")).click()
     report("раздел Python на главной открыт сразу", "PYTHON: ПЕРВЫЕ ШАГИ" in pg.inner_text("body").upper()
-           and pg.get_by_role("link", name="Робот Кью: первые команды").count() == 1)
+           and pg.get_by_role("link", name=re.compile("Робот Кью: первые команды")).count() == 1)
 
     pg.goto(BASE + "/learn/robot-start"); pg.wait_for_selector(".cm-content")
     report("одна вкладка Python и реплика Кью", pg.get_by_role("tab", name="Python").count() == 1

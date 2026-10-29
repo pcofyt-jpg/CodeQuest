@@ -79,7 +79,7 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
             className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2"
             placeholder="например, kot-raketa-123"
           />
-          <button type="submit" className="rounded-lg bg-route px-4 py-2 font-semibold text-white">
+          <button type="submit" className="rounded-lg bg-route px-4 py-2 font-semibold text-on-accent">
             Сохранить
           </button>
           <button type="button" onClick={() => setState({ s: "idle" })} className="rounded-lg px-2 py-2 font-semibold">

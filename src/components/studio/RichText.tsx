@@ -38,7 +38,10 @@ export function RichText({ text }: { text: string }) {
   let last = 0;
 
   for (const match of text.matchAll(PATTERN)) {
-    const value = match[0];
+    // Точка или двоеточие в конце — это знак препинания предложения, а не часть кода.
+    const value = match[1] !== undefined && /[^.:][.:]$/.test(match[0]) && !/\(\)$/.test(match[0])
+      ? match[0].replace(/[.:]+$/, "")
+      : match[0];
     const index = match.index ?? 0;
     const isCode = match[1] !== undefined;
     if (isCode && (PLAIN_WORDS.has(value) || value === ":" || value === ".")) continue;

@@ -162,7 +162,7 @@ export function GlossaryDrawer({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      <button type="button" aria-label="Закрыть шпаргалку" className="absolute inset-0 bg-ink/30" onClick={onClose} />
+      <button type="button" aria-label="Закрыть шпаргалку" className="absolute inset-0 bg-black/60" onClick={onClose} />
       <aside
         role="dialog"
         aria-modal="true"

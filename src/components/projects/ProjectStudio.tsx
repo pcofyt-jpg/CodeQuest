@@ -35,7 +35,7 @@ export function ProjectStudio() {
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
         <h1 className="text-2xl font-bold">Проект не найден</h1>
         <p className="text-[17px]">Возможно, он был удалён или сохранён в другом браузере.</p>
-        <Link href="/proekty/" className="rounded-xl bg-route px-6 py-3 font-semibold text-white">
+        <Link href="/proekty/" className="rounded-xl bg-route px-6 py-3 font-semibold text-on-accent">
           Мои проекты
         </Link>
       </main>

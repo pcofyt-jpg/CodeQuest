@@ -24,6 +24,8 @@ type Props = {
   outcome: CheckOutcome;
   onCheck: () => void;
   onReset: () => void;
+  /** подпись курса: «Миссия 1», «Старт», «Python» */
+  courseTag?: string;
   /** взять рабочую версию прошлого урока; null — если контрольной точки нет */
   onCheckpoint: (() => void) | null;
   quizScore: QuizScore | undefined;
@@ -41,6 +43,7 @@ export function LessonPanel({
   outcome,
   onCheck,
   onReset,
+  courseTag,
   onCheckpoint,
   quizScore,
   onQuizFinish,
@@ -56,9 +59,9 @@ export function LessonPanel({
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5">
         <header>
-          <p className="text-sm font-medium text-muted">
-            Урок {lesson.number} из {total}
-            {completed && <span className="text-mint"> · пройден</span>}
+          <p className="font-mono text-[13px] font-bold tracking-wide text-route uppercase">
+            {courseTag ? `${courseTag} · ` : ""}Урок {lesson.number} из {total}
+            {completed && <span className="text-mint"> · пройден ✓</span>}
           </p>
           <h1 className="mt-1 text-2xl leading-tight font-bold text-ink">{lesson.title}</h1>
           <p className="mt-2 text-[17px] leading-snug text-ink">{lesson.goal}</p>
@@ -240,7 +243,7 @@ export function LessonPanel({
               )}
               <Link
                 href={`/learn/${nextLesson.slug}`}
-                className="mt-4 inline-flex rounded-xl bg-ink px-5 py-3 font-semibold text-white"
+                className="mt-4 inline-flex rounded-xl bg-route px-5 py-3 font-semibold text-on-accent"
               >
                 Следующий урок: {nextLesson.title}
               </Link>
@@ -293,7 +296,7 @@ export function LessonPanel({
           type="button"
           onClick={onCheck}
           disabled={outcome.status === "running"}
-          className="rounded-xl bg-route px-6 py-3 font-semibold text-white disabled:opacity-60"
+          className="rounded-xl bg-route px-6 py-3 font-semibold text-on-accent disabled:opacity-60"
         >
           {outcome.status === "running" ? "Проверяю…" : "Проверить"}
         </button>

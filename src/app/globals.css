@@ -1,33 +1,60 @@
 @import "tailwindcss";
 
+/*
+ * Дизайн «Ночная миссия» (вариант B): тёмная тема, мятный акцент, янтарный — текущий этап.
+ * Названия токенов прежние, чтобы компоненты не переписывать:
+ *   paper — фон страницы, surface — панели, ink — основной текст, muted — второстепенный,
+ *   line — границы, route — главный акцент, sun — текущий этап и награды,
+ *   mint — успех, coral — ошибка, on-accent — текст на акцентных кнопках.
+ * Контраст текста проверен: muted на surface ≈ 7:1, mint и sun на surface — выше 9:1.
+ */
 @theme {
-  --color-paper: #f4f6fb;
-  --color-surface: #ffffff;
-  --color-ink: #1b2440;
-  --color-muted: #56627f;
-  --color-line: #dce2ee;
-  --color-route: #2f5bea;
-  --color-route-soft: #e6ecfd;
-  --color-sun: #ffc53d;
-  --color-sun-soft: #fff6dc;
-  --color-mint: #12805a;
-  --color-coral: #c8333a;
-  --color-coral-soft: #fdecec;
+  --color-paper: #11122b;
+  --color-surface: #1b1d42;
+  --color-raised: #262a5c;
+  --color-deep: #0d0e24;
+  --color-ink: #eef0ff;
+  --color-muted: #a9add6;
+  --color-line: #2c2f63;
+  --color-line-strong: #4a4f94;
+  --color-route: #3ef2c6;
+  --color-route-soft: #173a3b;
+  --color-on-accent: #0b0c22;
+  --color-sun: #ffb84d;
+  --color-sun-soft: #33291a;
+  --color-mint: #3ef2c6;
+  --color-coral: #ff7a8a;
+  --color-coral-soft: #3a1d2c;
+  --color-sky: #7cc4ff;
+  --color-violet: #8f7cf5;
 
-  --font-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Rubik Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Unbounded Variable", "Rubik Variable", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Menlo, monospace;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html,
 body {
-  background: var(--color-paper);
+  background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
+}
+
+/* Звёздная сетка из точек — как в макете, без градиентных пятен. */
+body {
+  background-image: radial-gradient(#23264f 1.2px, transparent 1.6px);
+  background-size: 26px 26px;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 
 /* Без лигатур: <!-- и --> должны выглядеть так, как их печатают, а не стрелками. */
@@ -51,5 +78,11 @@ kbd,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
   }
 }

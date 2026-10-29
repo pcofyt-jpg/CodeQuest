@@ -31,9 +31,9 @@ export function PracticeBlock({ exercises }: { exercises: Exercise[] }) {
                 aria-label={`Задание ${i + 1}${done[i] ? ", выполнено" : ""}`}
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
                   done[i]
-                    ? "bg-mint text-white"
+                    ? "bg-mint text-on-accent"
                     : i === current
-                      ? "bg-route text-white"
+                      ? "bg-sun text-on-accent"
                       : "border-2 border-line bg-surface text-muted"
                 }`}
               >
@@ -58,7 +58,7 @@ export function PracticeBlock({ exercises }: { exercises: Exercise[] }) {
         <button
           type="button"
           onClick={() => setCurrent(current + 1)}
-          className="mt-3 rounded-xl bg-ink px-5 py-2.5 font-semibold text-white"
+          className="mt-3 rounded-xl border border-line-strong bg-raised px-5 py-2.5 font-semibold text-ink"
         >
           Дальше →
         </button>
@@ -191,7 +191,7 @@ function OrderEx({ ex, seed, onDone }: { ex: Extract<Exercise, { kind: "order" }
         ))}
       </div>
       {full && result !== true && (
-        <button type="button" onClick={check} className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-white">
+        <button type="button" onClick={check} className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-on-accent">
           Проверить порядок
         </button>
       )}
@@ -244,7 +244,7 @@ function FillEx({ ex, onDone }: { ex: Extract<Exercise, { kind: "fill" }>; onDon
         <span className="whitespace-pre">{ex.after}</span>
       </div>
       {result !== true && (
-        <button type="submit" className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-white">
+        <button type="submit" className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-on-accent">
           Проверить ответ
         </button>
       )}
@@ -310,7 +310,7 @@ function TypeEx({ ex, onDone }: { ex: Extract<Exercise, { kind: "type" }>; onDon
         </p>
       )}
       {result !== true && (
-        <button type="submit" className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-white">
+        <button type="submit" className="mt-2 rounded-xl bg-route px-4 py-2 font-semibold text-on-accent">
           Проверить ответ
         </button>
       )}

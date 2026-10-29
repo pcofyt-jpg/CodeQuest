@@ -37,9 +37,9 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                   current
-                    ? "bg-route text-white ring-4 ring-route-soft"
+                    ? "bg-sun text-on-accent ring-4 ring-sun/25"
                     : done
-                      ? "bg-ink text-sun"
+                      ? "bg-route text-on-accent"
                       : open
                         ? "border-2 border-route bg-surface text-route"
                         : "border-2 border-dashed border-line bg-surface text-muted"
@@ -53,7 +53,7 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
                 {k > 0 && (
                   <span
                     aria-hidden="true"
-                    className={`h-0.5 w-2 lg:w-4 ${completed.includes(lessons[i - 1]!.slug) ? "bg-ink" : "bg-line"}`}
+                    className={`h-0.5 w-2 lg:w-4 ${completed.includes(lessons[i - 1]!.slug) ? "bg-route" : "bg-line"}`}
                   />
                 )}
                 {open ? (

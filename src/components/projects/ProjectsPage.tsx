@@ -61,7 +61,7 @@ export function ProjectsPage() {
         <button
           type="button"
           onClick={() => create("Новый проект", BLANK)}
-          className="rounded-xl bg-route px-5 py-3 font-semibold text-white"
+          className="rounded-xl bg-route px-5 py-3 font-semibold text-on-accent"
         >
           Новый проект
         </button>
@@ -130,7 +130,7 @@ export function ProjectsPage() {
                     autoFocus
                     className="min-w-0 flex-1 rounded-lg border border-line px-3 py-2"
                   />
-                  <button type="submit" className="rounded-lg bg-ink px-4 py-2 font-semibold text-white">
+                  <button type="submit" className="rounded-lg bg-route px-4 py-2 font-semibold text-on-accent">
                     Сохранить
                   </button>
                 </form>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/onest";
+import "@fontsource-variable/rubik";
+import "@fontsource-variable/unbounded";
 import "@fontsource-variable/jetbrains-mono";
 import "./globals.css";
 import { APP_CSP } from "@/lib/security";
@@ -14,7 +15,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#f4f6fb",
+  themeColor: "#11122b",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

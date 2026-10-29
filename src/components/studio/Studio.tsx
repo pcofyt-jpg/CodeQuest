@@ -9,7 +9,7 @@ import type { CodeFile, Lesson, ProjectFiles } from "@/content/lessons/types";
 import { downloadSite } from "@/lib/export/site";
 import { progressStore, type QuizScore } from "@/lib/progress/store";
 import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
-import { courses } from "@/content/courses";
+import { courseLabel, courses } from "@/content/courses";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { lessonCheckpoint, lessonStarter } from "@/lib/lessons/projectFlow";
 import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
@@ -55,7 +55,7 @@ export function Studio({ slug }: { slug: string }) {
           </p>
           <Link
             href={`/learn/${prev.slug}`}
-            className="mt-6 inline-flex rounded-xl bg-route px-6 py-3 font-semibold text-white"
+            className="mt-6 inline-flex rounded-xl bg-route px-6 py-3 font-semibold text-on-accent"
           >
             Перейти к уроку {prev.number}
           </Link>
@@ -190,6 +190,10 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
           <LessonPanel
             lesson={lesson}
             total={courseLessons(lesson.course).length}
+            courseTag={(() => {
+              const c = courses.find((x) => x.id === lesson.course);
+              return c ? courseLabel(c) : undefined;
+            })()}
             completed={completedSlugs.includes(lesson.slug)}
             nextLesson={nextLesson}
             hintsShown={hintsShown}

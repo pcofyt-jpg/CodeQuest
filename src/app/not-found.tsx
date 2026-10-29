@@ -5,7 +5,7 @@ export default function NotFound() {
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
       <h1 className="text-2xl font-bold">Такой страницы нет</h1>
       <p className="text-[17px]">Возможно, в адресе опечатка. Маршрут уроков — на главной.</p>
-      <Link href="/" className="rounded-xl bg-route px-6 py-3 font-semibold text-white">
+      <Link href="/" className="rounded-xl bg-route px-6 py-3 font-semibold text-on-accent">
         Открыть маршрут
       </Link>
     </main>

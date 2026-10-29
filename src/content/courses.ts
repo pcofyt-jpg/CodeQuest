@@ -15,11 +15,21 @@ export type Course = {
   skills?: string[];
   /** отдельное направление (Python): показывается без номера курса */
   standalone?: boolean;
+  /** цвет «планеты» на карте миссий */
+  planet: string;
 };
+
+/** Подпись курса на карте миссий: «СТАРТ», «МИССИЯ 1», «PYTHON». */
+export function courseLabel(c: Course): string {
+  if (c.number === 0) return "Старт";
+  if (c.standalone) return "Python";
+  return `Миссия ${c.number}`;
+}
 
 export const courses: Course[] = [
   {
     id: "start",
+    planet: "#3ef2c6",
     number: 0,
     title: "Старт: с азов",
     description: "Как устроен сайт, как печатать код на клавиатуре, что такое теги и как пользоваться студией.",
@@ -27,6 +37,7 @@ export const courses: Course[] = [
   },
   {
     id: "pervyj-sajt",
+    planet: "#ffb84d",
     number: 1,
     title: "Первый сайт",
     description: "Свой сайт на любую тему: заголовки, цвета, карточка, кнопки и счётчик.",
@@ -41,6 +52,7 @@ export const courses: Course[] = [
   },
   {
     id: "nastoyashchij-sajt",
+    planet: "#8f7cf5",
     number: 2,
     title: "Настоящий сайт",
     description: "Меню, списки, картинки, ряд карточек и версия для телефона. В конце — сайт с нуля по своему плану.",
@@ -57,6 +69,7 @@ export const courses: Course[] = [
   },
   {
     id: "python",
+    planet: "#7cc4ff",
     number: 10,
     title: "Python: первые шаги",
     description: "Настоящий Python: проведи робота Кью по полю, научи программу говорить и слушать, собери игру «Угадай число».",
@@ -72,6 +85,7 @@ export const courses: Course[] = [
   },
   {
     id: "igry",
+    planet: "#3a3e7a",
     number: 3,
     title: "Интерактив и мини-игры",
     description: "Условия, ввод, таймер и счёт. Кликер, «угадай число», викторина — и своя игра.",

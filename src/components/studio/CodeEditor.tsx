@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { basicSetup } from "codemirror";
 import { EditorState, type Extension } from "@codemirror/state";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags as t } from "@lezer/highlight";
 import { EditorView, keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { html } from "@codemirror/lang-html";
@@ -20,19 +22,42 @@ const languages: Record<CodeFile, () => Extension> = {
 
 const labels: Record<CodeFile, string> = { html: "HTML", css: "CSS", js: "JavaScript", py: "Python" };
 
-const theme = EditorView.theme({
-  "&": { height: "100%", fontSize: "15px", backgroundColor: "var(--color-surface)" },
-  ".cm-scroller": { fontFamily: "var(--font-mono)", lineHeight: "1.6" },
-  ".cm-content": { padding: "12px 0" },
-  ".cm-gutters": {
-    backgroundColor: "var(--color-surface)",
-    color: "var(--color-muted)",
-    borderRight: "1px solid var(--color-line)",
+/** Тёмный редактор в цветах темы «Ночная миссия». */
+const theme = EditorView.theme(
+  {
+    "&": { height: "100%", fontSize: "15px", backgroundColor: "var(--color-deep)", color: "#dfe1fb" },
+    ".cm-scroller": { fontFamily: "var(--font-mono)", lineHeight: "1.65" },
+    ".cm-content": { padding: "12px 0", caretColor: "var(--color-route)" },
+    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--color-route)", borderLeftWidth: "2px" },
+    ".cm-gutters": { backgroundColor: "var(--color-deep)", color: "#5c619e", borderRight: "1px solid var(--color-line)" },
+    ".cm-activeLine": { backgroundColor: "rgba(124, 196, 255, 0.06)" },
+    ".cm-activeLineGutter": { backgroundColor: "rgba(124, 196, 255, 0.1)", color: "var(--color-ink)" },
+    "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": { backgroundColor: "rgba(62, 242, 198, 0.22)" },
+    ".cm-matchingBracket": { backgroundColor: "rgba(255, 184, 77, 0.25)", outline: "none" },
+    ".cm-tooltip": { backgroundColor: "var(--color-surface)", border: "1px solid var(--color-line-strong)", color: "var(--color-ink)" },
+    ".cm-tooltip-autocomplete ul li[aria-selected]": { backgroundColor: "var(--color-raised)", color: "var(--color-ink)" },
+    ".cm-panels": { backgroundColor: "var(--color-surface)", color: "var(--color-ink)" },
+    "&.cm-focused": { outline: "none" },
   },
-  ".cm-activeLine": { backgroundColor: "#f3f6fd" },
-  ".cm-activeLineGutter": { backgroundColor: "#e9eefb", color: "var(--color-ink)" },
-  "&.cm-focused": { outline: "none" },
-});
+  { dark: true },
+);
+
+/** Подсветка кода: как в макете — теги голубые, атрибуты янтарные, строки мятные. */
+const highlight = syntaxHighlighting(
+  HighlightStyle.define([
+    { tag: [t.tagName, t.angleBracket], color: "#7cc4ff" },
+    { tag: t.attributeName, color: "#ffb84d" },
+    { tag: [t.string, t.attributeValue, t.special(t.string)], color: "#3ef2c6" },
+    { tag: [t.comment, t.lineComment, t.blockComment], color: "#8a8fc0", fontStyle: "italic" },
+    { tag: [t.keyword, t.controlKeyword, t.definitionKeyword, t.moduleKeyword], color: "#c7a4ff" },
+    { tag: [t.number, t.bool, t.null], color: "#ffb84d" },
+    { tag: [t.propertyName, t.className], color: "#7cc4ff" },
+    { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#9ee8ff" },
+    { tag: [t.operator, t.punctuation, t.bracket], color: "#c9ccec" },
+    { tag: t.variableName, color: "#eef0ff" },
+    { tag: t.invalid, color: "#ff7a8a" },
+  ]),
+);
 
 // Русские подписи для встроенных панелей редактора.
 const phrases = EditorState.phrases.of({
@@ -60,6 +85,7 @@ function createState(file: CodeFile, doc: string, onChange: (file: CodeFile, val
       keymap.of([indentWithTab]),
       languages[file](),
       theme,
+      highlight,
       phrases,
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({
