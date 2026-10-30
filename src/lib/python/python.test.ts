@@ -19,10 +19,10 @@ beforeAll(async () => {
   pyo.runPython(PYTHON_PRELUDE.replace("${MAX_ROBOT_STEPS}", String(MAX_ROBOT_STEPS)));
 }, 120_000);
 
-describe("курс Python: эталоны проходят, стартовый код — нет", () => {
-  const lessons = courseLessons("python");
-  it("в курсе 8 уроков на Python", () => {
-    expect(lessons).toHaveLength(8);
+describe("уроки на Python: эталоны проходят, стартовый код — нет", () => {
+  const lessons = [...courseLessons("python"), ...courseLessons("kiber")];
+  it("8 уроков «Первых шагов» и 10 уроков «Кибердетектива» — все на Python", () => {
+    expect(lessons).toHaveLength(18);
     for (const l of lessons) expect(l.lang, l.slug).toBe("python");
   });
 

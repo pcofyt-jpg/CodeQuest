@@ -236,5 +236,65 @@
     "html": "<h1>Поймай звезду</h1>\n<p>Очки: <span id=\"score\">0</span></p>\n<div id=\"field\"><button id=\"star\">⭐</button></div>\n<p id=\"message\"></p>\n",
     "css": "body {\n  font-family: Verdana, sans-serif;\n  text-align: center;\n  padding: 16px;\n}\n\n#field {\n  position: relative;\n  height: 240px;\n  max-width: 360px;\n  margin: 0 auto;\n  background-color: #11122b;\n  border-radius: 16px;\n}\n\n#star {\n  position: absolute;\n  left: 20px;\n  top: 20px;\n  font-size: 32px;\n  background: none;\n  border: none;\n}\n",
     "js": "let score = 0;\nconst star = document.querySelector(\"#star\");\nconst scoreText = document.querySelector(\"#score\");\nconst message = document.querySelector(\"#message\");\n\nstar.addEventListener(\"click\", function () {\n  score = score + 1;\n  scoreText.textContent = score;\n  star.style.left = Math.floor(Math.random() * 300) + \"px\";\n  star.style.top = Math.floor(Math.random() * 190) + \"px\";\n  if (score >= 10) {\n    message.textContent = \"Ты поймал 10 звёзд!\";\n  }\n});\n"
+  },
+  "kiber-vhod": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "password = input(\"Пароль: \")\nif password == \"кью123\":\n    print(\"Доступ разрешён\")\nelse:\n    print(\"Доступ запрещён\")\n"
+  },
+  "kiber-bajty": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "codes = [1055, 1088, 1080, 1074, 1077, 1090]\ntext = \"\"\nfor code in codes:\n    text = text + chr(code)\nprint(text)\n"
+  },
+  "kiber-cezar": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "alphabet = \"абвгдеёжзийклмнопрстуфхцчшщъыьэюя\"\ntext = input(\"Текст: \")\nshift = int(input(\"Сдвиг: \"))\nresult = \"\"\nfor letter in text:\n    if letter in alphabet:\n        index = alphabet.index(letter)\n        new_index = (index + shift) % 33\n        result = result + alphabet[new_index]\n    else:\n        result = result + letter\nprint(result)\n"
+  },
+  "kiber-perebor": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "alphabet = \"абвгдеёжзийклмнопрстуфхцчшщъыьэюя\"\nsecret = \"жцчхйье ш цчехузу ишёе\"\n\n\ndef decrypt(text, shift):\n    result = \"\"\n    for letter in text:\n        if letter in alphabet:\n            result = result + alphabet[(alphabet.index(letter) - shift) % 33]\n        else:\n            result = result + letter\n    return result\n\n\nfor shift in range(1, 33):\n    print(shift, decrypt(secret, shift))\n"
+  },
+  "kiber-chastota": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "alphabet = \"абвгдеёжзийклмнопрстуфхцчшщъыьэюя\"\nsecret = \"щхщцщ ьэкыщнщ щтпык м ащцщошщч цпью хэщ эщ щьэкмуц хщыщлхю щ хщэщыщф шухэщ шувпнщ шп тшкц\"\nbest_letter = \"\"\nbest_count = 0\nfor letter in alphabet:\n    count = secret.count(letter)\n    if count > best_count:\n        best_count = count\n        best_letter = letter\nshift = (alphabet.index(best_letter) - alphabet.index(\"о\")) % 33\nprint(\"Самая частая буква:\", best_letter)\nprint(\"Сдвиг:\", shift)\n"
+  },
+  "kiber-paroli": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "password = input(\"Пароль: \")\nscore = 0\nif len(password) >= 8:\n    score = score + 1\nhas_digit = False\nhas_upper = False\nhas_special = False\nfor ch in password:\n    if ch.isdigit():\n        has_digit = True\n    elif ch.isupper():\n        has_upper = True\n    elif not ch.isalnum():\n        has_special = True\nif has_digit:\n    score = score + 1\nif has_upper:\n    score = score + 1\nif has_special:\n    score = score + 1\nif score <= 1:\n    print(\"Пароль слабый\")\nelif score <= 3:\n    print(\"Пароль средний\")\nelse:\n    print(\"Пароль надёжный\")\n"
+  },
+  "kiber-hesh": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "import hashlib\n\n# Сайт хранит не пароль, а его хеш — «отпечаток»\nSAVED_HASH = \"d302300c52a96c599ace5e12a240a481c70b67809e5cef0944ccf7b1463f0f72\"\npassword = input(\"Пароль: \")\nh = hashlib.sha256(password.encode()).hexdigest()\nif h == SAVED_HASH:\n    print(\"Вход разрешён\")\nelse:\n    print(\"Вход запрещён\")\n"
+  },
+  "kiber-stego": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "lines = [\n    \"Кошка спала на тёплом окне.\",\n    \"Лето было долгим и жарким.\",\n    \"Аист улетел на юг в сентябре.\",\n    \"Дождь шёл до самого утра.\",\n]\nhidden = \"\"\nfor line in lines:\n    hidden = hidden + line[0]\nprint(hidden)\n"
+  },
+  "kiber-fishing": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "TRUSTED = \"codequest.ru\"\nurl = input(\"Ссылка: \")\ndomain = url.split(\"/\")[2]\nif domain == TRUSTED or domain.endswith(\".\" + TRUSTED):\n    print(\"Безопасно:\", domain)\nelse:\n    print(\"Осторожно, подделка:\", domain)\n"
+  },
+  "kiber-kvest": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "py": "alphabet = \"абвгдеёжзийклмнопрстуфхцчшщъыьэюя\"\nsecret = \"ытжй спзлчклщлсщпи\"\nfor shift in range(1, 33):\n    text = \"\"\n    for letter in secret:\n        if letter in alphabet:\n            text = text + alphabet[(alphabet.index(letter) - shift) % 33]\n        else:\n            text = text + letter\n    if \"флаг\" in text:\n        print(\"Нашёл! Сдвиг:\", shift)\n        print(text)\n"
   }
 }

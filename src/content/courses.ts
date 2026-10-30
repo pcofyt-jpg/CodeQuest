@@ -17,10 +17,13 @@ export type Course = {
   standalone?: boolean;
   /** цвет «планеты» на карте миссий */
   planet: string;
+  /** своя подпись на карте вместо «Миссия N» */
+  label?: string;
 };
 
 /** Подпись курса на карте миссий: «СТАРТ», «МИССИЯ 1», «PYTHON». */
 export function courseLabel(c: Course): string {
+  if (c.label) return c.label;
   if (c.number === 0) return "Старт";
   if (c.standalone) return "Python";
   return `Миссия ${c.number}`;
@@ -81,6 +84,24 @@ export const courses: Course[] = [
       "выводить сообщения и считать с переменными",
       "получать ввод и принимать решения с if/else",
       "делать игру с циклом while",
+    ],
+  },
+  {
+    id: "kiber",
+    planet: "#ff7a8a",
+    number: 11,
+    label: "Кибер",
+    title: "Кибердетектив: Python глазами хакера",
+    description: "Шифры, перебор, частотный анализ, пароли, хеши и фишинг — думай как хакер, чтобы защищать.",
+    status: "ready",
+    standalone: true,
+    requires: "python",
+    skills: [
+      "объяснять, чем белые хакеры отличаются от чёрных",
+      "шифровать и расшифровывать шифром Цезаря",
+      "взламывать учебные шифры перебором и частотным анализом",
+      "оценивать надёжность паролей и понимать хеши",
+      "замечать фишинговые ссылки",
     ],
   },
   {
