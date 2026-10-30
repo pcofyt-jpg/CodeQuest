@@ -16,8 +16,12 @@ SLUGS = list(REF)
 CONTINUES = {
     **{s: "Мой кот Барсик" for s in ["opisanie", "cveta", "kartochka", "knopka", "dizajn", "schetchik", "moj-proekt"]},
     **{s: "Мой футбол" for s in ["spiski", "menyu", "kartinki", "otstupy", "ramki", "ryad", "centr", "telefon"]},
+    **{s: "<h1>Кликер</h1>" for s in ["kliker-uluchsheniya", "kliker-tajmer"]},
+    **{s: "<h1>Угадай число</h1>" for s in ["ugadaj-podskazki", "ugadaj-popytki"]},
+    "viktorina-otvety": "<h1>Викторина</h1>",
 }
-FRESH = {"karkas": "Барсик", "sayt-s-nulya": "Мой футбол"}  # начинаются с чистого листа: чужого сайта быть не должно
+FRESH = {"karkas": "Барсик", "sayt-s-nulya": "Мой футбол", "ugadaj-vvod": "Кликер", "viktorina": "Угадай число",
+         "knb": "Викторина", "begun": "Камень", "svoya-igra": "Бегун"}  # начинаются с чистого листа: чужого сайта быть не должно
 TABS = {"html": "HTML", "css": "CSS", "js": "JavaScript"}
 
 def editor_text(pg, tab):

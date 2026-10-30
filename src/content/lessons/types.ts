@@ -34,7 +34,27 @@ export type Check = CheckBase &
     | { kind: "pyOutput"; stdin: string[]; expect: string[] }
     /** Python: программа выполняется без ошибок */
     | { kind: "pyNoError"; stdin?: string[] }
+    /** сценарий: студия играет в игру ребёнка по шагам и проверяет, что получилось */
+    | { kind: "scenario"; steps: ScenarioStep[] }
   );
+
+/** Шаг сценария проверки игры. */
+export type ScenarioStep =
+  | { click: string; times?: number }
+  | { type: { selector: string; value: string } }
+  | { key: string; times?: number }
+  | { wait: number }
+  | {
+      expect: {
+        selector: string;
+        equals?: string;
+        contains?: string;
+        matches?: string;
+        style?: { property: string; equals: string };
+        /** ожидаемый текст зависит от текста другого элемента: map[текст from] */
+        from?: { selector: string; map: Record<string, string> };
+      };
+    };
 
 export type CodeFile = "html" | "css" | "js" | "py";
 

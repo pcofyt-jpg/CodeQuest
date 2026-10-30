@@ -16,7 +16,8 @@ const CODE_SOURCES = [
   String.raw`[.#]?[a-zA-Z][\w-]*(?::[a-z]+)?\s*\{[^}]*\}`, // правила CSS
   String.raw`[a-z][a-z-]*:\s*[^;"\n]+;`, // свойство CSS целиком: padding: 20px;
   String.raw`(?<![\w.])\d+px\b`, // число с единицей: 20px
-  String.raw`[a-zA-Z_$.#:][\w$.\-#:]*(?:\([^)]*\))?(?:\s*=\s*"[^"]*";?)?`, // слова кода
+  // слова кода, в том числе вызовы с одной вложенной парой скобок: Math.floor(Math.random() * 10)
+  String.raw`[a-zA-Z_$.#:][\w$.\-#:]*(?:\((?:[^()]|\([^()]*\))*\))?(?:\s*=\s*"[^"]*";?)?`,
 ];
 
 const cyrillicAliases = glossary
@@ -46,7 +47,7 @@ export function RichText({ text }: { text: string }) {
     const isCode = match[1] !== undefined;
     if (isCode && (PLAIN_WORDS.has(value) || value === ":" || value === ".")) continue;
 
-    const termId = findTermId(value);
+    const termId = findTermId(value, glossaryApi?.prefer);
     const clickable = termId !== null && glossaryApi !== null;
     if (!isCode && !clickable) continue;
 

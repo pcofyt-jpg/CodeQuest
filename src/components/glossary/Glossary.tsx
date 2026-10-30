@@ -17,7 +17,7 @@ export function visibleTerms(completed: string[]): GlossaryTerm[] {
 
 // ---------- контекст: открыть понятие из любого места студии ----------
 
-type GlossaryApi = { openTerm: (id: string) => void };
+type GlossaryApi = { openTerm: (id: string) => void; prefer?: "py" | "web" };
 const GlossaryContext = createContext<GlossaryApi | null>(null);
 export const GlossaryProvider = GlossaryContext.Provider;
 export function useGlossary() {

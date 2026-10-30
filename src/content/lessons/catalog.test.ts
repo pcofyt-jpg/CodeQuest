@@ -24,7 +24,8 @@ describe("каталог уроков", () => {
     lessons.forEach((l) => expect(l.slug).toMatch(/^[a-z0-9-]+$/));
     // уроки одного курса идут подряд
     const order = lessons.map((l) => l.course);
-    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "nastoyashchij-sajt", "python"]);
+    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "nastoyashchij-sajt", "python", "igry"]);
+    expect(courseLessons("igry")).toHaveLength(12);
     expect(courseLessons("start")).toHaveLength(4);
   });
 
@@ -178,6 +179,11 @@ describe("шпаргалка", () => {
     expect(findTermId("@media (max-width: 600px) { … }")).toBe("media");
     expect(findTermId("padding: 20px;")).toBe("padding");
     expect(findTermId("что-то-неизвестное")).toBeNull();
+    // одно слово в двух языках: карточка по языку урока
+    expect(findTermId("if")).toBe("js-if");
+    expect(findTermId("if", "py")).toBe("py-if");
+    expect(findTermId("else", "py")).toBe("py-if");
+    expect(findTermId("setInterval")).toBe("js-timer");
   });
 });
 

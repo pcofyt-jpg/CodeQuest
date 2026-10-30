@@ -105,8 +105,9 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
         setGlossaryTerm(id);
         setGlossaryOpen(true);
       },
+      prefer: lesson.lang === "python" ? ("py" as const) : ("web" as const),
     }),
-    [],
+    [lesson.lang],
   );
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
   const isPython = lesson.lang === "python";

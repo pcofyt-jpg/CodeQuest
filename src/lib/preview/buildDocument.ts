@@ -208,6 +208,45 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
         return true;
       case "noOverflow":
         return document.documentElement.scrollWidth <= window.innerWidth + 1;
+      case "scenario":
+        for (var k = 0; k < c.steps.length; k++) {
+          var st = c.steps[k];
+          if (st.click) {
+            var target = document.querySelector(st.click);
+            if (!target) return false;
+            for (var n = 0; n < (st.times || 1); n++) { target.click(); await yieldTask(); }
+          } else if (st.type) {
+            var field = document.querySelector(st.type.selector);
+            if (!field) return false;
+            field.value = st.type.value;
+            field.dispatchEvent(new Event("input", { bubbles: true }));
+            field.dispatchEvent(new Event("change", { bubbles: true }));
+            await yieldTask();
+          } else if (st.key) {
+            for (var q = 0; q < (st.times || 1); q++) {
+              var where = document.activeElement || document.body;
+              where.dispatchEvent(new KeyboardEvent("keydown", { key: st.key, code: st.key, bubbles: true }));
+              where.dispatchEvent(new KeyboardEvent("keyup", { key: st.key, code: st.key, bubbles: true }));
+              await yieldTask();
+            }
+          } else if (typeof st.wait === "number") {
+            await wait(st.wait);
+          } else if (st.expect) {
+            var ex = st.expect;
+            var node = document.querySelector(ex.selector);
+            if (!node) return false;
+            var txt = (node.textContent || "").trim();
+            if (ex.equals !== undefined && txt !== ex.equals) return false;
+            if (ex.contains !== undefined && txt.toLowerCase().indexOf(ex.contains.toLowerCase()) === -1) return false;
+            if (ex.matches !== undefined && !new RegExp(ex.matches).test(txt)) return false;
+            if (ex.style && getComputedStyle(node).getPropertyValue(ex.style.property).trim() !== ex.style.equals) return false;
+            if (ex.from) {
+              var key = textOf(ex.from.selector);
+              if (key === null || !(key in ex.from.map) || txt !== ex.from.map[key]) return false;
+            }
+          }
+        }
+        return true;
       case "clickDistinct":
         el = document.querySelector(c.click);
         if (!el) return false;

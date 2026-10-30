@@ -3,6 +3,7 @@ import referencesJson from "./references.json";
 import { course0 } from "./course0";
 import { course2 } from "./course2";
 import { coursePython } from "./coursePython";
+import { course3 } from "./course3";
 
 /**
  * Учебный маршрут MVP.
@@ -1073,7 +1074,7 @@ button.addEventListener("click", function () {
 ];
 
 /** Все уроки маршрута по порядку: «Старт», курс 1, курс 2, Python. */
-export const lessons: Lesson[] = [...course0, ...course1, ...course2, ...coursePython];
+export const lessons: Lesson[] = [...course0, ...course1, ...course2, ...coursePython, ...course3];
 
 /** Уроки одного курса. */
 export function courseLessons(course: string): Lesson[] {

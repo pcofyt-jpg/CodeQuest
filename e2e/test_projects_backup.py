@@ -76,8 +76,8 @@ with sync_playwright() as p:
 
     # --- курсы на главной
     pg.goto(BASE + "/"); body = pg.inner_text("body")
-    report("карта миссий: миссия 2 и миссия 3 «скоро»", "МИССИЯ 2" in body.upper() and "Настоящий сайт" in body
-           and "МИССИЯ 3" in body.upper() and "Интерактив и мини-игры" in body and "Скоро" in body)
+    report("карта миссий: миссии 2 и 3 на месте", "МИССИЯ 2" in body.upper() and "Настоящий сайт" in body
+           and "МИССИЯ 3" in body.upper() and "Интерактив и мини-игры" in body)
     report("ошибок страницы нет", not [e for e in errs if "addEventListner" not in e])
     print("ALL OK:", ok_all)
     b.close()

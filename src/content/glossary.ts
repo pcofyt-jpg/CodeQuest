@@ -561,6 +561,83 @@ export const glossary: GlossaryTerm[] = [
     introducedIn: "telefon",
   },
 
+  // ---------- Курс 3: JavaScript для игр ----------
+  {
+    id: "js-if",
+    term: "if (условие) { … }",
+    group: "js",
+    what: "Условие: код в фигурных скобках выполнится, только если условие верно. Сравнения: > больше, < меньше, >= больше или равно, <= меньше или равно, === равно, !== не равно.",
+    example: "if (score >= 10) {\n  message.textContent = \"Победа!\";\n}",
+    note: "Равенство — три знака ===. Один знак = кладёт значение в переменную.",
+    aliases: ["if", "===", ">=", "<=", "!=="],
+    introducedIn: "kliker",
+  },
+  {
+    id: "js-timer",
+    term: "setInterval / clearInterval",
+    group: "js",
+    what: "setInterval(функция, 1000) запускает функцию снова и снова — каждую секунду (1000 миллисекунд). clearInterval(timer) останавливает таймер. Номер таймера запоминают в переменную.",
+    example: "const timer = setInterval(function () {\n  timeLeft = timeLeft - 1;\n  if (timeLeft <= 0) {\n    clearInterval(timer);\n  }\n}, 1000);",
+    aliases: ["setInterval", "clearInterval", "setInterval(функция, 1000)", "clearInterval(timer)"],
+    introducedIn: "kliker-tajmer",
+  },
+  {
+    id: "js-input-value",
+    term: "<input> и value",
+    group: "js",
+    what: "<input> — поле ввода. То, что ввёл игрок, лежит в свойстве value — всегда как текст. Number() превращает текст в число, чтобы сравнивать и считать.",
+    example: "<input id=\"guess\" type=\"number\">\n\nconst guess = Number(guessInput.value);",
+    demo: { html: '<input type="number" placeholder="Твоё число" style="font-size:16px;padding:8px">' },
+    aliases: ["<input>", "value", "Number", "Number()", "guessInput.value"],
+    introducedIn: "ugadaj-vvod",
+  },
+  {
+    id: "js-else-if",
+    term: "else if / else",
+    group: "js",
+    what: "else if — «иначе если»: ещё одна проверка. else — «во всех остальных случаях». Выполняется первая ветка с верным условием, остальные пропускаются.",
+    example: "if (guess < secret) {\n  hint.textContent = \"Больше!\";\n} else if (guess > secret) {\n  hint.textContent = \"Меньше!\";\n} else {\n  hint.textContent = \"Угадал!\";\n}",
+    aliases: ["else", "else if"],
+    introducedIn: "ugadaj-podskazki",
+  },
+  {
+    id: "js-object",
+    term: "Объект { … }",
+    group: "js",
+    what: "Объект хранит связанные данные под именами: текст вопроса, варианты, номер правильного ответа. Часть объекта достают через точку: q.text.",
+    example: "const q = { text: \"Сколько ног у паука?\", answers: [\"6\", \"8\", \"10\"], correct: 1 };\nq.text        // «Сколько ног у паука?»\nq.answers[1]  // «8»",
+    aliases: ["объект", "объекте", "объектов", "q.text"],
+    introducedIn: "viktorina",
+  },
+  {
+    id: "js-own-function",
+    term: "function имя() { … }",
+    group: "js",
+    what: "Своя функция — команды с именем. Пишется один раз, вызывается сколько угодно: имя(). В скобках можно передать данные — параметры.",
+    example: "function answer(index) {\n  console.log(\"Нажата кнопка\", index);\n}\nanswer(0);\nanswer(2);",
+    aliases: ["showQuestion", "showQuestion()", "answer", "move", "play"],
+    introducedIn: "viktorina",
+  },
+  {
+    id: "js-logic",
+    term: "&& и ||",
+    group: "js",
+    what: "&& — «и»: верно, только если оба условия верны. || — «или»: верно, если хотя бы одно условие верно. Так собирают сложные правила из простых.",
+    example: "if ((player === \"камень\" && computer === \"ножницы\") ||\n    (player === \"бумага\" && computer === \"камень\")) {\n  // победа\n}",
+    aliases: ["&&", "||"],
+    introducedIn: "knb",
+  },
+  {
+    id: "js-keydown",
+    term: "keydown и event.key",
+    group: "js",
+    what: "keydown — событие нажатия клавиши. В event.key — какая клавиша: \"ArrowRight\", \"ArrowLeft\", \" \" (пробел). Слушают на всей странице: document.addEventListener.",
+    example: "document.addEventListener(\"keydown\", function (event) {\n  if (event.key === \"ArrowRight\") {\n    move(20);\n  }\n});",
+    note: "На телефоне клавиатуры со стрелками нет — добавь кнопки, которые вызывают ту же функцию.",
+    aliases: ["keydown", "event.key", "ArrowRight", "ArrowLeft"],
+    introducedIn: "begun",
+  },
+
   // ---------- Python ----------
   {
     id: "py-robot",
@@ -638,13 +715,21 @@ export const glossary: GlossaryTerm[] = [
   },
 ];
 
-const aliasMap = new Map<string, string>();
+const aliasMap = new Map<string, string[]>();
 for (const t of glossary) {
-  for (const a of t.aliases) aliasMap.set(a.toLowerCase(), t.id);
+  for (const a of t.aliases) {
+    const key = a.toLowerCase();
+    aliasMap.set(key, [...(aliasMap.get(key) ?? []), t.id]);
+  }
 }
+const groupOf = new Map(glossary.map((t) => [t.id, t.group]));
 
-/** Ищет понятие по фрагменту кода или слову из текста урока. */
-export function findTermId(token: string): string | null {
+/**
+ * Ищет понятие по фрагменту кода или слову из текста урока.
+ * Если слово есть в нескольких языках (if, else), берём понятие нужного языка:
+ * prefer = "py" в уроках Python, иначе — веб-понятия.
+ */
+export function findTermId(token: string, prefer: "py" | "web" = "web"): string | null {
   const raw = token.trim().toLowerCase();
   const candidates = [
     raw,
@@ -655,8 +740,10 @@ export function findTermId(token: string): string | null {
     raw.split(/[\s(]/)[0] ?? raw, // «@media (max-width: 600px) {…}» → «@media»
   ];
   for (const c of candidates) {
-    const id = aliasMap.get(c);
-    if (id) return id;
+    const ids = aliasMap.get(c);
+    if (!ids) continue;
+    const preferred = ids.find((id) => (groupOf.get(id) === "py") === (prefer === "py"));
+    return preferred ?? ids[0]!;
   }
   return null;
 }
