@@ -9,8 +9,10 @@ export type ConsoleEntry = {
   text: string;
   /** объяснение для ребёнка (для ошибок) */
   explanation?: string;
-  /** строка в файле JS, если известна */
+  /** строка в коде, если известна */
   line?: number | null;
+  /** файл этой строки; по умолчанию JavaScript */
+  file?: "html" | "css" | "js";
 };
 
 const levelStyle: Record<ConsoleEntry["level"], string> = {
@@ -23,7 +25,7 @@ const levelStyle: Record<ConsoleEntry["level"], string> = {
 
 type Props = {
   entries: ConsoleEntry[];
-  onJumpToLine: (line: number) => void;
+  onJumpToLine: (line: number, file?: "html" | "css" | "js") => void;
   /** запрос к наставнику для записи с ошибкой; без него кнопки наставника нет */
   mentorRequest?: (entry: ConsoleEntry) => MentorRequest;
 };
@@ -52,7 +54,7 @@ export function ConsolePanel({ entries, onJumpToLine, mentorRequest }: Props) {
                     {" "}
                     <button
                       type="button"
-                      onClick={() => onJumpToLine(e.line!)}
+                      onClick={() => onJumpToLine(e.line!, e.file)}
                       className="font-sans text-sm font-semibold text-route underline underline-offset-2"
                     >
                       строка {e.line}

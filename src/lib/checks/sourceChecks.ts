@@ -1,5 +1,6 @@
 import type { Check, CheckResult, ProjectFiles } from "@/content/lessons/types";
 import { isDomCheck } from "@/lib/preview/buildDocument";
+import { analyzeStructure } from "@/lib/preview/structureHints";
 
 /** Проверяет исходный код регулярным выражением. Без выполнения кода. */
 export function runSourceCheck(check: Extract<Check, { kind: "source" }>, files: ProjectFiles): boolean {
@@ -37,6 +38,8 @@ export function combineResults(
       ok = domResults[domIndex++] === true;
     } else if (check.kind === "source") {
       ok = runSourceCheck(check, files);
+    } else if (check.kind === "structureOk") {
+      ok = analyzeStructure(files).length === 0;
     } else {
       ok = errorCount === 0;
     }

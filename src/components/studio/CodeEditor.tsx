@@ -3,9 +3,9 @@
 import { useEffect, useRef } from "react";
 import { basicSetup } from "codemirror";
 import { EditorState, type Extension } from "@codemirror/state";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { HighlightStyle, syntaxHighlighting, syntaxTree } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
-import { EditorView, keymap } from "@codemirror/view";
+import { Decoration, EditorView, ViewPlugin, keymap, type DecorationSet, type ViewUpdate } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
@@ -14,13 +14,56 @@ import { python } from "@codemirror/lang-python";
 import type { CodeFile, ProjectFiles } from "@/content/lessons/types";
 
 const languages: Record<CodeFile, () => Extension> = {
-  html: () => html({ autoCloseTags: true }),
+  html: () => [html({ autoCloseTags: true }), tagPairs],
   css: () => css(),
   js: () => javascript(),
   py: () => python(),
 };
 
 const labels: Record<CodeFile, string> = { html: "HTML", css: "CSS", js: "JavaScript", py: "Python" };
+
+/**
+ * Подсветка пары тега: курсор на <div> — светится и его </div>.
+ * Незакрытый тег светится коралловым — сразу видно, где ошибка.
+ * (Наблюдение пилота: ребёнок путал открывающие и закрывающие теги.)
+ */
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+const pairMark = Decoration.mark({ class: "cm-tag-pair" });
+const unpairedMark = Decoration.mark({ class: "cm-tag-unpaired" });
+
+function findTagPair(view: EditorView): DecorationSet {
+  const pos = view.state.selection.main.head;
+  for (let n = syntaxTree(view.state).resolveInner(pos, -1); n; n = n.parent!) {
+    if (n.name === "OpenTag" || n.name === "CloseTag") {
+      const el = n.parent;
+      if (!el || el.name !== "Element") return Decoration.none;
+      const open = el.getChild("OpenTag");
+      const close = el.getChild("CloseTag");
+      const nameNode = open?.getChild("TagName");
+      const name = nameNode ? view.state.sliceDoc(nameNode.from, nameNode.to).toLowerCase() : "";
+      if (open && close) return Decoration.set([pairMark.range(open.from, open.to), pairMark.range(close.from, close.to)]);
+      if (open && !VOID_TAGS.has(name)) return Decoration.set([unpairedMark.range(open.from, open.to)]);
+      return Decoration.none;
+    }
+    if (n.name === "Element" || n.name === "Document" || !n.parent) break;
+  }
+  return Decoration.none;
+}
+
+const tagPairs = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    constructor(view: EditorView) {
+      this.decorations = findTagPair(view);
+    }
+    update(u: ViewUpdate) {
+      if (u.docChanged || u.selectionSet || syntaxTree(u.startState) !== syntaxTree(u.state)) {
+        this.decorations = findTagPair(u.view);
+      }
+    }
+  },
+  { decorations: (v) => v.decorations },
+);
 
 /** Тёмный редактор в цветах темы «Ночная миссия». */
 const theme = EditorView.theme(
@@ -34,6 +77,8 @@ const theme = EditorView.theme(
     ".cm-activeLineGutter": { backgroundColor: "rgba(124, 196, 255, 0.1)", color: "var(--color-ink)" },
     "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": { backgroundColor: "rgba(62, 242, 198, 0.22)" },
     ".cm-matchingBracket": { backgroundColor: "rgba(255, 184, 77, 0.25)", outline: "none" },
+    ".cm-tag-pair": { backgroundColor: "rgba(255, 184, 77, 0.22)", outline: "1px solid rgba(255, 184, 77, 0.6)", borderRadius: "3px" },
+    ".cm-tag-unpaired": { backgroundColor: "rgba(255, 122, 138, 0.25)", outline: "1px solid rgba(255, 122, 138, 0.75)", borderRadius: "3px" },
     ".cm-tooltip": { backgroundColor: "var(--color-surface)", border: "1px solid var(--color-line-strong)", color: "var(--color-ink)" },
     ".cm-tooltip-autocomplete ul li[aria-selected]": { backgroundColor: "var(--color-raised)", color: "var(--color-ink)" },
     ".cm-panels": { backgroundColor: "var(--color-surface)", color: "var(--color-ink)" },

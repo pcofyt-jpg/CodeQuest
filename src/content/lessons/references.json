@@ -296,5 +296,45 @@
     "css": "",
     "js": "",
     "py": "alphabet = \"абвгдеёжзийклмнопрстуфхцчшщъыьэюя\"\nsecret = \"ытжй спзлчклщлсщпи\"\nfor shift in range(1, 33):\n    text = \"\"\n    for letter in secret:\n        if letter in alphabet:\n            text = text + alphabet[(alphabet.index(letter) - shift) % 33]\n        else:\n            text = text + letter\n    if \"флаг\" in text:\n        print(\"Нашёл! Сдвиг:\", shift)\n        print(text)\n"
+  },
+  "para-tegov": {
+    "html": "<h1>Мой питомец</h1>\n<p>Его зовут Рыжик.</p>\n<p>Он любит <b>спать на солнце</b></p>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": ""
+  },
+  "odin-main": {
+    "html": "<header>\n  <h1>Моя страница</h1>\n</header>\n\n<main>\n  <section id=\"o-sebe\">\n    <h2>О себе</h2>\n    <p>Мне 10 лет, я люблю рисовать.</p>\n  </section>\n\n  <section id=\"hobbi\">\n    <h2>Хобби</h2>\n    <p>Рисую котов и драконов.</p>\n  </section>\n</main>\n\n<footer>\n  <p>Сделано в CodeQuest</p>\n</footer>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\nfooter {\n  color: gray;\n}\n",
+    "js": ""
+  },
+  "roditel-deti": {
+    "html": "<h1>Мои любимые игры</h1>\n<div class=\"cards\">\n  <div class=\"card\">Шахматы</div>\n  <div class=\"card\">Майнкрафт</div>\n  <div class=\"card\">Футбол</div>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.cards {\n  display: flex;\n  gap: 12px;\n}\n\n.card {\n  background-color: #e7f5ff;\n  padding: 16px;\n  border-radius: 12px;\n}\n",
+    "js": ""
+  },
+  "id-ili-class": {
+    "html": "<p id=\"note\">Важно: завтра нет уроков!</p>\n<div class=\"box\">Коробка с карандашами</div>\n<div class=\"box\">Коробка с красками</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n#note {\n  color: #d6336c;\n  font-weight: bold;\n}\n\n.box {\n  background-color: #fff3bf;\n  padding: 8px;\n  margin-bottom: 8px;\n}\n",
+    "js": ""
+  },
+  "menyu-stolbikom": {
+    "html": "<header>\n  <h1>Мой сайт</h1>\n  <nav>\n    <a href=\"#o-sebe\">О себе</a>\n    <a href=\"#hobbi\">Хобби</a>\n    <a href=\"#foto\">Фото</a>\n  </nav>\n</header>\n\n<main>\n  <section id=\"o-sebe\"><h2>О себе</h2></section>\n  <section id=\"hobbi\"><h2>Хобби</h2></section>\n  <section id=\"foto\"><h2>Фото</h2></section>\n</main>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\nnav a {\n  margin-right: 12px;\n  display: block;\n  margin-bottom: 8px;\n}\n",
+    "js": ""
+  },
+  "chitaem-zadanie": {
+    "html": "<section>\n  <h2>Мои игрушки</h2>\n  <div class=\"toys\">\n    <div class=\"toy\"><h3>Конструктор</h3></div>\n    <div class=\"toy\"><h3>Робот</h3></div>\n    <div class=\"toy\"><h3>Мяч</h3></div>\n  </div>\n</section>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.toys {\n  display: flex;\n  gap: 12px;\n}\n\n.toy {\n  background-color: #e3fafc;\n  padding: 12px;\n  border-radius: 10px;\n}\n",
+    "js": ""
+  },
+  "najdi-vse-oshibki": {
+    "html": "<header>\n  <h1 id=\"title\">Клуб юных художников</h1>\n</header>\n\n<main>\n  <section id=\"o-klube\">\n    <h2>Наш клуб</h2>\n    <p>Мы рисуем по субботам.</p>\n  </section>\n\n  <section id=\"raboty\">\n    <h2>Работы</h2>\n    <div class=\"cards\">\n      <div class=\"card\">Закат</div>\n      <div class=\"card\">Кот</div>\n      <div class=\"card\">Море</div>\n    </div>\n  </section>\n</main>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n#title {\n  color: #8f7cf5;\n}\n\n.cards {\n  display: flex;\n  gap: 12px;\n}\n\n.card {\n  background-color: #fff3bf;\n  padding: 12px;\n  border-radius: 10px;\n}\n",
+    "js": ""
+  },
+  "po-sheme": {
+    "html": "<header>\n  <h1>Моя коллекция камней</h1>\n  <nav>\n    <a href=\"#rasskaz\">О коллекции</a>\n    <a href=\"#kollekciya\">Экспонаты</a>\n  </nav>\n</header>\n\n<main>\n  <section id=\"rasskaz\">\n    <h2>О коллекции</h2>\n    <p>Я собираю камни с моря и из путешествий.</p>\n  </section>\n\n  <section id=\"kollekciya\">\n    <h2>Экспонаты</h2>\n    <div class=\"cards\">\n      <div class=\"card\">Морская галька</div>\n      <div class=\"card\">Кварц</div>\n      <div class=\"card\">Яшма</div>\n    </div>\n  </section>\n</main>\n\n<footer>\n  <p>Коллекция собрана мной</p>\n</footer>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.cards {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.card {\n  background-color: #e7f5ff;\n  padding: 12px;\n  border-radius: 10px;\n}\n",
+    "js": ""
   }
 }

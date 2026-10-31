@@ -18,8 +18,14 @@ export type Check = CheckBase &
     | { kind: "clickDistinct"; click: string; watch: string; clicks: number; minDistinct: number }
     | { kind: "source"; file: CodeFile; pattern: string; flags?: string; minMatches?: number }
     | { kind: "noErrors" }
-    /** элементов не меньше min */
-    | { kind: "count"; selector: string; min: number }
+    /** элементов не меньше min (и не больше max, если задан) */
+    | { kind: "count"; selector: string; min: number; max?: number }
+    /** структура HTML/CSS без ошибок: теги закрыты, один <main>, имена классов и id совпадают */
+    | { kind: "structureOk" }
+    /** элементы идут на странице в этом порядке */
+    | { kind: "order"; selectors: string[] }
+    /** все элементы selector стоят друг под другом (vertical) или в ряд (horizontal) */
+    | { kind: "stacked"; selector: string; direction: "vertical" | "horizontal" }
     /** вычисленный CSS-стиль равен одному из значений */
     | { kind: "styleIs"; selector: string; property: string; values: string[] }
     /** у элемента есть атрибут: не короче minLength и/или подходит под pattern */

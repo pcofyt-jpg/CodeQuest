@@ -163,9 +163,9 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
     setMobileView("lesson");
   };
 
-  const jumpToJsLine = (line: number) => {
-    setActiveFile("js");
-    setJumpTo({ file: "js", line, nonce: Date.now() });
+  const jumpToJsLine = (line: number, file: "html" | "css" | "js" = "js") => {
+    setActiveFile(file);
+    setJumpTo({ file, line, nonce: Date.now() });
     setMobileView("code");
   };
 

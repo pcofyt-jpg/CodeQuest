@@ -373,6 +373,55 @@ export const glossary: GlossaryTerm[] = [
     introducedIn: "svoya-versiya",
   },
 
+  // ---------- Модуль «Понимаю структуру кода» ----------
+  {
+    id: "teg-para",
+    term: "Пара тегов",
+    group: "html",
+    what: "Тег: < имя > — открывающий, </ имя > — закрывающий. Без > или без закрывающего тега страница ломается. Поставь курсор на тег — студия подсветит его пару; коралловая подсветка — пары нет.",
+    example: "<p>Текст</p>\n<h1>Заголовок</h1>",
+    note: "Частые ошибки: <h1 Текст</h1> (нет >) и <p>Текст<p> (нет косой черты).",
+    aliases: ["пара тегов", "пару тегов"],
+    introducedIn: "para-tegov",
+  },
+  {
+    id: "karkas-poryadok",
+    term: "Каркас и порядок",
+    group: "html",
+    what: "Порядок в HTML — это порядок на странице. <main> на странице один, разделы <section> кладут внутрь него. Каркас: <header> → <main> → <footer>.",
+    example: "<header>…</header>\n<main>\n  <section>…</section>\n  <section>…</section>\n</main>\n<footer>…</footer>",
+    aliases: ["каркас", "порядок"],
+    introducedIn: "odin-main",
+  },
+  {
+    id: "roditel-deti",
+    term: "Родитель и дети",
+    group: "css",
+    what: "Контейнер — родитель, элементы внутри — дети. Родитель расставляет детей (display: flex), дети отвечают за свой вид. Одинаковым детям — один класс. .cards > .card — дети прямо внутри родителя.",
+    example: "<div class=\"cards\">\n  <div class=\"card\">А</div>\n  <div class=\"card\">Б</div>\n</div>",
+    aliases: ["родитель", "родителя", "контейнер", ".cards > .card"],
+    introducedIn: "roditel-deti",
+  },
+  {
+    id: "id-vs-class",
+    term: "id или class",
+    group: "css",
+    what: "id — уникальное имя (один элемент), class — общее имя для группы. В CSS и JavaScript: #id и .class. Перепутанный знак — правило молча не работает.",
+    example: "<p id=\"note\">…</p>     →  #note { … }\n<div class=\"box\">…</div> →  .box { … }",
+    aliases: ["id или class", "#note", ".box"],
+    introducedIn: "id-ili-class",
+  },
+  {
+    id: "br-vs-block",
+    term: "<br> или display: block",
+    group: "css",
+    what: "<br> — перенос строки в HTML. display: block — способ CSS поставить элемент на свою строку. Внешний вид — работа CSS: меню столбиком делают через nav a { display: block; }.",
+    example: "nav a {\n  display: block;\n}",
+    demo: { html: '<nav><a href="#">О себе</a><a href="#">Хобби</a><a href="#">Фото</a></nav>', css: "body{font-family:sans-serif}nav a{display:block;margin-bottom:6px}" },
+    aliases: ["<br>", "display: block", "block"],
+    introducedIn: "menyu-stolbikom",
+  },
+
   // ---------- Курс 2: HTML ----------
   {
     id: "header-main-footer",

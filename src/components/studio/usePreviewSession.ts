@@ -5,6 +5,7 @@ import type { ProjectFiles } from "@/content/lessons/types";
 import { buildPreviewDocument, errorLine, type PreviewMessage } from "@/lib/preview/buildDocument";
 import { explainError } from "@/lib/preview/explainError";
 import { analyzeBrackets, describeBrackets } from "@/lib/preview/brackets";
+import { analyzeStructure } from "@/lib/preview/structureHints";
 import type { ConsoleEntry } from "./ConsolePanel";
 
 const PREVIEW_DELAY_MS = 450;
@@ -55,8 +56,22 @@ export function usePreviewSession(files: ProjectFiles) {
       text: "Страница попробовала перейти по другому адресу. В предпросмотре работает только твоя страница, поэтому она открыта заново.",
     });
 
+  // Подсказки по структуре HTML/CSS: браузер о таких ошибках молчит, а дети на них спотыкаются.
+  const structure: ConsoleEntry[] = useMemo(
+    () =>
+      analyzeStructure(preview.files).map((h, k) => ({
+        id: -100 - k,
+        level: "warn" as const,
+        text: `Подсказка по ${h.file === "html" ? "HTML" : "CSS"}`,
+        explanation: h.message,
+        line: h.line,
+        file: h.file,
+      })),
+    [preview.files],
+  );
+
   const entries: ConsoleEntry[] = useMemo(() => {
-    const live = log.token === preview.token ? log.entries : [];
+    const live = [...structure, ...(log.token === preview.token ? log.entries : [])];
     if (!built.syntaxError) return live;
     const e = built.syntaxError;
     // Скобки проверяем точно, программой: это частая причина и тут нельзя ошибиться.
@@ -73,7 +88,7 @@ export function usePreviewSession(files: ProjectFiles) {
       },
       ...live,
     ];
-  }, [log, preview.token, preview.files.js, built.syntaxError]);
+  }, [log, preview.token, preview.files.js, built.syntaxError, structure]);
 
   /** Перезапуск: с текущим кодом или сразу с новым (сброс, контрольная точка). */
   const restart = useCallback((next: ProjectFiles) => setPreview({ files: next, token: crypto.randomUUID() }), []);

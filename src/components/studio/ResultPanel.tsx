@@ -9,7 +9,7 @@ type Props = {
   session: PreviewSession;
   title: string;
   onRestart: () => void;
-  onJumpToLine: (line: number) => void;
+  onJumpToLine: (line: number, file?: "html" | "css" | "js") => void;
   /** дополнительные кнопки в шапке панели (например, «Скачать сайт») */
   actions?: React.ReactNode;
   mentorRequest?: (entry: ConsoleEntry) => MentorRequest;

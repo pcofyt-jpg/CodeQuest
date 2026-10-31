@@ -137,9 +137,9 @@ function ProjectWorkspace({ project }: { project: Project }) {
                 files,
                 error: { message: entry.text, line: entry.line },
               })}
-              onJumpToLine={(line) => {
-                setActiveFile("js");
-                setJumpTo({ file: "js", line, nonce: Date.now() });
+              onJumpToLine={(line, file = "js") => {
+                setActiveFile(file);
+                setJumpTo({ file, line, nonce: Date.now() });
                 setMobileView("code");
               }}
               actions={

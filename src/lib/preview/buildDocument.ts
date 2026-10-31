@@ -28,10 +28,10 @@ export const PREVIEW_CSP = [
 export const LOOP_LIMIT_MS = 1000;
 
 /** Проверки, которые выполняются внутри предпросмотра (им нужен живой DOM). */
-export type DomCheck = Exclude<Check, { kind: "source" } | { kind: "noErrors" }>;
+export type DomCheck = Exclude<Check, { kind: "source" } | { kind: "noErrors" } | { kind: "structureOk" }>;
 
 export function isDomCheck(check: Check): check is DomCheck {
-  return check.kind !== "source" && check.kind !== "noErrors";
+  return check.kind !== "source" && check.kind !== "noErrors" && check.kind !== "structureOk";
 }
 
 export type PreviewMessage =
@@ -184,7 +184,25 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
         }
         return true;
       case "count":
-        return document.querySelectorAll(c.selector).length >= c.min;
+        var found = document.querySelectorAll(c.selector).length;
+        return found >= c.min && (c.max === undefined || found <= c.max);
+      case "order":
+        var prev = null;
+        for (var o = 0; o < c.selectors.length; o++) {
+          var cur = document.querySelector(c.selectors[o]);
+          if (!cur) return false;
+          if (prev && !(prev.compareDocumentPosition(cur) & Node.DOCUMENT_POSITION_FOLLOWING)) return false;
+          prev = cur;
+        }
+        return true;
+      case "stacked":
+        var items = document.querySelectorAll(c.selector);
+        if (items.length < 2) return false;
+        for (var s = 1; s < items.length; s++) {
+          var r1 = items[s - 1].getBoundingClientRect(), r2 = items[s].getBoundingClientRect();
+          if (c.direction === "vertical" ? r2.top < r1.bottom - 2 : (r2.left < r1.right - 2 || Math.abs(r2.top - r1.top) > r1.height)) return false;
+        }
+        return true;
       case "styleIs":
         el = document.querySelector(c.selector);
         if (!el) return false;

@@ -179,6 +179,25 @@ export function LessonPanel({
           )}
         </section>
 
+        {outcome.status !== "done" && lesson.checks.length > 0 && (
+          <section aria-labelledby="will-check-title" className="rounded-2xl border border-dashed border-line-strong px-4 py-3">
+            <h2 id="will-check-title" className="text-[15px] font-bold text-ink">
+              Студия проверит:
+            </h2>
+            <ul className="mt-2 space-y-1.5 text-[15px] leading-snug">
+              {lesson.checks.map((c, i) => (
+                <li key={i} className="flex gap-2">
+                  <span aria-hidden="true" className="text-muted">
+                    ○
+                  </span>
+                  <span>{c.message}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-sm text-muted">Студия смотрит на устройство кода, а не только на то, как выглядит страница.</p>
+          </section>
+        )}
+
         {outcome.status === "failed" && (
           <p role="status" className="rounded-xl bg-coral-soft px-4 py-3 text-[15px] text-coral">
             {outcome.reason}
