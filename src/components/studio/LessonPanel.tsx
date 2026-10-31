@@ -11,6 +11,8 @@ import type { CheckResult } from "@/content/lessons/types";
 import type { MentorRequest } from "@/lib/mentor/client";
 import { MentorBox } from "@/components/mentor/MentorBox";
 import { QuizBlock } from "./QuizBlock";
+import { buildStandaloneHtml } from "@/lib/export/site";
+import { PROJECT_COURSES } from "@/content/courses";
 import { PracticeBlock } from "./PracticeBlock";
 import { RichText } from "./RichText";
 
@@ -65,7 +67,7 @@ export function LessonPanel({
           </p>
           <h1 className="mt-1 text-2xl leading-tight font-bold text-ink">{lesson.title}</h1>
           <p className="mt-2 text-[17px] leading-snug text-ink">{lesson.goal}</p>
-          {lesson.track === "practice" && lesson.course !== "start" && lesson.lang !== "python" && (
+          {lesson.track === "practice" && (PROJECT_COURSES.includes(lesson.course) || lesson.course === "struktura") && (
             <p className="mt-3 inline-flex rounded-full bg-paper px-3 py-1 text-sm font-semibold text-muted">
               Тренировка на чужом коде — твой сайт она не меняет
             </p>
@@ -129,6 +131,23 @@ export function LessonPanel({
 
         {lesson.practice && lesson.practice.length > 0 && (
           <PracticeBlock key={lesson.slug} exercises={lesson.practice} />
+        )}
+
+        {lesson.sample && (
+          <section aria-labelledby="sample-title">
+            <h2 id="sample-title" className="text-lg font-bold text-ink">
+              Образец
+            </h2>
+            <p className="mt-1 text-sm text-muted">Так должна выглядеть страница. Повтори её по описанию.</p>
+            <div className="mt-2 h-[250px] overflow-hidden rounded-xl border border-line bg-white">
+              <iframe
+                title="Образец страницы"
+                sandbox=""
+                srcDoc={buildStandaloneHtml("Образец", lesson.reference)}
+                className="h-[625px] w-[250%] origin-top-left scale-[0.4] border-0"
+              />
+            </div>
+          </section>
         )}
 
         <section aria-labelledby="task-title">
@@ -274,7 +293,9 @@ export function LessonPanel({
         )}
 
         {(justPassed || completed) && (
-          <QuizBlock key={lesson.slug} questions={lesson.quiz} previous={quizScore} onFinish={onQuizFinish} />
+          lesson.quiz.length > 0 && (
+            <QuizBlock key={lesson.slug} questions={lesson.quiz} previous={quizScore} onFinish={onQuizFinish} />
+          )
         )}
 
         {onCheckpoint && (

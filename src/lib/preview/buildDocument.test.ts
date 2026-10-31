@@ -51,3 +51,10 @@ describe("errorLine", () => {
     expect(errorLine(built, "Uncaught Error: __CQ_INFINITE_LOOP__:0", 5)).toBe(2);
   });
 });
+
+describe("проверка контраста в странице", () => {
+  it("регулярное выражение цвета доходит до страницы с обратной косой чертой", () => {
+    const built = buildPreviewDocument({ html: "<p>x</p>", css: "", js: "" }, { token: "t", checks: [{ kind: "contrast", selector: "p", min: 4.5, message: "", fix: "" }] });
+    expect(built.html).toContain("/rgba?\\(([^)]+)\\)/");
+  });
+});

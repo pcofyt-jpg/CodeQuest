@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { courseLabel, courses, type Course } from "@/content/courses";
+import { PROJECT_COURSES, courseLabel, courses, type Course } from "@/content/courses";
 import { lessons } from "@/content/lessons/catalog";
 import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
 import { progressStore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { useProjects } from "@/lib/projects/useProjects";
 import { BackupControls } from "./BackupControls";
+import { DailyWarmup } from "./DailyWarmup";
 import { Logo } from "./Logo";
 
 type Stat = { done: number; total: number; open: boolean };
@@ -135,6 +136,8 @@ export function RouteMap() {
         </aside>
       </section>
 
+      {hydrated && doneCount > 0 && <DailyWarmup completed={completed} />}
+
       {hydrated && allReadyDone && (
         <p className="rounded-2xl border border-sun bg-sun-soft p-5 text-[17px] font-semibold">
           Все открытые миссии пройдены! Возвращайся к любому уроку, улучшай свои сайты или делай новое в «Моих проектах».
@@ -201,7 +204,7 @@ export function RouteMap() {
             const done = completed.includes(l.slug);
             const open = isLessonOpen(i, completed);
             const isCurrent = i === currentIndex && !done;
-            const tag = l.track === "practice" && l.course !== "start" && l.lang !== "python";
+            const tag = l.track === "practice" && PROJECT_COURSES.includes(l.course);
             const inner = (
               <>
                 <span

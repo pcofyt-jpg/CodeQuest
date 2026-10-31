@@ -6,6 +6,8 @@ import { coursePython } from "./coursePython";
 import { course3 } from "./course3";
 import { courseKiber } from "./courseKiber";
 import { courseStruktura } from "./courseStruktura";
+import { courseObrazec, courseZadachnik1, courseZadachnik2 } from "./courseTasks";
+import { course4 } from "./course4";
 
 /**
  * Учебный маршрут MVP.
@@ -1076,7 +1078,19 @@ button.addEventListener("click", function () {
 ];
 
 /** Все уроки маршрута по порядку: «Старт», курс 1, курс 2, Python. */
-export const lessons: Lesson[] = [...course0, ...course1, ...courseStruktura, ...course2, ...coursePython, ...courseKiber, ...course3];
+export const lessons: Lesson[] = [
+  ...course0,
+  ...course1,
+  ...courseStruktura,
+  ...courseZadachnik1,
+  ...course2,
+  ...courseZadachnik2,
+  ...courseObrazec,
+  ...coursePython,
+  ...courseKiber,
+  ...course3,
+  ...course4,
+];
 
 /** Уроки одного курса. */
 export function courseLessons(course: string): Lesson[] {

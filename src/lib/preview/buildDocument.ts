@@ -142,6 +142,29 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
   }
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function textOf(sel) { var el = document.querySelector(sel); return el ? (el.textContent || "").trim() : null; }
+  // Контраст по формуле WCAG: относительная яркость цвета текста и ближайшего непрозрачного фона.
+  function parseRgb(s) {
+    var m = /rgba?\\(([^)]+)\\)/.exec(s || "");
+    if (!m) return null;
+    var p = m[1].split(",").map(parseFloat);
+    return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+  }
+  function luminance(c) {
+    var a = [c.r, c.g, c.b].map(function (v) { v = v / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+  }
+  function contrastOf(node) {
+    var fg = parseRgb(getComputedStyle(node).color);
+    var bg = null;
+    for (var n = node; n; n = n.parentElement) {
+      var b = parseRgb(getComputedStyle(n).backgroundColor);
+      if (b && b.a > 0) { bg = b; break; }
+    }
+    if (!fg) return 0;
+    if (!bg) bg = { r: 255, g: 255, b: 255, a: 1 };
+    var l1 = luminance(fg), l2 = luminance(bg);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
   /** Ждёт, пока текст изменится: сразу, после хода браузера и, в крайнем случае, после короткого таймера. */
   async function textAfterClick(sel, before) {
     var t = textOf(sel);
@@ -186,6 +209,13 @@ function bridgeScript(config: { token: string; checks: DomCheck[] | null; marker
       case "count":
         var found = document.querySelectorAll(c.selector).length;
         return found >= c.min && (c.max === undefined || found <= c.max);
+      case "contrast":
+        el = document.querySelector(c.selector);
+        return !!el && contrastOf(el) >= c.min;
+      case "styleMatches":
+        el = document.querySelector(c.selector);
+        if (!el) return false;
+        return new RegExp(c.pattern).test(getComputedStyle(el).getPropertyValue(c.property).trim());
       case "order":
         var prev = null;
         for (var o = 0; o < c.selectors.length; o++) {

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { courseLessons, lessons } from "./catalog";
 import { courses } from "@/content/courses";
+
+/** Задачники и «Сверстай по образцу»: короткие задачи без теста после урока. */
+const TASK_COURSES = ["zadachnik-1", "zadachnik-2", "obrazec"];
 import { templates } from "@/content/templates";
 import { images } from "@/content/images";
 import { glossary, findTermId } from "@/content/glossary";
@@ -24,7 +27,13 @@ describe("каталог уроков", () => {
     lessons.forEach((l) => expect(l.slug).toMatch(/^[a-z0-9-]+$/));
     // уроки одного курса идут подряд
     const order = lessons.map((l) => l.course);
-    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual(["start", "pervyj-sajt", "struktura", "nastoyashchij-sajt", "python", "kiber", "igry"]);
+    expect(order.filter((c, i) => i === 0 || c !== order[i - 1])).toEqual([
+      "start", "pervyj-sajt", "struktura", "zadachnik-1", "nastoyashchij-sajt", "zadachnik-2", "obrazec",
+      "python", "kiber", "igry", "pro-verstka",
+    ]);
+    expect(courseLessons("pro-verstka")).toHaveLength(12);
+    expect(courseLessons("zadachnik-1")).toHaveLength(6);
+    expect(courseLessons("obrazec")).toHaveLength(6);
     expect(courseLessons("struktura")).toHaveLength(8);
     expect(courseLessons("kiber")).toHaveLength(10);
     expect(courseLessons("igry")).toHaveLength(12);
@@ -45,6 +54,7 @@ describe("каталог уроков", () => {
 
   it("тесты после уроков корректны", () => {
     for (const l of lessons) {
+      if (TASK_COURSES.includes(l.course)) continue; // у коротких задач теста нет — их смысл в практике
       expect(l.quiz.length, l.slug).toBeGreaterThanOrEqual(2);
       expect(l.quiz.length, l.slug).toBeLessThanOrEqual(3);
       for (const q of l.quiz) {
@@ -67,7 +77,8 @@ describe("каталог уроков", () => {
   });
 
   it("сквозной проект: первый урок каждого курса с заготовкой, тренировки — со своим кодом", () => {
-    for (const c of courses.filter((x) => x.status === "ready" && x.id !== "start" && !x.standalone)) {
+    // Курсы со сквозным сайтом начинаются с урока проекта; в курсе 4 каждый урок — своя страница.
+    for (const c of courses.filter((x) => ["pervyj-sajt", "nastoyashchij-sajt", "igry"].includes(x.id))) {
       const first = courseLessons(c.id)[0]!;
       expect(first.track, c.id).toBe("project");
       expect(first.track === "project" && first.starter, c.id).toBeTruthy();

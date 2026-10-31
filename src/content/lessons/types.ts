@@ -20,6 +20,10 @@ export type Check = CheckBase &
     | { kind: "noErrors" }
     /** элементов не меньше min (и не больше max, если задан) */
     | { kind: "count"; selector: string; min: number; max?: number }
+    /** контраст текста и фона по WCAG не ниже min (4.5 — норма для обычного текста) */
+    | { kind: "contrast"; selector: string; min: number }
+    /** вычисленный CSS-стиль подходит под регулярное выражение (например, 3 колонки сетки) */
+    | { kind: "styleMatches"; selector: string; property: string; pattern: string }
     /** структура HTML/CSS без ошибок: теги закрыты, один <main>, имена классов и id совпадают */
     | { kind: "structureOk" }
     /** элементы идут на странице в этом порядке */
@@ -128,6 +132,8 @@ type LessonBase = {
   robot?: import("@/lib/python/prelude").RobotLevel;
   /** реплика персонажа в начале урока — сюжет, как в Ozaria */
   story?: string;
+  /** показать в уроке живой образец — готовую страницу (эталон), которую нужно повторить */
+  sample?: boolean;
 };
 
 /**

@@ -336,5 +336,155 @@
     "html": "<header>\n  <h1>Моя коллекция камней</h1>\n  <nav>\n    <a href=\"#rasskaz\">О коллекции</a>\n    <a href=\"#kollekciya\">Экспонаты</a>\n  </nav>\n</header>\n\n<main>\n  <section id=\"rasskaz\">\n    <h2>О коллекции</h2>\n    <p>Я собираю камни с моря и из путешествий.</p>\n  </section>\n\n  <section id=\"kollekciya\">\n    <h2>Экспонаты</h2>\n    <div class=\"cards\">\n      <div class=\"card\">Морская галька</div>\n      <div class=\"card\">Кварц</div>\n      <div class=\"card\">Яшма</div>\n    </div>\n  </section>\n</main>\n\n<footer>\n  <p>Коллекция собрана мной</p>\n</footer>\n",
     "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.cards {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.card {\n  background-color: #e7f5ff;\n  padding: 12px;\n  border-radius: 10px;\n}\n",
     "js": ""
+  },
+  "z1-zagolovki": {
+    "html": "<h1>Мой день</h1>\n<p>Утром я делаю зарядку и завтракаю.</p>\n<p>Вечером я читаю книгу про космос.</p>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": ""
+  },
+  "z1-cveta": {
+    "html": "<h1>Моё лето</h1>\n<p>Я ездил на море.</p>\n<p>Я научился плавать.</p>\n",
+    "css": "/* Задача: фон lightyellow, заголовок tomato, абзацы navy */\nbody {\n  background-color: lightyellow;\n}\n\nh1 {\n  color: tomato;\n}\n\np {\n  color: navy;\n}\n",
+    "js": ""
+  },
+  "z1-kartochka": {
+    "html": "<div class=\"card\">Мой кот любит спать.</div>\n<div class=\"card\">Мой кот любит играть.</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n  background-color: #e7f5ff;\n}\n\n.card {\n  background-color: white;\n  padding: 16px;\n  border-radius: 12px;\n  margin-bottom: 12px;\n}\n",
+    "js": ""
+  },
+  "z1-knopka": {
+    "html": "<button id=\"hello\">Поздороваться</button>\n<p id=\"answer\"></p>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": "const button = document.querySelector(\"#hello\");\nconst answer = document.querySelector(\"#answer\");\n\nbutton.addEventListener(\"click\", function () {\n  answer.textContent = \"Привет!\";\n});\n"
+  },
+  "z1-schetchik": {
+    "html": "<p>Осталось: <span id=\"count\">10</span></p>\n<button id=\"minus\">−1</button>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": "let count = 10;\nconst countText = document.querySelector(\"#count\");\nconst minus = document.querySelector(\"#minus\");\n\nminus.addEventListener(\"click\", function () {\n  count = count - 1;\n  countText.textContent = count;\n});\n"
+  },
+  "z1-dizajn": {
+    "html": "<button class=\"btn\">Купить мороженое</button>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.btn {\n  background-color: #ffd43b;\n  border: none;\n  border-radius: 12px;\n  padding: 12px 20px;\n  font-size: 18px;\n  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);\n}\n\n.btn:hover {\n  background-color: orange;\n}\n",
+    "js": ""
+  },
+  "z2-karkas": {
+    "html": "<header>\n  <h1>Мой сайт</h1>\n</header>\n\n<main>\n  <p>Здесь будет всё самое интересное.</p>\n</main>\n\n<footer>\n  <p>Сделано в CodeQuest</p>\n</footer>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": ""
+  },
+  "z2-menyu-spisok": {
+    "html": "<header>\n  <h1>Мой сайт</h1>\n  <nav>\n    <ul>\n      <li><a href=\"#a\">Раздел А</a></li>\n      <li><a href=\"#b\">Раздел Б</a></li>\n      <li><a href=\"#c\">Раздел В</a></li>\n    </ul>\n  </nav>\n</header>\n\n<main>\n  <section id=\"a\"><h2>Раздел А</h2></section>\n  <section id=\"b\"><h2>Раздел Б</h2></section>\n  <section id=\"c\"><h2>Раздел В</h2></section>\n</main>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n",
+    "js": ""
+  },
+  "z2-galereya": {
+    "html": "<h1>Мои любимые вещи</h1>\n<div class=\"gallery\">\n  <img src=\"kartinki/myach.svg\" alt=\"Мяч\">\n  <img src=\"kartinki/kniga.svg\" alt=\"Книга\">\n  <img src=\"kartinki/kraski.svg\" alt=\"Краски\">\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.gallery {\n  display: flex;\n  gap: 12px;\n}\n",
+    "js": ""
+  },
+  "z2-centr": {
+    "html": "<div class=\"box\">\n  <h2>Привет!</h2>\n  <p>Я стою по центру страницы.</p>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.box {\n  background-color: #e7f5ff;\n  padding: 16px;\n  max-width: 400px;\n  margin: 0 auto;\n  text-align: center;\n}\n",
+    "js": ""
+  },
+  "z2-otstupy": {
+    "html": "<div class=\"card\">Понедельник — рисование</div>\n<div class=\"card\">Среда — плавание</div>\n<div class=\"card\">Пятница — шахматы</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.card {\n  background-color: #fff3bf;\n  border-radius: 10px;\n  padding: 12px;\n  margin-bottom: 16px;\n}\n",
+    "js": ""
+  },
+  "z2-perenos": {
+    "html": "<div class=\"cards\">\n  <div class=\"card\">Мяч</div>\n  <div class=\"card\">Ракетка</div>\n  <div class=\"card\">Шайба</div>\n  <div class=\"card\">Клюшка</div>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.cards {\n  display: flex;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n\n.card {\n  flex: none;\n  width: 130px;\n  padding: 12px;\n  background-color: #d3f9d8;\n  border-radius: 10px;\n}\n",
+    "js": ""
+  },
+  "o-vizitka": {
+    "html": "<div class=\"vizitka\">\n  <h1>Кью</h1>\n  <p>Робот-курьер и помощник юных программистов.</p>\n  <ul>\n    <li>Нахожу дорогу по коду</li>\n    <li>Собираю кристаллы</li>\n    <li>Объясняю ошибки</li>\n  </ul>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n  background-color: #e7f5ff;\n}\n\n.vizitka {\n  max-width: 320px;\n  margin: 0 auto;\n  background-color: white;\n  padding: 20px;\n  border-radius: 16px;\n  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);\n}\n\n.vizitka h1 {\n  color: #2f5be8;\n  margin-top: 0;\n}\n",
+    "js": ""
+  },
+  "o-menyu-kafe": {
+    "html": "<h1>Кафе «Пончик»</h1>\n\n<section>\n  <h2>Напитки</h2>\n  <ul>\n    <li>Какао — 120 ₽</li>\n    <li>Морс — 90 ₽</li>\n    <li>Чай с мятой — 80 ₽</li>\n  </ul>\n</section>\n\n<section>\n  <h2>Десерты</h2>\n  <ul>\n    <li>Пончик — 70 ₽</li>\n    <li>Блинчики — 150 ₽</li>\n    <li>Мороженое — 110 ₽</li>\n  </ul>\n</section>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n  background-color: #fff4e6;\n}\n\nh1 {\n  text-align: center;\n  color: #d9480f;\n}\n\nsection {\n  background-color: white;\n  padding: 12px 16px;\n  border-radius: 12px;\n  margin-bottom: 12px;\n}\n",
+    "js": ""
+  },
+  "o-pitomec": {
+    "html": "<header>\n  <h1>Мой кот Пушок</h1>\n  <nav>\n    <a href=\"#foto\">Фото</a>\n    <a href=\"#fakty\">Факты</a>\n  </nav>\n</header>\n\n<main>\n  <section id=\"foto\">\n    <h2>Фото</h2>\n    <img src=\"kartinki/kot.svg\" alt=\"Рыжий кот Пушок\">\n  </section>\n\n  <section id=\"fakty\">\n    <h2>Факты</h2>\n    <ul>\n      <li>Пушку три года</li>\n      <li>Он любит рыбу</li>\n      <li>Он спит 16 часов в день</li>\n    </ul>\n  </section>\n</main>\n\n<footer>\n  <p>Страница сделана с любовью</p>\n</footer>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 0;\n  background-color: #fff9db;\n}\n\nheader {\n  background-color: #f59f00;\n  color: white;\n  padding: 12px 16px;\n}\n\nnav a {\n  color: white;\n  margin-right: 12px;\n}\n\nmain {\n  padding: 16px;\n}\n\nfooter {\n  padding: 16px;\n  color: gray;\n}\n",
+    "js": ""
+  },
+  "o-galereya": {
+    "html": "<h1>Моя галерея</h1>\n<div class=\"gallery\">\n  <img src=\"kartinki/kot.svg\" alt=\"Кот\">\n  <img src=\"kartinki/sobaka.svg\" alt=\"Собака\">\n  <img src=\"kartinki/raketa.svg\" alt=\"Ракета\">\n  <img src=\"kartinki/zvezda.svg\" alt=\"Звезда\">\n  <img src=\"kartinki/cvetok.svg\" alt=\"Цветок\">\n  <img src=\"kartinki/solnce.svg\" alt=\"Солнце\">\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n  background-color: #e7f5ff;\n}\n\n.gallery {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.gallery img {\n  width: 90px;\n  background-color: white;\n  padding: 8px;\n  border-radius: 10px;\n}\n",
+    "js": ""
+  },
+  "o-landing": {
+    "html": "<header>\n  <h1>Космо-гонки</h1>\n  <p>Гонки на ракетах среди звёзд!</p>\n  <button>Играть</button>\n</header>\n\n<section class=\"features\">\n  <div class=\"feature\">\n    <h3>10 трасс</h3>\n    <p>От Луны до Юпитера.</p>\n  </div>\n  <div class=\"feature\">\n    <h3>Свои ракеты</h3>\n    <p>Собери и раскрась.</p>\n  </div>\n  <div class=\"feature\">\n    <h3>Игра с другом</h3>\n    <p>На одном компьютере.</p>\n  </div>\n</section>\n\n<footer>\n  <p>Космо-гонки — игра для всей семьи</p>\n</footer>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 0;\n}\n\nheader {\n  text-align: center;\n  background-color: #11122b;\n  color: white;\n  padding: 32px 16px;\n}\n\nheader button {\n  font-size: 18px;\n  padding: 12px 28px;\n  border: none;\n  border-radius: 12px;\n  background-color: #3ef2c6;\n}\n\n.features {\n  display: flex;\n  gap: 12px;\n  padding: 16px;\n}\n\n.feature {\n  flex: 1;\n  background-color: #e7f5ff;\n  padding: 12px;\n  border-radius: 12px;\n}\n\nfooter {\n  text-align: center;\n  color: gray;\n  padding: 16px;\n}\n",
+    "js": ""
+  },
+  "o-portfolio": {
+    "html": "<header>\n  <h1>Портфолио юного творца</h1>\n  <nav>\n    <a href=\"#o-sebe\">Обо мне</a>\n    <a href=\"#raboty\">Работы</a>\n    <a href=\"#kontakty\">Контакты</a>\n  </nav>\n</header>\n\n<main>\n  <section id=\"o-sebe\">\n    <h2>Обо мне</h2>\n    <p>Я рисую, собираю модели и пишу код.</p>\n  </section>\n\n  <section id=\"raboty\">\n    <h2>Работы</h2>\n    <div class=\"cards\">\n      <div class=\"card\">\n        <img src=\"kartinki/kraski.svg\" alt=\"Рисунки\">\n        <h3>Рисунки</h3>\n      </div>\n      <div class=\"card\">\n        <img src=\"kartinki/raketa.svg\" alt=\"Модели ракет\">\n        <h3>Модели ракет</h3>\n      </div>\n      <div class=\"card\">\n        <img src=\"kartinki/kniga.svg\" alt=\"Рассказы\">\n        <h3>Рассказы</h3>\n      </div>\n      <div class=\"card\">\n        <img src=\"kartinki/dzhojstik.svg\" alt=\"Игры\">\n        <h3>Игры</h3>\n      </div>\n    </div>\n  </section>\n\n  <section id=\"kontakty\">\n    <h2>Контакты</h2>\n    <p>Спроси у моих родителей!</p>\n  </section>\n</main>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 0;\n}\n\nheader {\n  background-color: #2f5be8;\n  color: white;\n  padding: 12px 16px;\n}\n\nnav {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\nnav a {\n  color: white;\n}\n\nmain {\n  padding: 16px;\n}\n\n.cards {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.card {\n  width: 140px;\n  background-color: #e7f5ff;\n  padding: 10px;\n  border-radius: 12px;\n  text-align: center;\n}\n\nimg {\n  max-width: 100%;\n}\n\n@media (max-width: 600px) {\n  .card {\n    width: 120px;\n  }\n}\n",
+    "js": ""
+  },
+  "pro-grid": {
+    "html": "<h1>Мои достижения</h1>\n<div class=\"gallery\">\n  <div class=\"item\">🏅 Бег</div>\n  <div class=\"item\">🎨 Рисунок</div>\n  <div class=\"item\">♟️ Шахматы</div>\n  <div class=\"item\">🏊 Плавание</div>\n  <div class=\"item\">📚 Чтение</div>\n  <div class=\"item\">💻 Код</div>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.gallery {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 12px;\n}\n\n.item {\n  background-color: #e7f5ff;\n  padding: 20px;\n  border-radius: 12px;\n  text-align: center;\n}\n",
+    "js": ""
+  },
+  "pro-grid-oblasti": {
+    "html": "<div class=\"page\">\n  <header>Шапка: Мой блог</header>\n  <aside>Меню: О себе · Статьи</aside>\n  <main>Здесь статьи блога.</main>\n  <footer>Подвал</footer>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.page {\n  gap: 8px;\n  display: grid;\n  grid-template-columns: 160px 1fr;\n  grid-template-areas:\n    \"header header\"\n    \"menu content\"\n    \"footer footer\";\n}\n\nheader, aside, main, footer {\n  background-color: #e7f5ff;\n  padding: 16px;\n  border-radius: 10px;\n}\n\nheader {\n  grid-area: header;\n}\n\naside {\n  grid-area: menu;\n}\n\nmain {\n  grid-area: content;\n}\n\nfooter {\n  grid-area: footer;\n}\n",
+    "js": ""
+  },
+  "pro-poziciya": {
+    "html": "<div class=\"card\">\n  <span class=\"badge\">Новинка!</span>\n  <h2>Конструктор «Ракета»</h2>\n  <p>200 деталей и инструкция.</p>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.card {\n  max-width: 260px;\n  margin: 24px;\n  background-color: #e7f5ff;\n  padding: 16px;\n  border-radius: 12px;\n  position: relative;\n}\n\n.badge {\n  background-color: #fa5252;\n  color: white;\n  padding: 4px 10px;\n  border-radius: 99px;\n  font-size: 13px;\n  position: absolute;\n  top: -10px;\n  right: -10px;\n}\n",
+    "js": ""
+  },
+  "pro-sticky": {
+    "html": "<header>\n  <b>Энциклопедия динозавров</b>\n  <nav><a href=\"#t-rex\">Тираннозавр</a> · <a href=\"#triceratops\">Трицератопс</a></nav>\n</header>\n<section id=\"t-rex\"><h2>Тираннозавр</h2><p>Самый известный хищник. Длина — до 12 метров.</p><p>Жил около 66 миллионов лет назад.</p></section>\n<section id=\"triceratops\"><h2>Трицератопс</h2><p>Травоядный, с тремя рогами.</p><p>Весил как два слона.</p></section>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 0;\n}\n\nheader {\n  background-color: #2f5be8;\n  color: white;\n  padding: 12px 16px;\n  position: sticky;\n  top: 0;\n  z-index: 1;\n}\n\nheader a {\n  color: white;\n}\n\nsection {\n  padding: 16px;\n  min-height: 400px;\n}\n",
+    "js": ""
+  },
+  "pro-peremennye": {
+    "html": "<h1>Клуб любителей космоса</h1>\n<p>Встречаемся по пятницам.</p>\n<button>Записаться</button>\n",
+    "css": ":root {\n  --accent: #8f7cf5;\n}\n\nbody {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\nh1 {\n  color: var(--accent);\n}\n\np {\n  border-left: 4px solid var(--accent);\n  padding-left: 8px;\n}\n\nbutton {\n  background-color: var(--accent);\n  color: white;\n  border: none;\n  padding: 10px 18px;\n  border-radius: 10px;\n}\n",
+    "js": ""
+  },
+  "pro-plavnost": {
+    "html": "<button class=\"btn\">Начать игру</button>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.btn {\n  background-color: #3ef2c6;\n  border: none;\n  padding: 14px 24px;\n  font-size: 18px;\n  border-radius: 14px;\n  transition: background-color 0.3s, transform 0.3s;\n}\n\n.btn:hover {\n  background-color: #ffb84d;\n  transform: scale(1.1);\n}\n",
+    "js": ""
+  },
+  "pro-animaciya": {
+    "html": "<h1>Ночное небо</h1>\n<div class=\"star\">⭐</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n  background-color: #11122b;\n  color: white;\n}\n\n@keyframes float {\n  from {\n    transform: translateY(0);\n  }\n  to {\n    transform: translateY(-12px);\n  }\n}\n\n.star {\n  font-size: 64px;\n  display: inline-block;\n  animation: float 1s infinite alternate;\n}\n",
+    "js": ""
+  },
+  "pro-forma": {
+    "html": "<h1>Запись в клуб</h1>\n<div class=\"form\">\n  <label for=\"name\">Имя героя</label>\n  <input id=\"name\" type=\"text\">\n  <label for=\"email\">Почта родителя</label>\n  <input id=\"email\" type=\"email\">\n  <label for=\"age\">Возраст</label>\n  <input id=\"age\" type=\"number\">\n  <button type=\"button\">Записаться</button>\n</div>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.form {\n  display: grid;\n  gap: 8px;\n  max-width: 280px;\n}\n\ninput {\n  padding: 8px;\n  font-size: 16px;\n}\n",
+    "js": ""
+  },
+  "pro-forma-proverka": {
+    "html": "<h1>Запись в клуб</h1>\n<label for=\"name\">Имя героя</label>\n<input id=\"name\" type=\"text\">\n<p id=\"error\"></p>\n<button id=\"send\" type=\"button\">Записаться</button>\n<p id=\"result\"></p>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n#error {\n  color: #c92a2a;\n}\n",
+    "js": "const nameInput = document.querySelector(\"#name\");\nconst error = document.querySelector(\"#error\");\nconst result = document.querySelector(\"#result\");\n\ndocument.querySelector(\"#send\").addEventListener(\"click\", function () {\n  const name = nameInput.value.trim();\n  if (name === \"\") {\n    error.textContent = \"Напиши имя героя\";\n    result.textContent = \"\";\n  } else {\n    error.textContent = \"\";\n    result.textContent = \"Спасибо, \" + name + \"!\";\n  }\n});\n"
+  },
+  "pro-tablica": {
+    "html": "<h1>Расписание кружков</h1>\n<table>\n  <thead>\n    <tr>\n      <th>День</th>\n      <th>Кружок</th>\n      <th>Время</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>Вторник</td>\n      <td>Рисование</td>\n      <td>16:00</td>\n    </tr>\n    <tr>\n      <td>Четверг</td>\n      <td>Шахматы</td>\n      <td>17:00</td>\n    </tr>\n    <tr>\n      <td>Суббота</td>\n      <td>Робототехника</td>\n      <td>11:00</td>\n    </tr>\n  </tbody>\n</table>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\ntable {\n  border-collapse: collapse;\n}\n\nth, td {\n  border: 1px solid #adb5bd;\n  padding: 8px 12px;\n}\n\nth {\n  background-color: #e7f5ff;\n}\n",
+    "js": ""
+  },
+  "pro-dostupnost": {
+    "html": "<h1>Магазин игрушек</h1>\n<label for=\"search\">Поиск</label>\n<input id=\"search\" type=\"text\">\n<p class=\"hint\">Найди игрушку по названию</p>\n<img src=\"kartinki/raketa.svg\" alt=\"Игрушечная ракета\">\n<img src=\"kartinki/myach.svg\" alt=\"Футбольный мяч\">\n<button class=\"buy\" type=\"button\">Купить</button>\n",
+    "css": "body {\n  font-family: Verdana, sans-serif;\n  margin: 16px;\n}\n\n.hint {\n  color: #495057;\n}\n\n.buy {\n  background-color: #2f5be8;\n  color: white;\n  padding: 10px 18px;\n  border: none;\n  border-radius: 10px;\n  font-size: 16px;\n  display: inline-block;\n}\n",
+    "js": ""
+  },
+  "pro-final": {
+    "html": "<header>\n  <h1>Летний лагерь юных программистов</h1>\n  <p>Две недели игр, кода и новых друзей.</p>\n  <img src=\"kartinki/raketa.svg\" alt=\"Ракета — символ лагеря\">\n</header>\n\n<main>\n  <section class=\"features\">\n    <div class=\"feature\">\n      <h2>Игры на JavaScript</h2>\n      <p>Своя игра к концу смены.</p>\n    </div>\n    <div class=\"feature\">\n      <h2>Роботы на Python</h2>\n      <p>Управляй роботом кодом.</p>\n    </div>\n    <div class=\"feature\">\n      <h2>Свой сайт</h2>\n      <p>Опубликуем вместе.</p>\n    </div>\n  </section>\n\n  <section class=\"signup\">\n    <h2>Запись</h2>\n    <label for=\"name\">Имя</label>\n    <input id=\"name\" type=\"text\">\n    <label for=\"email\">Почта родителя</label>\n    <input id=\"email\" type=\"email\">\n    <button class=\"btn\" type=\"button\">Записаться</button>\n  </section>\n</main>\n",
+    "css": ":root {\n  --accent: #2f5be8;\n  --soft: #e7f5ff;\n}\n\nbody {\n  font-family: Verdana, sans-serif;\n  margin: 0;\n}\n\nheader {\n  background-color: var(--accent);\n  color: white;\n  text-align: center;\n  padding: 24px 16px;\n}\n\nimg {\n  max-width: 100%;\n}\n\nmain {\n  padding: 16px;\n}\n\n.features {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\n  gap: 12px;\n}\n\n.feature {\n  background-color: var(--soft);\n  padding: 12px;\n  border-radius: 12px;\n}\n\n.signup {\n  display: grid;\n  gap: 8px;\n  max-width: 320px;\n  margin-top: 16px;\n}\n\n.btn {\n  background-color: var(--accent);\n  color: white;\n  border: none;\n  padding: 12px;\n  border-radius: 12px;\n  transition: transform 0.3s;\n}\n\n.btn:hover {\n  transform: scale(1.05);\n}\n",
+    "js": ""
   }
 }

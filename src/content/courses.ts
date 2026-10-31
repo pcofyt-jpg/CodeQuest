@@ -21,6 +21,9 @@ export type Course = {
   label?: string;
 };
 
+/** Курсы со сквозным сайтом: в них тренировки идут на чужом коде и не меняют сайт ребёнка. */
+export const PROJECT_COURSES = ["pervyj-sajt", "nastoyashchij-sajt", "igry"];
+
 /** Подпись курса на карте миссий: «СТАРТ», «МИССИЯ 1», «PYTHON». */
 export function courseLabel(c: Course): string {
   if (c.label) return c.label;
@@ -72,6 +75,17 @@ export const courses: Course[] = [
     ],
   },
   {
+    id: "zadachnik-1",
+    planet: "#ffd43b",
+    number: 13,
+    label: "Задачник",
+    title: "Задачник: первый сайт",
+    description: "Короткие задачи с автопроверкой на каждую тему курса 1: теги, цвета, карточки, кнопки.",
+    status: "ready",
+    standalone: true,
+    requires: "pervyj-sajt",
+  },
+  {
     id: "nastoyashchij-sajt",
     planet: "#8f7cf5",
     number: 2,
@@ -87,6 +101,28 @@ export const courses: Course[] = [
       "делать сайт удобным на телефоне",
       "собирать сайт с нуля по своему плану",
     ],
+  },
+  {
+    id: "zadachnik-2",
+    planet: "#ffa94d",
+    number: 14,
+    label: "Задачник",
+    title: "Задачник: настоящий сайт",
+    description: "Короткие задачи на каждую тему курса 2: каркас, меню, галерея, отступы, телефон.",
+    status: "ready",
+    standalone: true,
+    requires: "nastoyashchij-sajt",
+  },
+  {
+    id: "obrazec",
+    planet: "#f783ac",
+    number: 15,
+    label: "По образцу",
+    title: "Сверстай по образцу",
+    description: "Шесть страниц по нарастающей: смотри на живой образец и сверстай такую же.",
+    status: "ready",
+    standalone: true,
+    requires: "nastoyashchij-sajt",
   },
   {
     id: "python",
@@ -138,4 +174,20 @@ export const courses: Course[] = [
       "придумывать и собирать свою игру с нуля",
     ],
   },
+  {
+    id: "pro-verstka",
+    planet: "#748ffc",
+    number: 4,
+    title: "Профессиональная вёрстка",
+    description: "Сетка Grid, позиционирование, переменные, плавность и анимации, формы, таблицы и доступность.",
+    status: "ready",
+    requires: "nastoyashchij-sajt",
+    skills: [
+      "раскладывать страницы сеткой CSS Grid",
+      "ставить элементы точно: position и sticky",
+      "использовать переменные CSS, плавность и анимации",
+      "верстать формы с подписями и проверкой и таблицы",
+      "делать сайт доступным для всех людей",
+    ],
+  }
 ];

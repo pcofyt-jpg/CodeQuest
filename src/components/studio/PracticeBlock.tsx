@@ -7,19 +7,37 @@ import type { Exercise } from "@/content/lessons/types";
  * «Попробуй»: короткие задания перед основным заданием урока.
  * Не блокируют урок — это разминка: понять → попробовать → применить.
  */
-export function PracticeBlock({ exercises }: { exercises: Exercise[] }) {
+export function PracticeBlock({
+  exercises,
+  title = "Попробуй",
+  captions,
+  onAllDone,
+  doneText = "Разминка пройдена! Теперь — главное задание ниже.",
+}: {
+  exercises: Exercise[];
+  title?: string;
+  /** подпись к каждому заданию, например «Из урока „Карточка“» */
+  captions?: string[];
+  onAllDone?: () => void;
+  doneText?: string;
+}) {
   const [current, setCurrent] = useState(0);
   const [done, setDone] = useState<boolean[]>(() => exercises.map(() => false));
   const allDone = done.every(Boolean);
   const ex = exercises[current]!;
 
-  const markDone = () => setDone((d) => d.map((v, i) => (i === current ? true : v)));
+  const markDone = () =>
+    setDone((d) => {
+      const next = d.map((v, i) => (i === current ? true : v));
+      if (next.every(Boolean) && !d.every(Boolean)) onAllDone?.();
+      return next;
+    });
 
   return (
     <section aria-labelledby="practice-title" className="rounded-2xl border border-line bg-paper px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="practice-title" className="text-lg font-bold text-ink">
-          Попробуй
+          {title}
         </h2>
         <ol aria-label="Задания разминки" className="flex gap-1.5">
           {exercises.map((_, i) => (
@@ -44,7 +62,8 @@ export function PracticeBlock({ exercises }: { exercises: Exercise[] }) {
         </ol>
       </div>
       <p className="mt-1 text-sm text-muted">
-        Короткая разминка: задание {current + 1} из {exercises.length}.
+        Задание {current + 1} из {exercises.length}
+        {captions?.[current] ? ` · ${captions[current]}` : ""}
       </p>
 
       <div className="mt-3">
@@ -65,7 +84,7 @@ export function PracticeBlock({ exercises }: { exercises: Exercise[] }) {
       )}
       {allDone && (
         <p role="status" className="mt-3 font-semibold text-mint">
-          Разминка пройдена! Теперь — главное задание ниже.
+          {doneText}
         </p>
       )}
     </section>

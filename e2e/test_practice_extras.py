@@ -32,7 +32,7 @@ with sync_playwright() as p:
     practice.get_by_label("Напечатай здесь:").fill("<h1>"); practice.get_by_role("button", name="Проверить ответ").click()
     report("правильный ввод засчитан", "Верно!" in practice.inner_text())
     practice.get_by_role("button", name="Дальше →").click()
-    report("переход к следующему заданию разминки", "задание 2 из 5" in practice.inner_text())
+    report("переход к следующему заданию разминки", "задание 2 из 5" in practice.inner_text().lower())
 
     # --- «собери код» и «вставь пропущенное» (урок «Теги»)
     unlock_until(pg, 2, START)

@@ -60,7 +60,10 @@ with sync_playwright() as p:
         body = pg.inner_text("body")
         report("эталон проходит", "Все проверки пройдены" in body)
         report("нет ложного сообщения о переходе", "попробовала перейти" not in body)
-        report("показан тест «Проверь себя»", "Проверь себя" in body)
+        if slug.startswith(("z1-", "z2-", "o-")):  # у коротких задач теста после урока нет — так задумано
+            report("у задачи нет теста после урока", "Тест после урока" not in body)
+        else:
+            report("показан тест «Проверь себя»", "Проверь себя" in body)
 
     # тест после урока: ошибка → объяснение, верный ответ → итог
     pg.goto(BASE + "/learn/kartochka"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(500)
