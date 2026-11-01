@@ -21,8 +21,8 @@ beforeAll(async () => {
 
 describe("уроки на Python: эталоны проходят, стартовый код — нет", () => {
   const lessons = [...courseLessons("python"), ...courseLessons("kiber")];
-  it("8 уроков «Первых шагов» и 10 уроков «Кибердетектива» — все на Python", () => {
-    expect(lessons).toHaveLength(18);
+  it("10 уроков «Первых шагов» и 10 уроков «Кибердетектива» — все на Python", () => {
+    expect(lessons).toHaveLength(20);
     for (const l of lessons) expect(l.lang, l.slug).toBe("python");
   });
 

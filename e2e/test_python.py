@@ -19,7 +19,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width": 1440, "height": 900})
     fails = []; pg.on("requestfailed", lambda r: fails.append((r.url, r.failure)) if "example.com" in r.url else None)
     pg.goto(BASE + "/"); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(500)
-    pg.get_by_role("button", name=re.compile("Python: первые шаги")).click()
+    pg.get_by_role("button", name=re.compile(r"^Python Python: первые шаги")).click()
     report("раздел Python на главной открыт сразу", "PYTHON: ПЕРВЫЕ ШАГИ" in pg.inner_text("body").upper()
            and pg.get_by_role("link", name=re.compile("Робот Кью: первые команды")).count() == 1)
 

@@ -5,7 +5,7 @@ from helpers import *
 from playwright.sync_api import sync_playwright
 
 START = ["kak-ustroen-sajt", "klaviatura", "tegi", "studiya"]
-C1 = ["zagolovok","opisanie","cveta","kartochka","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
+C1 = ["zagolovok","opisanie","cveta","kartochka","naiti-element","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
 ok_all = True
 def report(name, cond):
     global ok_all
@@ -55,10 +55,19 @@ with sync_playwright() as p:
     practice.get_by_label("Пропущенный кусочек кода").fill("</p>"); practice.get_by_role("button", name="Проверить ответ").click()
     report("«вставь пропущенное» засчитано", "Верно!" in practice.inner_text())
 
-    # --- сертификат: курс 1 пройден, курс 2 — нет
-    unlock_until(pg, 10, C1)
+    # --- сертификат: курс 1 пройден → сначала контрольная миссия, потом сертификат
+    unlock_until(pg, 11, C1)
     pg.goto(BASE + "/"); pg.wait_for_timeout(500)
-    report("на главной ссылка на сертификат курса 1", pg.get_by_role("link", name="Получить сертификат курса").count() == 1)
+    report("у пройденного курса — «Контрольная миссия»", pg.get_by_role("link", name="Контрольная миссия").count() == 1)
+    # уроки решены самостоятельно (есть результаты) и контрольная пройдена
+    pg.evaluate("""(slugs) => {
+        const p = JSON.parse(localStorage.getItem('codequest:progress:v2'));
+        p.results = Object.fromEntries(slugs.map(s => [s, { files: { html: '', css: '', js: '' }, savedAt: Date.now() }]));
+        localStorage.setItem('codequest:progress:v2', JSON.stringify(p));
+        localStorage.setItem('codequest:control:v1', JSON.stringify({ 'pervyj-sajt': { correct: 7, total: 8, date: '2026-11-01' } }));
+    }""", C1)
+    pg.reload(); pg.wait_for_timeout(500)
+    report("после контрольной — ссылка на сертификат", pg.get_by_role("link", name="Получить сертификат курса").count() == 1)
     pg.goto(BASE + "/sertifikat/?kurs=pervyj-sajt"); pg.wait_for_timeout(500)
     pg.get_by_label("Имя на сертификате (по желанию)").fill("Миша")
     cert = pg.get_by_role("article", name="Сертификат")

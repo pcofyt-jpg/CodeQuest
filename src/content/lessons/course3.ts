@@ -3,8 +3,8 @@ import referencesJson from "./references.json";
 
 /**
  * Курс 3 «Интерактив и мини-игры». Пять игр на настоящем JavaScript:
- * кликер (1–3), «Угадай число» (4–6), викторина (7–8), «Камень, ножницы, бумага» (9), «Бегун» (10),
- * тренировка «Почини игру» (11) и финал — своя игра с нуля (12).
+ * разогрев JavaScript (1), кликер (2–4), «Угадай число» (5–7), викторина (8–9), «Камень, ножницы, бумага» (10),
+ * «Бегун» (11), тренировка «Почини игру» (12) и финал — своя игра с нуля (13).
  * Каждая игра начинается с чистого листа (freshStart) и растёт урок за уроком.
  * Проверки — сценарии: студия сама нажимает кнопки, вводит числа, жмёт клавиши и ждёт таймер.
  */
@@ -34,10 +34,94 @@ button {
 
 export const course3: Lesson[] = [
   {
+    track: "practice",
+    course: C,
+    slug: "razogrev-js",
+    number: 1,
+    title: "Разогрев: вспоминаем JavaScript",
+    goal: "Перед играми вспомним главное из JavaScript: найти элемент, услышать нажатие и поменять текст.",
+    explanation: [
+      "Ты писал JavaScript в курсе 1, и с тех пор прошло время — это нормально, если что-то забылось. Вспомним три шага, из которых состоит любая кнопка: найти элемент, услышать нажатие, поменять текст.",
+      "Найти: document.querySelector(\"#id\"). Услышать: кнопка.addEventListener(\"click\", function () { … }). Поменять: элемент.textContent = … Число хранят в переменной let — её значение можно менять: count = count + 1.",
+    ],
+    newTerms: [],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Найди элемент с id=\"counter\".",
+        before: 'document.querySelector("',
+        after: '")',
+        answers: ["#counter"],
+        explain: "Решётка и имя — как в HTML.",
+      },
+      {
+        kind: "order",
+        prompt: "Собери обработчик нажатия.",
+        lines: ['plus.addEventListener("click", function () {', "  count = count + 1;", "  counter.textContent = count;", "});"],
+        explain: "Сначала «когда нажмут», внутри — что сделать, в конце закрываем скобки.",
+      },
+      {
+        kind: "choice",
+        question: "Почему для счёта пишут let, а не const?",
+        options: ["Значение будет меняться", "let короче", "const нельзя для чисел"],
+        correct: 0,
+        explain: "const нельзя переприсвоить, а счёт растёт.",
+      },
+    ],
+    steps: [
+      "Кнопка «+1» и число уже есть в HTML.",
+      "В JavaScript найди кнопку: const plus = document.querySelector(\"#plus\");",
+      "Напиши обработчик: при нажатии count = count + 1 и counter.textContent = count.",
+    ],
+    starter: {
+      html: `<h1>Разогрев</h1>
+<p>Нажатий: <span id="counter">0</span></p>
+<button id="plus">+1</button>
+`,
+      css: gameCss,
+      js: `let count = 0;
+const counter = document.querySelector("#counter");
+// Найди кнопку #plus и напиши обработчик нажатия:
+// при нажатии count увеличивается на 1, а counter показывает count
+`,
+    },
+    focusFile: "js",
+    hints: [
+      "Три шага: найти кнопку, addEventListener, внутри — увеличить и показать.",
+      "const plus = document.querySelector(\"#plus\"); и plus.addEventListener(\"click\", function () { … });",
+      "Внутри обработчика: count = count + 1; counter.textContent = count;",
+    ],
+    checks: [
+      {
+        kind: "scenario",
+        steps: [{ click: "#plus", times: 3 }, { expect: { selector: "#counter", equals: "3" } }],
+        message: "После трёх нажатий — 3",
+        fix: "В обработчике: count = count + 1; counter.textContent = count;",
+      },
+      { kind: "noErrors", message: "В консоли нет ошибок", fix: "Проверь id в querySelector и скобки обработчика." },
+    ],
+    learned: ["Кнопка = найти + услышать нажатие + поменять текст.", "let — для значений, которые меняются."],
+    quiz: [
+      {
+        question: "Что делает addEventListener(\"click\", …)?",
+        options: ["Запускает функцию при нажатии", "Создаёт кнопку", "Меняет цвет"],
+        correct: 0,
+        explain: "Это «слушатель» нажатий.",
+      },
+      {
+        question: "Как показать число count на странице?",
+        options: ["counter.textContent = count;", "print(count)", "count.show()"],
+        correct: 0,
+        explain: "textContent — текст элемента.",
+      },
+    ],
+    reference: ref("razogrev-js"),
+  },
+  {
     track: "project",
     course: C,
     slug: "kliker",
-    number: 1,
+    number: 2,
     title: "Кликер: условие if",
     goal: "Ты сделаешь первую игру: жми кнопку, набирай очки — и на 10 очках появится «Победа!».",
     freshStart: true,
@@ -67,7 +151,7 @@ export const course3: Lesson[] = [
     ],
     steps: [
       "Нажми «Жми!» в окне результата — очки растут. Но победы пока нет.",
-      "Во вкладке JavaScript найди комментарий «Урок 1» внутри обработчика нажатия.",
+      "Во вкладке JavaScript найди комментарий «Урок 2» внутри обработчика нажатия.",
       "Напиши на его месте условие: if (score >= 10) { message.textContent = \"Победа!\"; }",
       "Понажимай кнопку десять раз и проверь.",
     ],
@@ -87,7 +171,7 @@ const clickButton = document.querySelector("#click-button");
 clickButton.addEventListener("click", function () {
   score = score + 1;
   scoreText.textContent = score;
-  // Урок 1: если score дошёл до 10 — напиши в message «Победа!»
+  // Урок 2: если score дошёл до 10 — напиши в message «Победа!»
 });
 `,
     },
@@ -144,7 +228,7 @@ clickButton.addEventListener("click", function () {
     track: "project",
     course: C,
     slug: "kliker-uluchsheniya",
-    number: 2,
+    number: 3,
     title: "Кликер: улучшения",
     goal: "В кликере появится улучшение: за 10 очков каждое нажатие станет приносить вдвое больше.",
     explanation: [
@@ -170,14 +254,14 @@ clickButton.addEventListener("click", function () {
       },
     ],
     steps: [
-      "В HTML появилась кнопка улучшения, а в конце JavaScript — заготовка «Урок 2».",
+      "В HTML появилась кнопка улучшения, а в конце JavaScript — заготовка «Урок 3».",
       "В обработчике главной кнопки замени score + 1 на score + perClick.",
       "Напиши обработчик для upgradeButton: если score >= 10 — отними 10, удвой perClick и покажи новые очки.",
     ],
     additions: {
       html: { before: '<p id="message">', text: '<button id="upgrade-button">Улучшение: ×2 за 10 очков</button>\n' },
       js: `
-// Урок 2: улучшение
+// Урок 3: улучшение
 let perClick = 1;
 const upgradeButton = document.querySelector("#upgrade-button");
 // Напиши: при нажатии на улучшение — если очков хватает (score >= 10),
@@ -233,7 +317,7 @@ const upgradeButton = document.querySelector("#upgrade-button");
     track: "project",
     course: C,
     slug: "kliker-tajmer",
-    number: 3,
+    number: 4,
     title: "Кликер на время: таймер",
     goal: "Кликер станет игрой на скорость: у тебя 5 секунд, а потом кнопка выключится.",
     explanation: [
@@ -260,7 +344,7 @@ const upgradeButton = document.querySelector("#upgrade-button");
       },
     ],
     steps: [
-      "В HTML появились время и кнопка «Старт», в JavaScript — заготовка «Урок 3».",
+      "В HTML появились время и кнопка «Старт», в JavaScript — заготовка «Урок 4».",
       "Напиши обработчик для startButton, а в нём — таймер: const timer = setInterval(function () { … }, 1000);",
       "Внутри таймера: уменьши timeLeft на 1 и покажи его в timeText.",
       "Когда timeLeft станет 0: clearInterval(timer), выключи кнопку и напиши итог в message.",
@@ -268,7 +352,7 @@ const upgradeButton = document.querySelector("#upgrade-button");
     additions: {
       html: { before: '<p id="message">', text: '<p>Время: <span id="time">5</span></p>\n<button id="start-button">Старт</button>\n' },
       js: `
-// Урок 3: игра на время
+// Урок 4: игра на время
 let timeLeft = 5;
 const timeText = document.querySelector("#time");
 const startButton = document.querySelector("#start-button");
@@ -328,7 +412,7 @@ const startButton = document.querySelector("#start-button");
     track: "project",
     course: C,
     slug: "ugadaj-vvod",
-    number: 4,
+    number: 5,
     title: "Угадай число: поле ввода",
     goal: "Ты начнёшь новую игру и научишься читать то, что игрок ввёл в поле.",
     freshStart: true,
@@ -381,7 +465,7 @@ const checkButton = document.querySelector("#check-button");
 const hint = document.querySelector("#hint");
 
 checkButton.addEventListener("click", function () {
-  // Урок 4: возьми число из поля ввода и покажи его в hint
+  // Урок 5: возьми число из поля ввода и покажи его в hint
 });
 `,
     },
@@ -432,7 +516,7 @@ checkButton.addEventListener("click", function () {
     track: "project",
     course: C,
     slug: "ugadaj-podskazki",
-    number: 5,
+    number: 6,
     title: "Угадай число: больше или меньше",
     goal: "Игра начнёт подсказывать: «Больше!», «Меньше!» — пока не угадаешь.",
     explanation: [
@@ -463,7 +547,7 @@ checkButton.addEventListener("click", function () {
     ],
     additions: {
       js: `
-// Урок 5: загаданное число
+// Урок 6: загаданное число
 const secret = 7;
 // В обработчике выше: если guess < secret — «Больше!», если больше — «Меньше!», иначе — «Угадал!»
 `,
@@ -517,7 +601,7 @@ const secret = 7;
     track: "project",
     course: C,
     slug: "ugadaj-popytki",
-    number: 6,
+    number: 7,
     title: "Угадай число: попытки и новая игра",
     goal: "Игра будет считать попытки, а кнопка «Новая игра» загадает новое случайное число.",
     explanation: [
@@ -550,7 +634,7 @@ const secret = 7;
     additions: {
       html: { before: '<p id="hint">', text: '<p>Попыток: <span id="tries">0</span></p>\n<button id="new-game">Новая игра</button>\n' },
       js: `
-// Урок 6: попытки и новая игра
+// Урок 7: попытки и новая игра
 let tries = 0;
 const triesText = document.querySelector("#tries");
 const newGameButton = document.querySelector("#new-game");
@@ -613,7 +697,7 @@ const newGameButton = document.querySelector("#new-game");
     track: "project",
     course: C,
     slug: "viktorina",
-    number: 7,
+    number: 8,
     title: "Викторина: вопросы и функция",
     goal: "Ты начнёшь викторину: вопросы хранятся в списке, а своя функция показывает вопрос на экране.",
     freshStart: true,
@@ -666,7 +750,7 @@ const questionText = document.querySelector("#question");
 const scoreText = document.querySelector("#score");
 const buttons = [document.querySelector("#a0"), document.querySelector("#a1"), document.querySelector("#a2")];
 
-// Урок 7: допиши функцию — показать вопрос номер current и подписать кнопки
+// Урок 8: допиши функцию — показать вопрос номер current и подписать кнопки
 function showQuestion() {
 }
 
@@ -717,7 +801,7 @@ showQuestion();
     track: "project",
     course: C,
     slug: "viktorina-otvety",
-    number: 8,
+    number: 9,
     title: "Викторина: ответы и итог",
     goal: "Викторина заработает целиком: ответы, очки, следующий вопрос и итог в конце.",
     explanation: [
@@ -749,7 +833,7 @@ showQuestion();
     ],
     additions: {
       js: `
-// Урок 8: ответы, очки и конец игры
+// Урок 9: ответы, очки и конец игры
 function answer(index) {
   // если index === questions[current].correct — прибавь очко и покажи его;
   // потом перейди к следующему вопросу, а если вопросы кончились — покажи итог
@@ -809,7 +893,7 @@ buttons[2].addEventListener("click", function () { answer(2); });
     track: "project",
     course: C,
     slug: "knb",
-    number: 9,
+    number: 10,
     title: "Камень, ножницы, бумага",
     goal: "Ты сыграешь с компьютером: он выбирает случайно, а программа решает, кто победил.",
     freshStart: true,
@@ -857,7 +941,7 @@ const resultText = document.querySelector("#result");
 function play(player) {
   const computer = choices[Math.floor(Math.random() * 3)];
   computerText.textContent = "Компьютер: " + computer;
-  // Урок 9: ничья, победа или поражение?
+  // Урок 10: ничья, победа или поражение?
 }
 
 document.querySelector("#rock").addEventListener("click", function () { play("камень"); });
@@ -917,7 +1001,7 @@ document.querySelector("#paper").addEventListener("click", function () { play("�
     track: "project",
     course: C,
     slug: "begun",
-    number: 10,
+    number: 11,
     title: "Бегун: клавиатура",
     goal: "Бегун будет двигаться стрелками на клавиатуре и кнопками на экране — для телефона.",
     freshStart: true,
@@ -979,11 +1063,11 @@ let steps = 0;
 const runner = document.querySelector("#runner");
 const stepsText = document.querySelector("#steps");
 
-// Урок 10: допиши — сдвинуть бегуна на dx пикселей и посчитать шаг
+// Урок 11: допиши — сдвинуть бегуна на dx пикселей и посчитать шаг
 function move(dx) {
 }
 
-// Урок 10: слушай клавиатуру — стрелки ← и → вызывают move
+// Урок 11: слушай клавиатуру — стрелки ← и → вызывают move
 
 document.querySelector("#left").addEventListener("click", function () { move(-20); });
 document.querySelector("#right").addEventListener("click", function () { move(20); });
@@ -1037,7 +1121,7 @@ document.querySelector("#right").addEventListener("click", function () { move(20
     track: "practice",
     course: C,
     slug: "pochini-igru",
-    number: 11,
+    number: 12,
     title: "Тренировка: почини игру",
     goal: "Чужой кликер на время сломан в трёх местах. Найди и почини.",
     explanation: [
@@ -1147,7 +1231,7 @@ startButton.addEventListener("click", function () {
     track: "project",
     course: C,
     slug: "svoya-igra",
-    number: 12,
+    number: 13,
     title: "Финал: своя игра",
     goal: "Ты придумаешь и соберёшь свою игру с нуля — по своему плану.",
     freshStart: true,

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { QuizQuestion } from "@/content/lessons/types";
+import { optionOrder } from "@/lib/shuffle";
 import type { QuizScore } from "@/lib/progress/store";
 
 type Props = {
@@ -62,7 +63,8 @@ export function QuizBlock({ questions, previous, onFinish }: Props) {
                   </pre>
                 )}
                 <div className="mt-2 flex flex-col gap-2">
-                  {q.options.map((opt, oi) => {
+                  {optionOrder(q.question + q.options.join("|"), q.options.length).map((oi) => {
+                    const opt = q.options[oi]!;
                     const isChosen = chosen === oi;
                     const style = !isChosen
                       ? "border-line bg-surface hover:border-route"

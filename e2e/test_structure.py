@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from helpers import *
 from playwright.sync_api import sync_playwright
 
-C1 = ["zagolovok","opisanie","cveta","kartochka","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
+C1 = ["zagolovok","opisanie","cveta","kartochka","naiti-element","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
 ok_all = True
 def report(name, cond):
     global ok_all
@@ -13,7 +13,7 @@ def report(name, cond):
 
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width": 1440, "height": 900})
-    unlock_until(pg, 10, C1)
+    unlock_until(pg, 11, C1)
     pg.goto(BASE + "/learn/para-tegov"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     con = pg.locator('section[aria-label="Консоль"]')
     t = con.inner_text()
@@ -34,7 +34,7 @@ with sync_playwright() as p:
     report("курсор на незакрытом <p>: коралловая подсветка", pg.locator(".cm-tag-unpaired").count() == 1)
 
     # переход к строке CSS из подсказки
-    unlock_until(pg, 13, C1 + ["para-tegov", "odin-main", "roditel-deti"])
+    unlock_until(pg, 14, C1 + ["para-tegov", "odin-main", "roditel-deti"])
     pg.goto(BASE + "/learn/id-ili-class"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     con = pg.locator('section[aria-label="Консоль"]')
     report("id/class перепутаны: подсказка «Для id пиши #note»", "Для id пиши #note" in con.inner_text())

@@ -9,7 +9,7 @@ from helpers import *
 from playwright.sync_api import sync_playwright
 
 MOCK = os.environ.get("MENTOR_MOCK", "http://127.0.0.1:3200/")
-SLUGS = ["zagolovok","opisanie","cveta","kartochka","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
+SLUGS = ["zagolovok","opisanie","cveta","kartochka","naiti-element","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
 ok_all = True
 def report(name, cond):
     global ok_all
@@ -18,7 +18,7 @@ def report(name, cond):
 
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width": 1440, "height": 900})
-    unlock_until(pg, 6, SLUGS)
+    unlock_until(pg, 7, SLUGS)
     pg.goto(BASE + "/learn/oshibka"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     console = pg.locator('section[aria-label="Консоль"]')
     console.get_by_role("button", name="Спросить наставника").first.click()

@@ -161,6 +161,13 @@ export const progressStore = {
     delete drafts[slug];
     write({ ...cur, drafts });
   },
+  /** Засчитать уроки без решения — после входной проверки. Сертификат за такие курсы не выдаётся. */
+  markSkipped(slugs: string[]) {
+    const cur = read();
+    const completed = [...cur.completed, ...slugs.filter((s) => !cur.completed.includes(s))];
+    write({ ...cur, completed });
+  },
+
   resetAll() {
     write(emptyProgress());
   },

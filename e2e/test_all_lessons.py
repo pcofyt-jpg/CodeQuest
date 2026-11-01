@@ -14,7 +14,7 @@ REF = json.load(open(os.path.join(ROOT, "src/content/lessons/references.json"), 
 SLUGS = list(REF)
 # Уроки проекта, которые продолжают сайт прошлого урока того же курса, и чем этот сайт узнать.
 CONTINUES = {
-    **{s: "Мой кот Барсик" for s in ["opisanie", "cveta", "kartochka", "knopka", "dizajn", "schetchik", "moj-proekt"]},
+    **{s: "Мой кот Барсик" for s in ["opisanie", "cveta", "kartochka", "naiti-element", "knopka", "dizajn", "schetchik", "moj-proekt"]},
     **{s: "Мой футбол" for s in ["spiski", "menyu", "kartinki", "otstupy", "ramki", "ryad", "centr", "telefon"]},
     **{s: "<h1>Кликер</h1>" for s in ["kliker-uluchsheniya", "kliker-tajmer"]},
     **{s: "<h1>Угадай число</h1>" for s in ["ugadaj-podskazki", "ugadaj-popytki"]},

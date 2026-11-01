@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from helpers import *
 from playwright.sync_api import sync_playwright
 
-SLUGS = ["zagolovok","opisanie","cveta","kartochka","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
+SLUGS = ["zagolovok","opisanie","cveta","kartochka","naiti-element","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
 ok_all = True
 def report(name, cond):
     global ok_all
@@ -69,7 +69,7 @@ with sync_playwright() as p:
     report("проект удалён", pg.get_by_text("Пока проектов нет").count() == 1)
 
     # --- урок 7: подсказка при опечатке после исправления первой ошибки
-    unlock_until(pg, 6, SLUGS); pg.goto(BASE + "/learn/oshibka/"); pg.wait_for_selector(".cm-content")
+    unlock_until(pg, 7, SLUGS); pg.goto(BASE + "/learn/oshibka/"); pg.wait_for_selector(".cm-content")
     set_code(pg, "JavaScript", 'const button = document.querySelector("#start-button");\nconst statusText = document.querySelector("#status");\n\nbutton.addEventListner("click", function () {\n  statusText.textContent = "Поехали!";\n});\n')
     pg.wait_for_timeout(1200)
     report("опечатка: подсказка addEventListener", "Может быть, ты имел в виду addEventListener?" in pg.locator('section[aria-label="Консоль"]').inner_text())

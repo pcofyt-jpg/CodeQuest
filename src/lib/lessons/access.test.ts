@@ -25,6 +25,11 @@ describe("доступ к урокам", () => {
     expect(lessonOpen(items, 3, ["a1"], courses)).toBe(true);
   });
 
+  it("пройденный урок открыт, даже если перед ним вставили новый", () => {
+    // a2 пройден раньше, а a1 появился позже и ещё не пройден
+    expect(lessonOpen(items, 3, ["a2"], courses)).toBe(true);
+  });
+
   it("курс 2 открывается только после всего курса 1", () => {
     expect(lessonOpen(items, 4, ["a1"], courses)).toBe(false);
     expect(lessonOpen(items, 4, ["a1", "a2"], courses)).toBe(true);

@@ -57,6 +57,21 @@ export const course2: Lesson[] = [
       "Заголовок <h1> лежит внутри <header>, абзац о себе — внутри <main>.",
       "Так: <header> <h1>Мой футбол</h1> </header> <main> <p>Я играю в футбол…</p> </main> <footer> <p>Сайт сделан в CodeQuest</p> </footer>",
     ],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери каркас страницы сверху вниз.",
+        lines: ["<header>…</header>", "<main>…</main>", "<footer>…</footer>"],
+        explain: "Шапка, основная часть, подвал — порядок в коде совпадает с порядком на странице.",
+      },
+      {
+        kind: "choice",
+        question: "Где место для рассказа об увлечении?",
+        options: ["В <main>", "В <footer>", "В <header>"],
+        correct: 0,
+        explain: "<main> — основная часть: всё самое главное.",
+      },
+    ],
     checks: [
       {
         kind: "exists",
@@ -129,6 +144,23 @@ export const course2: Lesson[] = [
       "Список и заголовок пишутся внутри <main>, то есть перед </main>.",
       "Например: <h2>Что мне нравится</h2> <ul> <li>Забивать голы</li> <li>Играть в команде</li> <li>Смотреть матчи</li> </ul>",
     ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Каждый пункт списка — это…",
+        before: "<ul>\n  <",
+        after: ">Мяч</li>\n</ul>",
+        answers: ["li"],
+        explain: "Пункт списка — <li>, list item.",
+      },
+      {
+        kind: "choice",
+        question: "Какой список сам пронумерует шаги рецепта?",
+        options: ["<ol>", "<ul>", "<li>"],
+        correct: 0,
+        explain: "ol — ordered list, нумерованный.",
+      },
+    ],
     checks: [
       {
         kind: "text",
@@ -194,6 +226,23 @@ export const course2: Lesson[] = [
       "Раздел — <section id=\"имя\"> … </section>. Ссылка на него — <a href=\"#имя\">Текст</a>, с решёткой.",
       "id в разделе и в ссылке должны совпадать до буквы: id=\"o-sebe\" и href=\"#o-sebe\".",
       "Меню целиком: <nav> <a href=\"#o-sebe\">О себе</a> <a href=\"#lyublyu\">Что я люблю</a> </nav> — внутри <header>.",
+    ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Ссылка на раздел с id=\"galereya\".",
+        before: '<a href="',
+        after: '">Галерея</a>',
+        answers: ["#galereya"],
+        explain: "Решётка и id раздела — до буквы.",
+      },
+      {
+        kind: "choice",
+        question: "В каком теге держат ссылки меню?",
+        options: ["<nav>", "<footer>", "<p>"],
+        correct: 0,
+        explain: "nav — navigation, навигация.",
+      },
     ],
     checks: [
       {
@@ -269,6 +318,24 @@ export const course2: Lesson[] = [
       "Картинка — один тег без пары: <img src=\"kartinki/имя.svg\" alt=\"описание\">.",
       "Адрес картинки удобнее всего скопировать из библиотеки: кнопка «Картинки» вверху студии.",
       "Целиком: <section id=\"galereya\"> <h2>Галерея</h2> <img src=\"kartinki/myach.svg\" alt=\"Футбольный мяч\"> </section>",
+    ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Чего не хватает картинке?",
+        code: '<img src="kartinki/kot.svg">',
+        options: ["Описания alt", "Закрывающего </img>", "Ничего"],
+        correct: 0,
+        explain: "alt описывает картинку словами. Закрывающего тега у <img> нет.",
+      },
+      {
+        kind: "fill",
+        prompt: "Допиши атрибут, где лежит адрес картинки.",
+        before: "<img ",
+        after: '="kartinki/myach.svg" alt="Мяч">',
+        answers: ["src"],
+        explain: "src — source, источник картинки.",
+      },
     ],
     checks: [
       {
@@ -348,6 +415,22 @@ export const course2: Lesson[] = [
       "padding — отступ внутри, margin — снаружи. Нужны оба.",
       "Так: section { background-color: white; padding: 16px; margin-bottom: 16px; }",
     ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Текст прилип к краю карточки. Что добавить?",
+        options: ["padding", "margin", "border"],
+        correct: 0,
+        explain: "padding — отступ внутри, от края до текста.",
+      },
+      {
+        kind: "choice",
+        question: "Карточки слиплись друг с другом. Что добавить?",
+        options: ["margin", "padding", "color"],
+        correct: 0,
+        explain: "margin — отступ снаружи, он отодвигает соседей.",
+      },
+    ],
     checks: [
       {
         kind: "styleNot",
@@ -412,6 +495,22 @@ export const course2: Lesson[] = [
     hints: [
       "Рамка: border: толщина вид цвет; например border: 2px solid gray;",
       "Ширина и центр: main { max-width: 700px; margin: 0 auto; }",
+    ],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери рамку: толщина, вид, цвет.",
+        lines: ["section {", "  border: 2px solid gray;", "}"],
+        explain: "Три части рамки через пробел.",
+      },
+      {
+        kind: "fill",
+        prompt: "Поставь блок с max-width по центру.",
+        before: "main { max-width: 700px; margin: 0 ",
+        after: "; }",
+        answers: ["auto"],
+        explain: "auto слева и справа делит свободное место поровну.",
+      },
     ],
     checks: [
       {
@@ -490,6 +589,23 @@ export const course2: Lesson[] = [
       "Ряд = контейнер с display: flex. Контейнер — это <div class=\"cards\">, карточки лежат внутри него.",
       "CSS: .cards { display: flex; gap: 16px; } — правило для контейнера, а не для карточек.",
     ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Поставь карточки в ряд.",
+        before: ".cards { display: ",
+        after: "; }",
+        answers: ["flex"],
+        explain: "flex — контейнеру, тогда дети встают в ряд.",
+      },
+      {
+        kind: "choice",
+        question: "Что задаёт gap: 16px; у .cards?",
+        options: ["Промежуток между карточками", "Отступ внутри карточки", "Ширину карточки"],
+        correct: 0,
+        explain: "gap — расстояние между соседями в ряду.",
+      },
+    ],
     checks: [
       {
         kind: "count",
@@ -562,6 +678,23 @@ export const course2: Lesson[] = [
     hints: [
       "Текст по центру — text-align: center; ряд по центру — display: flex; и justify-content: center;",
       "Правило для меню: nav { display: flex; justify-content: center; gap: 16px; }",
+    ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Как поставить пункты меню по центру ряда?",
+        options: ["justify-content: center;", "text-align: center;", "align: middle;"],
+        correct: 0,
+        explain: "Блоки flex-ряда выравнивает justify-content.",
+      },
+      {
+        kind: "fill",
+        prompt: "Поставь текст шапки по центру.",
+        before: "header { text-align: ",
+        after: "; }",
+        answers: ["center"],
+        explain: "text-align выравнивает текст.",
+      },
     ],
     checks: [
       {
@@ -637,6 +770,23 @@ export const course2: Lesson[] = [
     hints: [
       "Перенос блоков на новую строку — flex-wrap: wrap; в правиле контейнера .cards.",
       "Медиа-запрос: @media (max-width: 600px) { .card { width: 100%; } } — фигурные скобки двойные: у запроса и у правила внутри.",
+    ],
+    practice: [
+      {
+        kind: "fill",
+        prompt: "Разреши карточкам переноситься.",
+        before: ".cards { flex-wrap: ",
+        after: "; }",
+        answers: ["wrap"],
+        explain: "wrap — переносить на новую строку.",
+      },
+      {
+        kind: "choice",
+        question: "Когда сработают правила внутри @media (max-width: 600px)?",
+        options: ["На экранах не шире 600 точек", "Всегда", "Только на компьютере"],
+        correct: 0,
+        explain: "max-width: 600px — «не шире 600».",
+      },
     ],
     checks: [
       {
@@ -752,6 +902,22 @@ export const course2: Lesson[] = [
       "Сравни по буквам href ссылки «Галерея» и id раздела с галереей. И имя класса у второй карточки.",
       "Ряд задаёт контейнер: display: flex и gap должны быть в правиле .cards, а не .card.",
     ],
+    practice: [
+      {
+        kind: "choice",
+        question: "Ссылка <a href=\"#galery\"> не ведёт на <section id=\"gallery\">. Почему?",
+        options: ["Имена не совпадают до буквы", "Ссылки не работают в nav", "Нужно убрать решётку"],
+        correct: 0,
+        explain: "galery и gallery — разные имена.",
+      },
+      {
+        kind: "choice",
+        question: "Почему консоль не показывает ошибки вёрстки?",
+        options: ["Для браузера это не ошибки: он делает то, что написано", "Консоль сломалась", "Ошибки CSS видны только на телефоне"],
+        correct: 0,
+        explain: "Ошибки вёрстки ищут глазами и по подсказкам помощника.",
+      },
+    ],
     checks: [
       {
         kind: "anchorsResolve",
@@ -826,6 +992,23 @@ export const course2: Lesson[] = [
     },
     focusFile: "html",
     hints: ["Загляни в свой сайт из этого курса и в шпаргалку — там есть всё: разделы с id, меню, картинки и display: flex."],
+    practice: [
+      {
+        kind: "choice",
+        question: "С чего начать вёрстку по описанию?",
+        options: ["С каркаса: шапка, основная часть, подвал", "С цветов", "С картинок"],
+        correct: 0,
+        explain: "Сначала каркас, потом содержание, в конце оформление.",
+      },
+      {
+        kind: "fill",
+        prompt: "Контейнер для картинок по заданию называется gallery.",
+        before: '<div class="',
+        after: '">',
+        answers: ["gallery"],
+        explain: "Имя класса — ровно как в задании.",
+      },
+    ],
     checks: [
       {
         kind: "anchorsResolve",
@@ -916,6 +1099,21 @@ export const course2: Lesson[] = [
     },
     focusFile: "html",
     hints: ["Иди по чек-листу сверху вниз и после каждого пункта нажимай «Проверить»: так видно, что уже готово."],
+    practice: [
+      {
+        kind: "order",
+        prompt: "Собери план работы над сайтом.",
+        lines: ["Каркас: header, main, footer", "Разделы и меню", "Оформление и проверка на телефоне"],
+        explain: "От общего к деталям — так не запутаешься.",
+      },
+      {
+        kind: "choice",
+        question: "Сайт готов. Что проверить напоследок?",
+        options: ["Как он выглядит на экране телефона", "Только цвет заголовка", "Ничего"],
+        correct: 0,
+        explain: "Больше половины людей смотрят сайты с телефона.",
+      },
+    ],
     checks: [
       {
         kind: "anchorsResolve",

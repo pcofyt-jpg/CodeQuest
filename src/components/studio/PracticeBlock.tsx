@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Exercise } from "@/content/lessons/types";
+import { optionOrder } from "@/lib/shuffle";
 
 /**
  * «Попробуй»: короткие задания перед основным заданием урока.
@@ -116,7 +117,7 @@ function ChoiceEx({ ex, onDone }: { ex: Extract<Exercise, { kind: "choice" }>; o
       <p className="text-[15px] font-semibold">{ex.question}</p>
       {ex.code && <Code>{ex.code}</Code>}
       <div className="mt-2 flex flex-col gap-2">
-        {ex.options.map((opt, i) => (
+        {optionOrder(ex.question + ex.options.join("|"), ex.options.length).map((i) => ({ opt: ex.options[i]!, i })).map(({ opt, i }) => (
           <button
             key={i}
             type="button"

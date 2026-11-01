@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Lesson } from "@/content/lessons/types";
+import type { Lesson, ProjectFiles } from "@/content/lessons/types";
 import { getTerm } from "@/content/glossary";
 import { TermCard } from "@/components/glossary/Glossary";
 import type { QuizScore } from "@/lib/progress/store";
@@ -14,6 +14,8 @@ import { QuizBlock } from "./QuizBlock";
 import { buildStandaloneHtml } from "@/lib/export/site";
 import { PROJECT_COURSES } from "@/content/courses";
 import { PracticeBlock } from "./PracticeBlock";
+import { SolutionReview } from "./SolutionReview";
+import { REVIEW_AFTER_FAILS } from "@/lib/lessons/attempts";
 import { RichText } from "./RichText";
 
 type Props = {
@@ -23,6 +25,10 @@ type Props = {
   nextLesson: Lesson | null;
   hintsShown: number;
   onShowHint: () => void;
+  /** сколько раз проверка не прошла (для «Разбора решения») */
+  failedAttempts?: number;
+  /** текущий код ребёнка — чтобы показать в разборе, каких строк нет */
+  currentFiles?: ProjectFiles;
   outcome: CheckOutcome;
   onCheck: () => void;
   onReset: () => void;
@@ -42,6 +48,8 @@ export function LessonPanel({
   nextLesson,
   hintsShown,
   onShowHint,
+  failedAttempts = 0,
+  currentFiles,
   outcome,
   onCheck,
   onReset,
@@ -221,6 +229,10 @@ export function LessonPanel({
           <p role="status" className="rounded-xl bg-coral-soft px-4 py-3 text-[15px] text-coral">
             {outcome.reason}
           </p>
+        )}
+
+        {!completed && currentFiles && failedAttempts >= REVIEW_AFTER_FAILS && hintsShown >= lesson.hints.length && (
+          <SolutionReview lesson={lesson} current={currentFiles} />
         )}
 
         {outcome.status === "done" && (

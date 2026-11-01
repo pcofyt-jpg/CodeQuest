@@ -1,7 +1,7 @@
 import sys, time; import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from helpers import *
 from playwright.sync_api import sync_playwright
-SLUGS = ["zagolovok","opisanie","cveta","kartochka","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
+SLUGS = ["zagolovok","opisanie","cveta","kartochka","naiti-element","knopka","dizajn","oshibka","schetchik","svoya-versiya","moj-proekt"]
 ATTACK = r'''
 const r = [];
 try { r.push("parentDOM:" + parent.document.title); } catch (e) { r.push("parentDOM:blocked"); }
@@ -16,7 +16,7 @@ console.log(r.join(" | "));
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width":1440,"height":900})
     reqs=[]; pg.on("request", lambda r: reqs.append(r.url) if "example.com" in r.url else None)
-    unlock_until(pg, 9, SLUGS)
+    unlock_until(pg, 10, SLUGS)
     pg.goto(BASE + "/learn/moj-proekt"); pg.wait_for_selector(".cm-content")
     set_code(pg, "JavaScript", ATTACK); pg.wait_for_timeout(2000)
     cons = pg.locator('section[aria-label="Консоль"]').inner_text()

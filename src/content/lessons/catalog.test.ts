@@ -18,7 +18,7 @@ const starterFromReferences = (i: number) =>
 
 describe("каталог уроков", () => {
   it("курсы 1 и 2: уникальные адреса, номера по порядку внутри курса", () => {
-    expect(courseLessons("pervyj-sajt")).toHaveLength(10);
+    expect(courseLessons("pervyj-sajt")).toHaveLength(11);
     expect(courseLessons("nastoyashchij-sajt")).toHaveLength(12);
     expect(new Set(slugs).size).toBe(lessons.length);
     for (const c of courses.filter((x) => x.status === "ready")) {
@@ -36,7 +36,7 @@ describe("каталог уроков", () => {
     expect(courseLessons("obrazec")).toHaveLength(6);
     expect(courseLessons("struktura")).toHaveLength(8);
     expect(courseLessons("kiber")).toHaveLength(10);
-    expect(courseLessons("igry")).toHaveLength(12);
+    expect(courseLessons("igry")).toHaveLength(13);
     expect(courseLessons("start")).toHaveLength(4);
   });
 
@@ -78,7 +78,7 @@ describe("каталог уроков", () => {
 
   it("сквозной проект: первый урок каждого курса с заготовкой, тренировки — со своим кодом", () => {
     // Курсы со сквозным сайтом начинаются с урока проекта; в курсе 4 каждый урок — своя страница.
-    for (const c of courses.filter((x) => ["pervyj-sajt", "nastoyashchij-sajt", "igry"].includes(x.id))) {
+    for (const c of courses.filter((x) => ["pervyj-sajt", "nastoyashchij-sajt"].includes(x.id))) {
       const first = courseLessons(c.id)[0]!;
       expect(first.track, c.id).toBe("project");
       expect(first.track === "project" && first.starter, c.id).toBeTruthy();

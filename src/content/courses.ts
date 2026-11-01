@@ -19,6 +19,10 @@ export type Course = {
   planet: string;
   /** своя подпись на карте вместо «Миссия N» */
   label?: string;
+  /** шаг рекомендуемого маршрута (1, 2, 3…) */
+  step?: number;
+  /** пояснение для направлений вне основного маршрута */
+  note?: string;
 };
 
 /** Курсы со сквозным сайтом: в них тренировки идут на чужом коде и не меняют сайт ребёнка. */
@@ -35,6 +39,7 @@ export function courseLabel(c: Course): string {
 export const courses: Course[] = [
   {
     id: "start",
+    step: 1,
     planet: "#3ef2c6",
     number: 0,
     title: "Старт: с азов",
@@ -43,6 +48,7 @@ export const courses: Course[] = [
   },
   {
     id: "pervyj-sajt",
+    step: 2,
     planet: "#ffb84d",
     number: 1,
     title: "Первый сайт",
@@ -58,6 +64,7 @@ export const courses: Course[] = [
   },
   {
     id: "struktura",
+    step: 3,
     planet: "#5af78e",
     number: 12,
     label: "Практикум",
@@ -76,6 +83,7 @@ export const courses: Course[] = [
   },
   {
     id: "zadachnik-1",
+    step: 4,
     planet: "#ffd43b",
     number: 13,
     label: "Задачник",
@@ -87,6 +95,7 @@ export const courses: Course[] = [
   },
   {
     id: "nastoyashchij-sajt",
+    step: 5,
     planet: "#8f7cf5",
     number: 2,
     title: "Настоящий сайт",
@@ -104,6 +113,7 @@ export const courses: Course[] = [
   },
   {
     id: "zadachnik-2",
+    step: 6,
     planet: "#ffa94d",
     number: 14,
     label: "Задачник",
@@ -115,6 +125,7 @@ export const courses: Course[] = [
   },
   {
     id: "obrazec",
+    step: 7,
     planet: "#f783ac",
     number: 15,
     label: "По образцу",
@@ -126,6 +137,7 @@ export const courses: Course[] = [
   },
   {
     id: "python",
+    note: "Можно начать в любой момент, лучше с 10 лет",
     planet: "#7cc4ff",
     number: 10,
     title: "Python: первые шаги",
@@ -142,6 +154,7 @@ export const courses: Course[] = [
   },
   {
     id: "kiber",
+    note: "После «Python: первые шаги»",
     planet: "#ff7a8a",
     number: 11,
     label: "Кибер",
@@ -160,6 +173,7 @@ export const courses: Course[] = [
   },
   {
     id: "igry",
+    step: 8,
     planet: "#3a3e7a",
     number: 3,
     title: "Интерактив и мини-игры",
@@ -176,6 +190,7 @@ export const courses: Course[] = [
   },
   {
     id: "pro-verstka",
+    step: 9,
     planet: "#748ffc",
     number: 4,
     title: "Профессиональная вёрстка",

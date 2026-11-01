@@ -7,6 +7,9 @@ import { Logo } from "@/components/Logo";
 import { courses } from "@/content/courses";
 import { courseLessons } from "@/content/lessons/catalog";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
+import { controlStore, isPassed, type ControlResult } from "@/lib/control/store";
+
+const EMPTY_CONTROL = {};
 
 /**
  * Сертификат о прохождении курса — бесплатно (у многих платформ он только по подписке).
@@ -42,13 +45,38 @@ export function CertificatePage() {
     readName,
     () => "",
   );
-  const course = courses.find((c) => c.id === courseId && c.status === "ready" && c.number > 0);
+  const course = courses.find((c) => c.id === courseId && c.status === "ready" && c.skills);
+  const control = useSyncExternalStore(controlStore.subscribe, controlStore.getAll, () => EMPTY_CONTROL);
   const items = course ? courseLessons(course.id) : [];
   const done = items.filter((l) => progress.completed.includes(l.slug));
   const finished = items.length > 0 && done.length === items.length;
   const finishedAt = Math.max(0, ...items.map((l) => progress.results[l.slug]?.savedAt ?? 0));
 
   if (!hydrated) return <div className="p-6 text-muted">Открываю сертификат…</div>;
+
+  // Уроки, засчитанные входной проверкой, не дают сертификата: его дают за пройденное самому.
+  const solvedAll = items.every((l) => progress.results[l.slug]);
+  const controlResult = course ? (control as Record<string, ControlResult>)[course.id] : undefined;
+  if (course && finished && (!solvedAll || !isPassed(controlResult))) {
+    return (
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
+        <h1 className="text-2xl font-bold">Почти готово</h1>
+        <p className="text-[17px]">
+          {!solvedAll
+            ? "Часть уроков этого курса засчитана по входной проверке. Сертификат выдаётся за уроки, пройденные самостоятельно."
+            : `Осталась контрольная миссия по курсу «${course.title}» — 8 вопросов по всему курсу.`}
+        </p>
+        {solvedAll && (
+          <Link href={`/kontrolnaya/?kurs=${course.id}`} className="rounded-xl bg-route px-6 py-3 font-semibold text-on-accent">
+            Пройти контрольную миссию
+          </Link>
+        )}
+        <Link href="/" className="font-semibold text-route underline underline-offset-4">
+          К карте миссий
+        </Link>
+      </main>
+    );
+  }
 
   if (!course || !finished) {
     return (

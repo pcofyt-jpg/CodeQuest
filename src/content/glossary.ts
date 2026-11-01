@@ -142,7 +142,7 @@ export const glossary: GlossaryTerm[] = [
     example: '<button id="like-button">Нравится</button>\n\ndocument.querySelector("#like-button")',
     note: "id в HTML и в querySelector должны совпадать до буквы, иначе код элемент не найдёт.",
     aliases: ["id"],
-    introducedIn: "knopka",
+    introducedIn: "naiti-element",
   },
   {
     id: "button",
@@ -297,7 +297,7 @@ export const glossary: GlossaryTerm[] = [
     example: 'const button = document.querySelector("#like-button");',
     note: "Если элемент не найден, querySelector вернёт null, и в консоли появится ошибка «Cannot read properties of null».",
     aliases: ["querySelector", "document.querySelector"],
-    introducedIn: "knopka",
+    introducedIn: "naiti-element",
   },
   {
     id: "addEventListener",
@@ -324,7 +324,7 @@ export const glossary: GlossaryTerm[] = [
     what: "Текст внутри элемента. Чтобы поменять текст, присвой ему новое значение через знак =. Текст пишется в кавычках.",
     example: 'message.textContent = "Барсик доволен!";',
     aliases: ["textContent", "message.textContent", "countText.textContent"],
-    introducedIn: "knopka",
+    introducedIn: "naiti-element",
   },
   {
     id: "string",
@@ -334,7 +334,7 @@ export const glossary: GlossaryTerm[] = [
     example: '"Привет!"',
     note: "Открывающая и закрывающая кавычки должны быть одинаковыми: \"…\" или '…'.",
     aliases: ["кавычках", "кавычки"],
-    introducedIn: "knopka",
+    introducedIn: "naiti-element",
   },
   {
     id: "console",
@@ -853,7 +853,7 @@ export const glossary: GlossaryTerm[] = [
     what: "Цикл while повторяет команды, пока условие верно. Внутри условие должно меняться — иначе цикл будет вечным.",
     example: "guess = int(input())\nwhile guess != 7:\n    guess = int(input())\nprint(\"Угадал!\")",
     aliases: ["while"],
-    introducedIn: "py-ugadaj",
+    introducedIn: "py-while",
   },
 
   // ---------- Кибердетектив (Python) ----------
@@ -891,7 +891,7 @@ export const glossary: GlossaryTerm[] = [
     what: "def создаёт свою функцию: имя, параметры в скобках и двоеточие, внутри — команды с отступом. return возвращает результат. Вызывать функцию можно сколько угодно.",
     example: "def double(n):\n    return n * 2\n\nprint(double(21))  # 42",
     aliases: ["def", "return", "decrypt"],
-    introducedIn: "kiber-perebor",
+    introducedIn: "py-def",
   },
   {
     id: "py-count",

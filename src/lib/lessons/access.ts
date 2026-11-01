@@ -12,6 +12,8 @@ type Item = { slug: string; course: string };
 export function lessonOpen(items: Item[], index: number, completed: string[], courses: Course[] = allCourses): boolean {
   const l = items[index];
   if (!l) return false;
+  // Пройденный урок открыт всегда — даже если перед ним позже появился новый урок.
+  if (completed.includes(l.slug)) return true;
   const prev = items[index - 1];
   if (prev && prev.course === l.course) return completed.includes(prev.slug);
   const req = courses.find((c) => c.id === l.course)?.requires;

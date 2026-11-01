@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { courseLessons, getLessonIndex, lessons } from "@/content/lessons/catalog";
 import { ImagesDrawer } from "@/components/images/ImagesDrawer";
 import { PythonPanel, usePythonChecks } from "@/components/python/PythonPanel";
@@ -10,6 +10,7 @@ import { downloadSite } from "@/lib/export/site";
 import { progressStore, type QuizScore } from "@/lib/progress/store";
 import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
 import { courseLabel, courses } from "@/content/courses";
+import { attemptsStore } from "@/lib/lessons/attempts";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { lessonCheckpoint, lessonStarter } from "@/lib/lessons/projectFlow";
 import { GlossaryDrawer, GlossaryProvider } from "@/components/glossary/Glossary";
@@ -131,12 +132,19 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
     return () => window.clearTimeout(t);
   }, [files, lesson, lessonStart]);
 
-  // Засчитываем урок, когда все проверки пройдены.
+  // Засчитываем урок, когда все проверки пройдены; неудачи считаем для «Разбора решения».
   useEffect(() => {
     if (runner.outcome.status === "done" && runner.outcome.passed) {
       progressStore.markCompleted(lesson.slug, runner.outcome.files);
+    } else if (runner.outcome.status === "done") {
+      attemptsStore.noteFailed(lesson.slug);
     }
   }, [runner.outcome, lesson.slug]);
+  const failedAttempts = useSyncExternalStore(
+    attemptsStore.subscribe,
+    () => attemptsStore.get(lesson.slug),
+    () => 0,
+  );
 
   const handleChange = useCallback((file: CodeFile, value: string) => {
     setFiles((f) => (f[file] === value ? f : { ...f, [file]: value }));
@@ -198,6 +206,8 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             completed={completedSlugs.includes(lesson.slug)}
             nextLesson={nextLesson}
             hintsShown={hintsShown}
+            failedAttempts={failedAttempts}
+            currentFiles={files}
             onShowHint={() => setHintsShown((n) => Math.min(n + 1, lesson.hints.length))}
             outcome={runner.outcome}
             onCheck={handleCheck}

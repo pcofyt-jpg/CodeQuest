@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { PROJECT_COURSES, courseLabel, courses, type Course } from "@/content/courses";
 import { lessons } from "@/content/lessons/catalog";
 import { currentLessonIndex, isLessonOpen } from "@/lib/lessons/access";
@@ -9,6 +9,9 @@ import { progressStore } from "@/lib/progress/store";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
 import { useProjects } from "@/lib/projects/useProjects";
 import { BackupControls } from "./BackupControls";
+import { controlStore, isPassed, type ControlResult } from "@/lib/control/store";
+
+const EMPTY_CONTROL = {};
 import { DailyWarmup } from "./DailyWarmup";
 import { Logo } from "./Logo";
 
@@ -20,6 +23,7 @@ export function RouteMap() {
   const projects = useProjects();
   const hydrated = useHydrated();
   const [confirmReset, setConfirmReset] = useState(false);
+  const control = useSyncExternalStore(controlStore.subscribe, controlStore.getAll, () => EMPTY_CONTROL);
   const { completed } = progress;
 
   const currentIndex = currentLessonIndex(completed);
@@ -53,6 +57,15 @@ export function RouteMap() {
     const req = courses.find((x) => x.id === c.requires);
     return { text: req ? `После: ${courseLabel(req).toLowerCase()}` : "Закрыто", color: "text-muted" };
   };
+
+  // Рекомендуем дальше: первый по шагам маршрута курс, который открыт и ещё не пройден.
+  const recommended = courses
+    .filter((c) => c.step && c.status === "ready")
+    .sort((a, b) => a.step! - b.step!)
+    .find((c) => {
+      const st = stat(c);
+      return st.done < st.total && (st.open || st.done > 0);
+    });
 
   const stages = lessons.map((l, i) => ({ l, i })).filter((x) => x.l.course === selected.id);
   const selStat = stat(selected);
@@ -138,6 +151,17 @@ export function RouteMap() {
 
       {hydrated && doneCount > 0 && <DailyWarmup completed={completed} />}
 
+      {hydrated && doneCount === 0 && (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-line bg-surface px-5 py-4">
+          <p className="text-[16px] leading-relaxed">
+            <b>Уже делал сайты?</b> Пройди входную проверку — 10 вопросов. Если ответишь на 8, начнёшь сразу с практикума и курса 2.
+          </p>
+          <Link href="/proverka/" className="rounded-xl border border-line-strong px-4 py-2 font-semibold hover:border-route">
+            Входная проверка
+          </Link>
+        </section>
+      )}
+
       {hydrated && allReadyDone && (
         <p className="rounded-2xl border border-sun bg-sun-soft p-5 text-[17px] font-semibold">
           Все открытые миссии пройдены! Возвращайся к любому уроку, улучшай свои сайты или делай новое в «Моих проектах».
@@ -169,16 +193,23 @@ export function RouteMap() {
                     className="h-16 w-16 rounded-full shadow-[inset_-10px_-8px_0_rgba(0,0,0,0.22)]"
                     style={{ background: c.planet, outline: active ? "2px dashed var(--color-sun)" : "none", outlineOffset: 5 }}
                   />
-                  <span className="font-mono text-xs tracking-wide text-muted uppercase">{courseLabel(c)}</span>
+                  {hydrated && recommended?.id === c.id && (
+                    <span className="rounded-full bg-sun px-2.5 py-0.5 text-xs font-bold text-on-accent">★ Рекомендуем дальше</span>
+                  )}
+                  <span className="font-mono text-xs tracking-wide text-muted uppercase">
+                    {c.step ? `Шаг ${c.step} · ` : ""}
+                    {courseLabel(c)}
+                  </span>
                   <span className="text-[19px] leading-tight font-bold">{c.title}</span>
                   {hydrated && <span className={`text-sm ${st.color}`}>{st.text}</span>}
+                  {c.note && <span className="text-xs leading-snug text-muted">{c.note}</span>}
                 </button>
-                {hydrated && s && c.number > 0 && s.done === s.total && (
+                {hydrated && s && c.skills && s.done === s.total && (
                   <Link
-                    href={`/sertifikat/?kurs=${c.id}`}
+                    href={isPassed((control as Record<string, ControlResult>)[c.id]) ? `/sertifikat/?kurs=${c.id}` : `/kontrolnaya/?kurs=${c.id}`}
                     className="rounded-xl border border-sun bg-sun-soft px-3 py-2 text-center text-sm font-semibold"
                   >
-                    Получить сертификат курса
+                    {isPassed((control as Record<string, ControlResult>)[c.id]) ? "Получить сертификат курса" : "Контрольная миссия"}
                   </Link>
                 )}
               </li>
