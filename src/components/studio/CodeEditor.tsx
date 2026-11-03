@@ -6,7 +6,7 @@ import { EditorState, type Extension } from "@codemirror/state";
 import { HighlightStyle, syntaxHighlighting, syntaxTree } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { Decoration, EditorView, ViewPlugin, keymap, type DecorationSet, type ViewUpdate } from "@codemirror/view";
-import { indentWithTab } from "@codemirror/commands";
+import { indentMore, indentWithTab, undo } from "@codemirror/commands";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
@@ -21,6 +21,17 @@ const languages: Record<CodeFile, () => Extension> = {
 };
 
 const labels: Record<CodeFile, string> = { html: "HTML", css: "CSS", js: "JavaScript", py: "Python" };
+
+/**
+ * Символы над экранной клавиатурой телефона: на ней они спрятаны на втором-третьем экране,
+ * а в уроках нужны постоянно. Набор — под язык открытого файла.
+ */
+const SYMBOLS: Record<CodeFile, string[]> = {
+  html: ["<", ">", "</", "/", "=", '"', "#", ".", ":", ";", "-", "!"],
+  css: ["{", "}", ":", ";", "#", ".", "-", "(", ")", "%", ",", '"'],
+  js: ["(", ")", "{", "}", ";", "=", '"', ".", "[", "]", "+", "<", ">", "!", "'", "#"],
+  py: ["(", ")", ":", "=", '"', "'", "[", "]", "+", ",", "#", "_", "<", ">"],
+};
 
 /**
  * Подсветка пары тега: курсор на <div> — светится и его </div>.
@@ -159,6 +170,10 @@ type Props = {
   toolbar?: React.ReactNode;
   /** какие файлы показывать вкладками; по умолчанию HTML, CSS и JavaScript */
   fileTabs?: CodeFile[];
+  /** показать строку символов (телефон с открытой клавиатурой) */
+  showSymbols?: boolean;
+  /** редактор получил или потерял фокус */
+  onFocusChange?: (focused: boolean) => void;
 };
 
 export function CodeEditor({
@@ -170,6 +185,8 @@ export function CodeEditor({
   jumpTo,
   toolbar,
   fileTabs = ["html", "css", "js"],
+  showSymbols = false,
+  onFocusChange,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -227,8 +244,26 @@ export function CodeEditor({
     view.focus();
   }, [jumpTo]);
 
+  const insert = (text: string) => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch(view.state.replaceSelection(text), { scrollIntoView: true, userEvent: "input.type" });
+    view.focus();
+  };
+
+  // Кнопки строки символов не должны забирать фокус: иначе клавиатура закроется.
+  const keepFocus = (e: React.PointerEvent | React.MouseEvent) => e.preventDefault();
+
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      onFocus={(e) => {
+        if ((e.target as HTMLElement).closest(".cm-editor")) onFocusChange?.(true);
+      }}
+      onBlur={(e) => {
+        if ((e.target as HTMLElement).closest(".cm-editor")) onFocusChange?.(false);
+      }}
+    >
       <div role="tablist" aria-label="Файлы проекта" className="flex gap-1 border-b border-line px-2 pt-2">
         {fileTabs.map((file) => (
           <button
@@ -249,6 +284,54 @@ export function CodeEditor({
         {toolbar && <div className="ml-auto flex items-center pb-1">{toolbar}</div>}
       </div>
       <div ref={hostRef} className="min-h-0 flex-1 overflow-hidden" />
+      {showSymbols && (
+        <div
+          role="toolbar"
+          aria-label="Символы для кода"
+          className="flex shrink-0 gap-1 overflow-x-auto border-t border-line bg-raised px-1.5 py-1.5 [scrollbar-width:none]"
+        >
+          <button
+            type="button"
+            onPointerDown={keepFocus}
+            onMouseDown={keepFocus}
+            onClick={() => {
+              const view = viewRef.current;
+              if (!view) return;
+              if (view.state.selection.main.empty) insert(active === "py" ? "    " : "  ");
+              else indentMore(view);
+            }}
+            aria-label="Отступ"
+            className="h-10 min-w-12 shrink-0 rounded-lg bg-surface px-2 font-mono text-[15px] text-muted"
+          >
+            ⇥
+          </button>
+          {SYMBOLS[active].map((sym) => (
+            <button
+              key={sym}
+              type="button"
+              onPointerDown={keepFocus}
+              onMouseDown={keepFocus}
+              onClick={() => insert(sym)}
+              className="h-10 min-w-10 shrink-0 rounded-lg bg-surface px-2 font-mono text-[17px] font-semibold text-ink active:bg-route-soft"
+            >
+              {sym}
+            </button>
+          ))}
+          <button
+            type="button"
+            onPointerDown={keepFocus}
+            onMouseDown={keepFocus}
+            onClick={() => {
+              const view = viewRef.current;
+              if (view) undo(view);
+            }}
+            aria-label="Отменить"
+            className="h-10 min-w-12 shrink-0 rounded-lg bg-surface px-2 text-[15px] text-muted"
+          >
+            ↶
+          </button>
+        </div>
+      )}
     </div>
   );
 }

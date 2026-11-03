@@ -15,6 +15,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Android: клавиатура уменьшает экран страницы, а не закрывает собой редактор.
+  interactiveWidget: "resizes-content",
   themeColor: "#11122b",
 };
 

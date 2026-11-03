@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Lesson, ProjectFiles } from "@/content/lessons/types";
 import { getTerm } from "@/content/glossary";
 import { TermCard } from "@/components/glossary/Glossary";
@@ -64,10 +64,21 @@ export function LessonPanel({
   const newTerms = lesson.newTerms.map(getTerm).filter((t) => t !== undefined);
   const hintsLeft = lesson.hints.length - hintsShown;
   const justPassed = outcome.status === "done" && outcome.passed;
+  // После проверки показываем итог сразу, а не внизу длинного задания (особенно важно на телефоне).
+  // Прокручиваем только саму панель: scrollIntoView сдвинул бы и всю страницу.
+  const resultsRef = useRef<HTMLElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = scrollRef.current;
+    const el = resultsRef.current;
+    if (outcome.status !== "done" || !box || !el) return;
+    const top = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 16;
+    box.scrollTo({ top, behavior: "smooth" });
+  }, [outcome]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5">
         <header>
           <p className="font-mono text-[13px] font-bold tracking-wide text-route uppercase">
             {courseTag ? `${courseTag} · ` : ""}Урок {lesson.number} из {total}
@@ -236,7 +247,7 @@ export function LessonPanel({
         )}
 
         {outcome.status === "done" && (
-          <section aria-labelledby="results-title" role="status">
+          <section ref={resultsRef} aria-labelledby="results-title" role="status">
             <h2 id="results-title" className="text-lg font-bold text-ink">
               {outcome.passed ? "Все проверки пройдены" : "Почти получилось"}
             </h2>

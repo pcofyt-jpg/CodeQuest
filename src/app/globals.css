@@ -67,6 +67,20 @@ kbd,
   font-feature-settings: "liga" 0, "calt" 0;
 }
 
+/* Телефон: код мельче и без колонки сворачивания, чтобы длинные строки реже переносились. */
+@media (max-width: 1023px) {
+  .cm-editor.cm-editor {
+    font-size: 14px;
+  }
+  .cm-editor .cm-gutters .cm-foldGutter {
+    display: none !important;
+  }
+  .cm-editor .cm-lineNumbers .cm-gutterElement {
+    padding: 0 6px 0 4px;
+    min-width: 2ch;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--color-route);
   outline-offset: 2px;

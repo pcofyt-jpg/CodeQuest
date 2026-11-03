@@ -20,6 +20,8 @@ import { usePreviewSession } from "./usePreviewSession";
 import { LessonPanel } from "./LessonPanel";
 import { StudioHeader } from "./StudioHeader";
 import { useCheckRunner } from "./useCheckRunner";
+import { useScreenKeyboard } from "./useScreenKeyboard";
+import { TaskStrip } from "./TaskStrip";
 
 const DRAFT_DELAY_MS = 800;
 
@@ -121,6 +123,10 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
   const pyChecks = usePythonChecks(lesson.robot ?? null);
   const runner = isPython ? { ...pyChecks, frame: null } : webChecks;
   const session = usePreviewSession(files);
+  // Телефон: пока открыта клавиатура, прячем шапку и нижние вкладки — весь экран отдаём коду.
+  const keyboard = useScreenKeyboard();
+  const [editorFocused, setEditorFocused] = useState(false);
+  const typing = keyboard.open && mobileView === "code";
 
   // Сохраняем черновик в этом браузере.
   useEffect(() => {
@@ -184,17 +190,26 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
 
   return (
     <GlossaryProvider value={glossaryApi}>
-    <div className="flex h-dvh flex-col bg-paper">
-      <StudioHeader
-        currentIndex={index}
-        completed={completedSlugs}
-        onOpenGlossary={() => {
-          setGlossaryTerm(null);
-          setGlossaryOpen(true);
-        }}
-      />
+    <div
+      className={`flex flex-col bg-paper ${typing ? "fixed inset-x-0 top-0 lg:static lg:h-dvh" : "h-dvh"}`}
+      style={typing ? { top: keyboard.offsetTop, height: keyboard.height } : undefined}
+    >
+      <div className={typing ? "hidden lg:block" : undefined}>
+        <StudioHeader
+          currentIndex={index}
+          completed={completedSlugs}
+          onOpenGlossary={() => {
+            setGlossaryTerm(null);
+            setGlossaryOpen(true);
+          }}
+        />
+      </div>
 
-      <main className="grid min-h-0 flex-1 grid-rows-1 gap-3 p-2 pb-[calc(4.75rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)_minmax(0,1fr)] lg:pb-3">
+      <main
+        className={`grid min-h-0 flex-1 grid-rows-1 gap-3 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)_minmax(0,1fr)] lg:p-3 ${
+          typing ? "p-0" : "p-2 pb-[calc(4.75rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4.75rem+env(safe-area-inset-bottom))]"
+        }`}
+      >
         <section aria-label="Урок" className={panel("lesson")}>
           <LessonPanel
             lesson={lesson}
@@ -225,7 +240,10 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
         </section>
 
         <section aria-label="Редактор кода" className={panel("code")}>
+          {!typing && <TaskStrip lesson={lesson} />}
           <CodeEditor
+            showSymbols={typing && editorFocused}
+            onFocusChange={setEditorFocused}
             files={files}
             active={activeFile}
             onActiveChange={setActiveFile}
@@ -290,7 +308,9 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
 
       <nav
         aria-label="Разделы студии"
-        className="fixed inset-x-0 bottom-0 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className={`fixed inset-x-0 bottom-0 items-center gap-1 border-t border-line bg-surface pr-2 pb-[env(safe-area-inset-bottom)] lg:hidden ${
+          typing ? "hidden" : "flex"
+        }`}
       >
         {(
           [
@@ -304,12 +324,12 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             type="button"
             aria-pressed={mobileView === view}
             onClick={() => setMobileView(view)}
-            className={`flex h-16 flex-1 items-center justify-center text-[15px] font-semibold ${
+            className={`flex h-16 min-w-0 flex-1 items-center justify-center text-[15px] font-semibold ${
               mobileView === view ? "text-route" : "text-muted"
             }`}
           >
             <span
-              className={`rounded-full px-4 py-1.5 ${mobileView === view ? "bg-route-soft" : ""}`}
+              className={`rounded-full px-3 py-1.5 ${mobileView === view ? "bg-route-soft" : ""}`}
             >
               {label}
               {view === "result" && session.entries.some((e) => e.level === "error") && (
@@ -318,6 +338,16 @@ function Workspace({ lesson, index, completedSlugs, starter, checkpoint, initial
             </span>
           </button>
         ))}
+        {lesson.checks.length > 0 && mobileView !== "lesson" && (
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={runner.outcome.status === "running"}
+            className="h-11 shrink-0 rounded-xl bg-route px-4 text-[15px] font-semibold text-on-accent disabled:opacity-60"
+          >
+            {runner.outcome.status === "running" ? "Проверяю…" : "Проверить"}
+          </button>
+        )}
       </nav>
 
       {runner.frame}
