@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { Logo } from "@/components/Logo";
+import { QuestCertificate } from "./QuestCertificate";
 import { courses } from "@/content/courses";
 import { courseLessons } from "@/content/lessons/catalog";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
@@ -94,9 +94,8 @@ export function CertificatePage() {
     );
   }
 
-
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
+    <main className="cert-page mx-auto max-w-5xl px-3 py-8 sm:px-5">
       <div className="mb-6 print:hidden">
         <Link href="/" className="text-sm font-semibold text-route underline-offset-4 hover:underline">
           ← К маршруту
@@ -122,36 +121,23 @@ export function CertificatePage() {
         </button>
       </div>
 
-      <article
-        aria-label="Сертификат"
-        className="rounded-3xl border-[6px] border-double border-[#2f5bea] bg-white px-8 py-10 text-center text-[#111827] shadow-sm print:shadow-none"
-      >
-        <div className="flex justify-center">
-          <Logo size="lg" />
-        </div>
-        <p className="mt-6 text-sm font-bold tracking-[0.3em] text-[#4b5563] uppercase">Сертификат</p>
-        <h1 className="mt-3 text-3xl font-extrabold text-[#111827]">{name.trim() || "Юный разработчик"}</h1>
-        <p className="mt-3 text-[17px]">прошёл(ла) курс</p>
-        <p className="mt-1 text-2xl font-bold text-[#2f5bea]">
-          «{course.title}» · {items.length} уроков
-        </p>
-        {course.skills && (
-          <div className="mx-auto mt-6 max-w-xl text-left">
-            <p className="text-center text-sm font-semibold text-[#4b5563]">Теперь умеет:</p>
-            <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-relaxed text-[#111827]">
-              {course.skills.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <p className="mt-6 text-sm text-[#4b5563]">
-          {finishedAt ? new Date(finishedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }) : ""}
-        </p>
-        <p className="mt-6 text-xs text-[#4b5563]">
-          Документ о прохождении курса в учебной студии CodeQuest, а не государственный документ об образовании.
-        </p>
-      </article>
+      <QuestCertificate
+        name={name.trim() || "Юный разработчик"}
+        courseTitle={course.title}
+        lessons={items.length}
+        skills={course.skills ?? []}
+        date={finishedAt ? new Date(finishedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }) : ""}
+        control={controlResult}
+      />
+      {/* Печать: только сертификат, на весь альбомный лист A4, с тёмным фоном. */}
+      <style>{`
+        @page { size: A4 landscape; margin: 0; }
+        @media print {
+          html, body { background: #15123a !important; }
+          .quest-cert { width: 297mm !important; border-radius: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .cert-page { max-width: none !important; padding: 0 !important; }
+        }
+      `}</style>
     </main>
   );
 }

@@ -71,7 +71,7 @@ with sync_playwright() as p:
     pg.goto(BASE + "/sertifikat/?kurs=pervyj-sajt"); pg.wait_for_timeout(500)
     pg.get_by_label("Имя на сертификате (по желанию)").fill("Миша")
     cert = pg.get_by_role("article", name="Сертификат")
-    report("сертификат с именем и курсом", "Миша" in cert.inner_text() and "Первый сайт" in cert.inner_text())
+    report("сертификат с именем и курсом", "Миша" in cert.inner_text() and "первый сайт" in cert.inner_text().lower())
     pg.goto(BASE + "/sertifikat/?kurs=nastoyashchij-sajt"); pg.wait_for_timeout(500)
     report("незавершённый курс: сертификат пока не готов", "пока не готов" in pg.inner_text("body"))
 
