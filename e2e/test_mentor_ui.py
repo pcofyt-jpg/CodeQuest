@@ -22,28 +22,48 @@ with sync_playwright() as p:
     pg.goto(BASE + "/learn/oshibka"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     console = pg.locator('section[aria-label="Консоль"]')
     console.get_by_role("button", name="Спросить наставника").first.click()
-    report("без кода просит родителя ввести код", "Наставнику нужен код доступа" in console.inner_text())
-    report("родителю объяснено, что передаётся", "получает только код урока и текст ошибки" in console.inner_text())
+    parent = console.inner_text()
+    report("без кода просит родителя ввести код", "Наставнику нужен код доступа" in parent)
+    report(
+        "родителю перечислено, что уходит",
+        "весь код урока (все файлы)" in parent and "задание урока" in parent and "сообщения непройденных проверок или текст ошибки" in parent,
+    )
+    report(
+        "нет ложных обещаний",
+        "не сохраняет" not in parent and "не передаются" not in parent and "только код урока" not in parent,
+    )
 
     console.get_by_label("Код доступа").fill("неверный-код"); console.get_by_role("button", name="Сохранить").click()
-    pg.wait_for_timeout(800)
+    pg.wait_for_timeout(300)
+    report("после кода — напоминание, запроса ещё нет", "Наставник увидит весь твой код" in console.inner_text() and "Код доступа не подходит" not in console.inner_text())
+    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     report("неверный код: понятный отказ и снова форма", "Код доступа не подходит" in console.inner_text() and console.get_by_label("Код доступа").count() == 1)
 
     console.get_by_label("Код доступа").fill("Test-Code-1"); console.get_by_role("button", name="Сохранить").click()
-    pg.wait_for_timeout(800)
+    pg.wait_for_timeout(300)
+    report("перед отправкой напоминание", "Наставник увидит весь твой код" in console.inner_text())
+    console.get_by_role("button", name="Отмена").click(); pg.wait_for_timeout(300)
+    report("отмена не показывает ответ", "сравни id кнопки" not in console.inner_text())
+
+    console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(200)
+    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     txt = console.inner_text()
     report("верный код: ответ наставника показан", "сравни id кнопки" in txt)
     report("подпись «ИИ может ошибаться» и остаток вопросов", "может ошибаться" in txt and "осталось: 7" in txt)
 
-    # код запомнился: на другой ошибке форма не появляется
+    # код запомнен: форма не появляется, но напоминание — каждый раз
     pg.reload(); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
-    console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(800)
-    report("код запомнен — сразу ответ", "сравни id кнопки" in console.inner_text())
+    console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(300)
+    report("код запомнен — сначала напоминание", "Наставник увидит весь твой код" in console.inner_text() and "Наставнику нужен код доступа" not in console.inner_text())
+    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
+    report("код запомнен — ответ после «Отправить»", "сравни id кнопки" in console.inner_text())
 
     # «что не так» после непройденной проверки
     check(pg)
     panel = pg.locator('section[aria-label="Урок"]')
-    panel.get_by_role("button", name="Спросить наставника, что не так").click(); pg.wait_for_timeout(800)
+    panel.get_by_role("button", name="Спросить наставника, что не так").click(); pg.wait_for_timeout(300)
+    report("напоминание и у непройденной проверки", "Наставник увидит весь твой код" in panel.inner_text())
+    panel.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     report("«что не так» после проверки отвечает", "сравни id кнопки" in panel.inner_text())
 
     received = json.loads(urllib.request.urlopen(MOCK).read().decode())

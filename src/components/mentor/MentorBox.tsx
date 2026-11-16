@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { MENTOR_PARENT_COPY, MENTOR_REMINDER_COPY } from "@/content/pendingOwnerCopy";
 import { askMentor, mentorEnabled, type MentorRequest } from "@/lib/mentor/client";
 import { mentorCode, useMentorCode } from "@/lib/mentor/codeStore";
 
@@ -25,27 +26,36 @@ function MentorText({ text }: { text: string }) {
 type State =
   | { s: "idle" }
   | { s: "need-code"; note?: string }
+  | { s: "confirm"; code: string }
   | { s: "loading" }
   | { s: "answer"; text: string; left: number | null }
   | { s: "error"; text: string };
 
 /**
  * Кнопка «Спросить наставника» и его ответ.
- * Запрос собирается в момент нажатия: в нём только код урока и ошибка или проверки.
+ * Если кода доступа ещё нет — сначала экран кода, затем напоминание, затем отправка.
+ * Если код уже сохранён — напоминание перед каждой отправкой. «Отмена» ничего не отправляет.
  */
 export function MentorBox({ label, buildRequest }: { label: string; buildRequest: () => MentorRequest }) {
   const code = useMentorCode();
   const [state, setState] = useState<State>({ s: "idle" });
+  const busy = useRef(false);
   if (!mentorEnabled) return null;
 
   const ask = async (withCode: string) => {
+    if (busy.current) return;
+    busy.current = true;
     setState({ s: "loading" });
-    const r = await askMentor(buildRequest(), withCode);
-    if (r.ok) setState({ s: "answer", text: r.answer, left: r.left });
-    else if (r.kind === "code") {
-      mentorCode.clear();
-      setState({ s: "need-code", note: r.message });
-    } else setState({ s: "error", text: r.message });
+    try {
+      const r = await askMentor(buildRequest(), withCode);
+      if (r.ok) setState({ s: "answer", text: r.answer, left: r.left });
+      else if (r.kind === "code") {
+        mentorCode.clear();
+        setState({ s: "need-code", note: r.message });
+      } else setState({ s: "error", text: r.message });
+    } finally {
+      busy.current = false;
+    }
   };
 
   if (state.s === "need-code") {
@@ -57,16 +67,20 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
           const value = String(new FormData(e.currentTarget).get("mentor-code") ?? "").trim();
           if (!value) return;
           mentorCode.set(value);
-          void ask(value.toLowerCase());
+          setState({ s: "confirm", code: value.toLowerCase() });
         }}
       >
         {state.note && <p className="mb-2 font-semibold text-coral">{state.note}</p>}
         <p className="font-semibold">Наставнику нужен код доступа. Попроси родителя ввести его.</p>
-        <p className="mt-1 text-muted">
-          Для родителя: наставник — это ИИ (YandexGPT от Яндекса). Чтобы ответить, он получает только код урока и
-          текст ошибки. Имя и другие личные данные не передаются; Яндекс не сохраняет эти запросы. Вводя код, вы
-          соглашаетесь на такую передачу на время пилота.
-        </p>
+        <div className="mt-1 text-muted">
+          <p>{MENTOR_PARENT_COPY.lead}</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5">
+            {MENTOR_PARENT_COPY.items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p className="mt-1">{MENTOR_PARENT_COPY.tail}</p>
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
           <label htmlFor="mentor-code" className="sr-only">
             Код доступа
@@ -90,13 +104,40 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
     );
   }
 
+  if (state.s === "confirm") {
+    const saved = state.code;
+    return (
+      <div className="mt-2 rounded-xl border border-route/30 bg-route-soft p-3 font-sans text-sm leading-relaxed text-ink">
+        <p>{MENTOR_REMINDER_COPY.text}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => void ask(saved)}
+            className="inline-flex items-center justify-center rounded-lg bg-route px-4 font-semibold text-on-accent"
+            style={{ minHeight: 44, minWidth: 44 }}
+          >
+            {MENTOR_REMINDER_COPY.send}
+          </button>
+          <button
+            type="button"
+            onClick={() => setState({ s: "idle" })}
+            className="inline-flex items-center justify-center rounded-lg px-4 font-semibold"
+            style={{ minHeight: 44, minWidth: 44 }}
+          >
+            {MENTOR_REMINDER_COPY.cancel}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-1.5 font-sans">
       {state.s !== "answer" && (
         <button
           type="button"
           disabled={state.s === "loading"}
-          onClick={() => (code ? void ask(code) : setState({ s: "need-code" }))}
+          onClick={() => (code ? setState({ s: "confirm", code }) : setState({ s: "need-code" }))}
           className="rounded-lg border border-route/40 bg-surface px-3 py-1.5 text-sm font-semibold text-route hover:bg-route-soft disabled:opacity-60"
         >
           {state.s === "loading" ? "Наставник думает…" : label}
