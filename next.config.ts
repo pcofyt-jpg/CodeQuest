@@ -29,7 +29,7 @@ const nextConfig: NextConfig = isStaticExport
   ? {
       env: { NEXT_PUBLIC_BASE_PATH: basePath },
       output: "export",
-      // Сайт на GitHub Pages живёт по адресу вида https://имя.github.io/репозиторий/
+      // Свой домен https://codequest.ru отдаёт сайт с корня, поэтому basePath пустой.
       basePath,
       trailingSlash: true,
       poweredByHeader: false,

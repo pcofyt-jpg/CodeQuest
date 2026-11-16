@@ -59,7 +59,10 @@ jobs:
         run: npx next build
         env:
           STATIC_EXPORT: "1"
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # https://codequest.ru/ отдаёт сайт с корня. Не подставлять base_path из
+          # configure-pages: у project site без своего домена это /CodeQuest, и файлы
+          # на своём домене не найдутся.
+          BASE_PATH: ""
           # Адрес функции ИИ-наставника (Settings → Secrets and variables → Actions → Variables).
           # Это не секрет: браузер всё равно обращается по нему. Если не задан — наставник скрыт.
           # Берём из Variables, а если его положили в Secrets — оттуда.
