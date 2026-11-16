@@ -4,6 +4,11 @@
 ветки `main` (сценарий `.github/workflows/pages.yml`). Перед выкладкой запускаются проверки:
 если тесты не прошли, сайт не обновится.
 
+Адрес пилота — **https://codequest.ru/**. Сайт открывается с корня домена, без префикса
+`/CodeQuest`. Имя домена записано в `public/CNAME` и попадает в каждую сборку, поэтому
+настройка не сбрасывается при выкладке. У регистратора уже стоят четыре A-записи корня
+на адреса GitHub Pages и CNAME `www` → `pcofyt-jpg.github.io`.
+
 ## Важно знать
 
 - **Код будет публичным.** На бесплатном тарифе GitHub Pages работает только с публичными
@@ -43,7 +48,7 @@ GitHub Pages не даёт задать свои заголовки. Главн�
 6. **Запустите выкладку.** Вкладка Actions → «Выкладка на GitHub Pages» → Run workflow
    (первая автоматическая попытка могла упасть, пока Pages не был включён — это нормально).
    Через 3–5 минут появится зелёная галочка.
-7. **Ссылка:** `https://ВАШ_ЛОГИН.github.io/codequest/`
+7. **Ссылка:** https://codequest.ru/
 
 ## Как обновлять сайт
 
@@ -63,6 +68,7 @@ Actions → упавший запуск → шаг с красным крест�
 ## Проверить сборку для Pages локально
 
 ```bash
-STATIC_EXPORT=1 BASE_PATH=/codequest npx next build   # результат — папка out/
+STATIC_EXPORT=1 npx next build   # результат — папка out/, пути от корня /
 ```
-В PowerShell: `$env:STATIC_EXPORT="1"; $env:BASE_PATH="/codequest"; npx next build`.
+В PowerShell: `$env:STATIC_EXPORT="1"; npx next build`.
+`BASE_PATH` не задаём: для https://codequest.ru префикс не нужен.
