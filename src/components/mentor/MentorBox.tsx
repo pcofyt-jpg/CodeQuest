@@ -23,8 +23,41 @@ function MentorText({ text }: { text: string }) {
   );
 }
 
-/** Первые миллисекунды «Отправить» не срабатывает: второй клик по «Спросить» не должен уйти в запрос. */
-const SEND_ARM_MS = 500;
+/** Первые миллисекунды обе кнопки напоминания не срабатывают: повторный клик по «Спросить» не должен ни отправить код, ни закрыть окно. */
+const BUTTONS_ARM_MS = 500;
+
+/** Нижняя панель вкладок есть только уже `lg` (1024px). На компьютере страницу не прокручиваем. */
+const MOBILE_TABS = "(max-width: 1023px)";
+
+function tabBarTop(): number | null {
+  if (!window.matchMedia(MOBILE_TABS).matches) return null;
+  const nav = document.querySelector('nav[aria-label="Разделы студии"]');
+  if (!(nav instanceof HTMLElement) || getComputedStyle(nav).display === "none") return null;
+  return nav.getBoundingClientRect().top;
+}
+
+/** Поднимает напоминание над панелью вкладок, прокручивая только внутренний список, не окно. */
+function liftAboveTabBar(el: HTMLElement) {
+  const limit = tabBarTop();
+  if (limit == null) return;
+  for (let guard = 0; guard < 6 && el.getBoundingClientRect().bottom > limit - 8; guard++) {
+    let node = el.parentElement;
+    let scroller: HTMLElement | null = null;
+    while (node && node !== document.body) {
+      const style = getComputedStyle(node);
+      if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1) {
+        scroller = node;
+        break;
+      }
+      node = node.parentElement;
+    }
+    if (!scroller) return;
+    const overflow = el.getBoundingClientRect().bottom - (limit - 8);
+    const before = scroller.scrollTop;
+    scroller.scrollTop = before + overflow;
+    if (scroller.scrollTop === before) return;
+  }
+}
 
 type State =
   | { s: "idle" }
@@ -42,42 +75,61 @@ type State =
 export function MentorBox({ label, buildRequest }: { label: string; buildRequest: () => MentorRequest }) {
   const code = useMentorCode();
   const [state, setState] = useState<State>({ s: "idle" });
-  const [sendArmed, setSendArmed] = useState(false);
+  const [buttonsArmed, setButtonsArmed] = useState(false);
   const busy = useRef(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const scrollYRef = useRef(0);
+  const wasConfirm = useRef(false);
+  const scrollEpoch = useRef(0);
   const remindTitleId = useId();
 
   useEffect(() => {
-    if (state.s !== "confirm") return;
-    const timer = window.setTimeout(() => setSendArmed(true), SEND_ARM_MS);
-    const el = dialogRef.current;
-    if (el) {
-      el.focus({ preventScroll: true });
-      const lift = () => {
-        const nav = document.querySelector('nav[aria-label="Разделы студии"]');
-        const navTop =
-          nav instanceof HTMLElement && getComputedStyle(nav).display !== "none"
-            ? nav.getBoundingClientRect().top
-            : window.innerHeight;
-        const rect = el.getBoundingClientRect();
-        if (rect.bottom > navTop - 8) el.scrollIntoView({ block: "center", inline: "nearest" });
+    if (state.s === "confirm") {
+      wasConfirm.current = true;
+      const epoch = ++scrollEpoch.current;
+      const y = scrollYRef.current;
+      const timer = window.setTimeout(() => setButtonsArmed(true), BUTTONS_ARM_MS);
+      const el = dialogRef.current;
+      el?.focus({ preventScroll: true });
+      const keepWindow = () => {
+        if (scrollEpoch.current !== epoch) return;
+        if (Math.abs(window.scrollY - y) > 0) window.scrollTo(window.scrollX, y);
       };
-      lift();
-      const frame = window.requestAnimationFrame(lift);
+      if (el) liftAboveTabBar(el);
+      keepWindow();
+      const frame = window.requestAnimationFrame(() => {
+        if (el) liftAboveTabBar(el);
+        keepWindow();
+      });
       return () => {
         window.clearTimeout(timer);
         window.cancelAnimationFrame(frame);
       };
     }
-    return () => window.clearTimeout(timer);
+    if (!wasConfirm.current) return;
+    wasConfirm.current = false;
+    const epoch = ++scrollEpoch.current;
+    const y = scrollYRef.current;
+    triggerRef.current?.focus({ preventScroll: true });
+    window.scrollTo(window.scrollX, y);
+    const frame = window.requestAnimationFrame(() => {
+      if (scrollEpoch.current !== epoch) return;
+      triggerRef.current?.focus({ preventScroll: true });
+      window.scrollTo(window.scrollX, y);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [state.s]);
 
   if (!mentorEnabled) return null;
 
   const showConfirm = (nextCode: string) => {
-    setSendArmed(false);
+    scrollYRef.current = window.scrollY;
+    setButtonsArmed(false);
     setState({ s: "confirm", code: nextCode });
   };
+
+  const closeConfirm = () => setState({ s: "idle" });
 
   const ask = async (withCode: string) => {
     if (busy.current) return;
@@ -149,24 +201,34 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
         role="alertdialog"
         aria-labelledby={remindTitleId}
         tabIndex={-1}
-        className="mt-2 scroll-mb-24 rounded-xl border border-route/30 bg-route-soft p-3 font-sans text-sm leading-relaxed text-ink outline-none"
+        className="mt-2 rounded-xl border border-route/30 bg-route-soft p-3 pb-14 font-sans text-sm leading-relaxed text-ink outline-none"
+        onKeyDown={(e) => {
+          if (e.key !== "Escape") return;
+          e.preventDefault();
+          e.stopPropagation();
+          closeConfirm();
+        }}
       >
         <p id={remindTitleId}>{MENTOR_REMINDER_COPY.text}</p>
-        {/* «Отмена» слева, где была кнопка вопроса: «Отправить» справа, не под курсором. */}
+        {/* Кнопки ниже текста: центр «Спросить наставника» попадает в текст, не в кнопку. */}
         <div className="mt-3 flex flex-nowrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setState({ s: "idle" })}
-            className="inline-flex items-center justify-center rounded-lg px-4 font-semibold"
+            disabled={!buttonsArmed}
+            onClick={() => {
+              if (!buttonsArmed) return;
+              closeConfirm();
+            }}
+            className="inline-flex items-center justify-center rounded-lg px-4 font-semibold disabled:opacity-60"
             style={{ minHeight: 44, minWidth: 44 }}
           >
             {MENTOR_REMINDER_COPY.cancel}
           </button>
           <button
             type="button"
-            disabled={!sendArmed}
+            disabled={!buttonsArmed}
             onClick={() => {
-              if (!sendArmed) return;
+              if (!buttonsArmed) return;
               void ask(saved);
             }}
             className="ml-auto inline-flex items-center justify-center rounded-lg bg-route px-4 font-semibold text-on-accent disabled:opacity-60"
@@ -183,6 +245,7 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
     <div className="mt-1.5 font-sans">
       {state.s !== "answer" && (
         <button
+          ref={triggerRef}
           type="button"
           disabled={state.s === "loading"}
           onClick={() => (code ? showConfirm(code) : setState({ s: "need-code" }))}

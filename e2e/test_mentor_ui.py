@@ -2,7 +2,7 @@
 
 Студия должна быть собрана с NEXT_PUBLIC_AI_MENTOR_URL=адрес имитации, имитация — принимать код test-code-1.
 Проверяет: код доступа, ответ, отказ по неверному коду, «что не так» после проверки, состав запроса,
-двойной и тройной клик по «Спросить наставника» (запроса без «Отправить» нет).
+двойной и тройной клик и двойное касание: напоминание остаётся, прокрутка окна не прыгает, запроса нет.
 """
 import json, os, sys, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -20,19 +20,31 @@ def report(name, cond):
 def mock_len():
     return len(json.loads(urllib.request.urlopen(MOCK).read().decode()))
 
-def burst_click(pg, locator, n, gap_ms):
-    """n кликов в одну точку — центр кнопки «Спросить», как двойной клик мышью."""
+def scroll_y(pg):
+    return pg.evaluate("window.scrollY")
+
+def reminder_open(scope):
+    return scope.get_by_role("alertdialog").count() == 1 and "Наставник увидит весь твой код" in scope.inner_text()
+
+def burst_at(pg, locator, n, gap_ms, tap=False):
+    """n нажатий в центр кнопки «Спросить», без прокрутки между ними."""
     locator.scroll_into_view_if_needed()
+    pg.wait_for_timeout(50)
     box = locator.bounding_box()
     if not box:
-        return False
+        return None
     x = box["x"] + box["width"] / 2
     y = box["y"] + box["height"] / 2
+    y0 = scroll_y(pg)
     for i in range(n):
-        pg.mouse.click(x, y)
+        if tap:
+            pg.touchscreen.tap(x, y)
+        else:
+            pg.mouse.click(x, y)
         if i + 1 < n and gap_ms:
             pg.wait_for_timeout(gap_ms)
-    return True
+    pg.wait_for_timeout(80)
+    return y0
 
 def close_reminder(scope, pg):
     cancel = scope.get_by_role("button", name="Отмена")
@@ -41,7 +53,8 @@ def close_reminder(scope, pg):
         pg.wait_for_timeout(80)
 
 with sync_playwright() as p:
-    b = p.chromium.launch(); pg = b.new_page(viewport={"width": 1440, "height": 900})
+    b = p.chromium.launch()
+    pg = b.new_context(viewport={"width": 1440, "height": 900}, has_touch=True).new_page()
     unlock_until(pg, 7, SLUGS)
     pg.goto(BASE + "/learn/oshibka"); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     console = pg.locator('section[aria-label="Консоль"]')
@@ -69,20 +82,49 @@ with sync_playwright() as p:
     console.get_by_role("button", name="Отмена").click(); pg.wait_for_timeout(300)
     report("отмена не показывает ответ", "сравни id кнопки" not in console.inner_text())
 
-    # Двойной и тройной клик не должны попадать в «Отправить».
-    for width in (1440, 1280):
-        pg.set_viewport_size({"width": width, "height": 900})
-        pg.wait_for_timeout(200)
+    # Повторные клики не закрывают напоминание и не двигают окно.
+    def check_burst(scope, button_name, width, height, n, gap, tap=False):
+        pg.set_viewport_size({"width": width, "height": height})
+        pg.wait_for_timeout(150)
+        if width < 1024:
+            tab = pg.locator('nav[aria-label="Разделы студии"] button', has_text="Результат")
+            if tab.count():
+                tab.click()
+        close_reminder(scope, pg)
+        ask = scope.get_by_role("button", name=button_name).first
+        ask.wait_for()
+        before = mock_len()
+        y0 = burst_at(pg, ask, n, gap, tap)
+        kind = "касания" if tap else "клика"
+        open_ok = y0 is not None and reminder_open(scope) and mock_len() == before and abs(scroll_y(pg) - y0) <= 2
+        report(f"{button_name} {width}px: {n} {kind}, пауза {gap} мс — открыто, без запроса, scrollY", open_ok)
+        pg.wait_for_timeout(550)
+        y_before_cancel = scroll_y(pg)
+        close_reminder(scope, pg)
+        report(
+            f"{button_name} {width}px: {n} {kind} — «Отмена» после паузы, scrollY",
+            y0 is not None
+            and not reminder_open(scope)
+            and abs(scroll_y(pg) - y_before_cancel) <= 2
+            and abs(scroll_y(pg) - y0) <= 2,
+        )
+
+    for width in (1280, 1366, 1440, 1920):
         for n in (2, 3):
             for gap in (0, 150, 300):
-                before = mock_len()
-                ask = console.get_by_role("button", name="Спросить наставника").first
-                ok = burst_click(pg, ask, n, gap)
-                pg.wait_for_timeout(700)
-                report(f"консоль {width}px: {n} клика, пауза {gap} мс — запроса нет", ok and mock_len() == before)
-                close_reminder(console, pg)
+                check_burst(console, "Спросить наставника", width, 900, n, gap)
+    check_burst(console, "Спросить наставника", 390, 844, 2, 80, tap=True)
 
     pg.set_viewport_size({"width": 1440, "height": 900})
+    pg.wait_for_timeout(200)
+    close_reminder(console, pg)
+    y_esc = scroll_y(pg)
+    console.get_by_role("button", name="Спросить наставника").first.click()
+    pg.wait_for_timeout(100)
+    report("Escape закрывает напоминание", reminder_open(console))
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(100)
+    report("Escape закрыл и не сдвинул scrollY", not reminder_open(console) and abs(scroll_y(pg) - y_esc) <= 2)
     console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(600)
     console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     txt = console.inner_text()
@@ -103,14 +145,9 @@ with sync_playwright() as p:
     ask_lesson.wait_for()
     for n in (2, 3):
         for gap in (0, 150, 300):
-            before = mock_len()
-            ok = burst_click(pg, ask_lesson, n, gap)
-            pg.wait_for_timeout(700)
-            report(f"урок: {n} клика, пауза {gap} мс — запроса нет", ok and mock_len() == before)
-            close_reminder(panel, pg)
-            ask_lesson = panel.get_by_role("button", name="Спросить наставника, что не так")
-            ask_lesson.wait_for()
+            check_burst(panel, "Спросить наставника, что не так", 1440, 900, n, gap)
 
+    ask_lesson = panel.get_by_role("button", name="Спросить наставника, что не так")
     ask_lesson.click(); pg.wait_for_timeout(600)
     report("напоминание и у непройденной проверки", "Наставник увидит весь твой код" in panel.inner_text())
     panel.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
