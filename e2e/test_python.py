@@ -70,3 +70,5 @@ with sync_playwright() as p:
     report("ввод показан в выводе как в консоли", "Какое животное тебе нравится? кот" in out)
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

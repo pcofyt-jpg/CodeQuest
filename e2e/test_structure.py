@@ -42,3 +42,5 @@ with sync_playwright() as p:
     report("ссылка на строку открывает вкладку CSS", pg.get_by_role("tab", name="CSS").get_attribute("aria-selected") == "true")
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

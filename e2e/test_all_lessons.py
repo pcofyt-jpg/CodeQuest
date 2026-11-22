@@ -94,3 +94,5 @@ with sync_playwright() as p:
     report("страница шпаргалки показывает все понятия", "Ещё" not in pg.inner_text("main") if pg.locator("main").count() else "появятся здесь" not in pg.inner_text("body"))
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

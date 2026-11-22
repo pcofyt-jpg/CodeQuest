@@ -35,3 +35,5 @@ with sync_playwright() as p:
     report("в скачанный сайт картинка встроена", "data:image/svg+xml;base64," in html and "kartinki/" not in html)
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

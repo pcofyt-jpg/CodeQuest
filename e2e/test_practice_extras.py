@@ -89,3 +89,5 @@ with sync_playwright() as p:
     report("пример из шпаргалки копируется", len(pg.evaluate("navigator.clipboard.readText()")) > 3)
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

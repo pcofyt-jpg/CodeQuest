@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { QuestCertificate } from "./QuestCertificate";
+import { CERTIFICATE_NAME_COPY } from "@/content/pendingOwnerCopy";
 import { courses } from "@/content/courses";
 import { courseLessons } from "@/content/lessons/catalog";
 import { useHydrated, useProgress } from "@/lib/progress/useProgress";
@@ -29,6 +30,15 @@ const saveName = (v: string) => {
     window.localStorage.setItem(NAME_KEY, v.slice(0, 60));
   } catch {
     // имя просто не сохранится
+  }
+  listeners.forEach((l) => l());
+};
+/** Удаляет только имя на сертификате. Прогресс и другие ключи не трогает. */
+const forgetName = () => {
+  try {
+    window.localStorage.removeItem(NAME_KEY);
+  } catch {
+    // имя просто не сотрётся
   }
   listeners.forEach((l) => l());
 };
@@ -108,17 +118,28 @@ export function CertificatePage() {
           value={name}
           onChange={(e) => saveName(e.target.value)}
           maxLength={60}
-          placeholder="Например, Миша"
+          placeholder={CERTIFICATE_NAME_COPY.placeholder}
           className="mt-1 w-full max-w-sm rounded-lg border border-line bg-surface px-3 py-2"
         />
+        <p className="mt-1 text-sm text-muted">{CERTIFICATE_NAME_COPY.nickHint}</p>
+        {/* Проверено по коду: это поле пишется только в localStorage (NAME_KEY) и рисуется на сертификате.
+            В запрос наставника, адрес, document.title, cookies и JSON-копию прогресса оно не входит. */}
         <p className="mt-1 text-sm text-muted">Имя хранится только в этом браузере и никуда не отправляется.</p>
         <button
           type="button"
+          onClick={forgetName}
+          className="mt-3 inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-line bg-surface px-4 py-2 font-semibold"
+        >
+          {CERTIFICATE_NAME_COPY.clearName}
+        </button>
+        <button
+          type="button"
           onClick={() => window.print()}
-          className="mt-4 rounded-xl bg-route px-6 py-3 font-semibold text-on-accent"
+          className="mt-4 block w-fit rounded-xl bg-route px-6 py-3 font-semibold text-on-accent"
         >
           Распечатать или сохранить в PDF
         </button>
+        <p className="cert-screen-advice mt-3 max-w-prose text-sm print:hidden">{CERTIFICATE_NAME_COPY.printAdvice}</p>
       </div>
 
       <QuestCertificate

@@ -32,16 +32,21 @@ with sync_playwright() as p:
     t = time.time(); pg.evaluate("1"); t2 = time.time()-t
     cons = pg.locator('section[aria-label="Консоль"]').inner_text()
     print("eval latency during/after loop: %.2fs / %.2fs" % (t1, t2))
+    ok_all = "Цикл работал дольше секунды" in cons and "строка 2" in cons
     print("loop message:", "Цикл работал дольше секунды" in cons, "| line link:", "строка 2" in cons)
 
     # уход фрейма на другой адрес
     set_code(pg, "JavaScript", 'setTimeout(() => { location.href = "https://example.com"; }, 200);')
     pg.wait_for_timeout(2500)
     cons = pg.locator('section[aria-label="Консоль"]').inner_text()
+    ok_all = ok_all and "попробовала перейти" in cons
     print("nav blocked msg:", "попробовала перейти" in cons)
     # постоянный уход -> предпросмотр останавливается, а не зацикливается
     set_code(pg, "JavaScript", 'location.href = "https://example.com";')
     pg.wait_for_timeout(4000)
-    print("stuck notice:", "снова и снова" in pg.inner_text("body"))
+    stuck = "снова и снова" in pg.inner_text("body")
+    ok_all = ok_all and stuck
+    print("stuck notice:", stuck)
     print("requests to example.com total:", len(reqs))
     b.close()
+sys.exit(0 if ok_all else 1)

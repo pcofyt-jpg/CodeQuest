@@ -22,8 +22,12 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
   const nextOpen = next ? isLessonOpen(currentIndex + 1, completed) : false;
 
   return (
-    <header className="flex items-center gap-3 border-b border-line bg-surface px-3 py-2 sm:px-4">
-      <Link href="/" className="shrink-0 rounded-lg" aria-label="CodeQuest — к маршруту">
+    <header className="flex w-full min-w-0 max-w-[100dvw] items-center gap-2 overflow-x-clip border-b border-line bg-surface px-2 py-2 sm:gap-3 sm:px-4">
+      <Link
+        href="/"
+        className="shrink-0 rounded-lg max-[380px]:[&_.font-display]:hidden"
+        aria-label="CodeQuest — к маршруту"
+      >
         <Logo />
       </Link>
 
@@ -77,12 +81,12 @@ export function StudioHeader({ currentIndex, completed, onOpenGlossary }: Props)
         </ol>
       </nav>
 
-      <div className="ml-auto flex items-center gap-1 md:ml-0">
+      <div className="ml-auto flex min-w-0 shrink items-center gap-0.5 sm:gap-1 md:ml-0">
         {onOpenGlossary && (
           <button
             type="button"
             onClick={onOpenGlossary}
-            className="mr-1 rounded-xl border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-paper"
+            className="mr-1 shrink-0 rounded-xl border border-line px-2 py-2 text-sm font-semibold text-ink hover:bg-paper sm:px-3"
           >
             Шпаргалка
           </button>
