@@ -23,8 +23,24 @@ def mock_len():
 def scroll_y(pg):
     return pg.evaluate("window.scrollY")
 
-def reminder_open(scope):
-    return scope.get_by_role("alertdialog").count() == 1 and "Наставник увидит весь твой код" in scope.inner_text()
+def reminder_open(pg):
+    dialog = pg.get_by_role("alertdialog")
+    return dialog.count() == 1 and "Наставник увидит весь твой код" in dialog.inner_text()
+
+def buttons_on_screen(pg):
+    """Обе кнопки целиком в окне и верхний элемент в их центре — сама кнопка."""
+    return pg.evaluate("""() => {
+      const d = document.querySelector('[role="alertdialog"]');
+      if (!d) return false;
+      const buttons = [...d.querySelectorAll('button')];
+      if (buttons.length !== 2) return false;
+      return buttons.every((b) => {
+        const r = b.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        const inside = r.top >= -1 && r.left >= -1 && r.bottom <= window.innerHeight + 1 && r.right <= window.innerWidth + 1;
+        return inside && r.width >= 44 && r.height >= 44 && !!top && (top === b || b.contains(top));
+      });
+    }""")
 
 def burst_at(pg, locator, n, gap_ms, tap=False):
     """n нажатий в центр кнопки «Спросить», без прокрутки между ними."""
@@ -46,11 +62,10 @@ def burst_at(pg, locator, n, gap_ms, tap=False):
     pg.wait_for_timeout(80)
     return y0
 
-def close_reminder(scope, pg):
-    cancel = scope.get_by_role("button", name="Отмена")
-    if cancel.count():
-        cancel.first.click()
-        pg.wait_for_timeout(80)
+def close_reminder(pg):
+    if pg.get_by_role("alertdialog").count():
+        pg.keyboard.press("Escape")
+        pg.wait_for_timeout(60)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -72,61 +87,60 @@ with sync_playwright() as p:
 
     console.get_by_label("Код доступа").fill("неверный-код"); console.get_by_role("button", name="Сохранить").click()
     pg.wait_for_timeout(300)
-    report("после кода — напоминание, запроса ещё нет", "Наставник увидит весь твой код" in console.inner_text() and "Код доступа не подходит" not in console.inner_text())
-    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
+    report("после кода — напоминание, запроса ещё нет", reminder_open(pg) and "Код доступа не подходит" not in console.inner_text())
+    pg.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     report("неверный код: понятный отказ и снова форма", "Код доступа не подходит" in console.inner_text() and console.get_by_label("Код доступа").count() == 1)
 
     console.get_by_label("Код доступа").fill("Test-Code-1"); console.get_by_role("button", name="Сохранить").click()
     pg.wait_for_timeout(300)
-    report("перед отправкой напоминание", "Наставник увидит весь твой код" in console.inner_text())
-    console.get_by_role("button", name="Отмена").click(); pg.wait_for_timeout(300)
+    report("перед отправкой напоминание", reminder_open(pg))
+    pg.get_by_role("button", name="Отмена").click(); pg.wait_for_timeout(300)
     report("отмена не показывает ответ", "сравни id кнопки" not in console.inner_text())
 
-    # Повторные клики не закрывают напоминание и не двигают окно.
-    def check_burst(scope, button_name, width, height, n, gap, tap=False):
+    # Повторные клики и касания не закрывают окно, кнопки целиком на экране, окно не прыгает.
+    VIEWPORTS = [(1280, 720), (1280, 800), (1366, 768), (1440, 900), (1920, 1080), (390, 844), (320, 568)]
+
+    def check_burst(scope, button_name, width, height, n, gap, tab):
         pg.set_viewport_size({"width": width, "height": height})
-        pg.wait_for_timeout(150)
+        pg.wait_for_timeout(80)
+        close_reminder(pg)
         if width < 1024:
-            tab = pg.locator('nav[aria-label="Разделы студии"] button', has_text="Результат")
-            if tab.count():
-                tab.click()
-        close_reminder(scope, pg)
+            tab_btn = pg.locator('nav[aria-label="Разделы студии"] button', has_text=tab)
+            if tab_btn.count() and tab_btn.get_attribute("aria-pressed") != "true":
+                tab_btn.click(force=True)
         ask = scope.get_by_role("button", name=button_name).first
         ask.wait_for()
         before = mock_len()
+        tap = width < 1024
         y0 = burst_at(pg, ask, n, gap, tap)
         kind = "касания" if tap else "клика"
-        open_ok = y0 is not None and reminder_open(scope) and mock_len() == before and abs(scroll_y(pg) - y0) <= 2
-        report(f"{button_name} {width}px: {n} {kind}, пауза {gap} мс — открыто, без запроса, scrollY", open_ok)
-        pg.wait_for_timeout(550)
-        y_before_cancel = scroll_y(pg)
-        close_reminder(scope, pg)
-        report(
-            f"{button_name} {width}px: {n} {kind} — «Отмена» после паузы, scrollY",
+        open_ok = (
             y0 is not None
-            and not reminder_open(scope)
-            and abs(scroll_y(pg) - y_before_cancel) <= 2
-            and abs(scroll_y(pg) - y0) <= 2,
+            and reminder_open(pg)
+            and buttons_on_screen(pg)
+            and mock_len() == before
+            and abs(scroll_y(pg) - y0) <= 2
         )
+        report(f"{button_name} {width}x{height}: {n} {kind}, пауза {gap} — открыто, кнопки сверху, scrollY, 0 запросов", open_ok)
+        close_reminder(pg)
 
-    for width in (1280, 1366, 1440, 1920):
+    for width, height in VIEWPORTS:
         for n in (2, 3):
-            for gap in (0, 150, 300):
-                check_burst(console, "Спросить наставника", width, 900, n, gap)
-    check_burst(console, "Спросить наставника", 390, 844, 2, 80, tap=True)
+            for gap in (0, 150, 300, 600):
+                check_burst(console, "Спросить наставника", width, height, n, gap, "Результат")
 
     pg.set_viewport_size({"width": 1440, "height": 900})
-    pg.wait_for_timeout(200)
-    close_reminder(console, pg)
+    pg.wait_for_timeout(150)
+    close_reminder(pg)
     y_esc = scroll_y(pg)
     console.get_by_role("button", name="Спросить наставника").first.click()
     pg.wait_for_timeout(100)
-    report("Escape закрывает напоминание", reminder_open(console))
+    report("Escape закрывает напоминание", reminder_open(pg))
     pg.keyboard.press("Escape")
     pg.wait_for_timeout(100)
-    report("Escape закрыл и не сдвинул scrollY", not reminder_open(console) and abs(scroll_y(pg) - y_esc) <= 2)
+    report("Escape закрыл и не сдвинул scrollY", not reminder_open(pg) and abs(scroll_y(pg) - y_esc) <= 2)
     console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(600)
-    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
+    pg.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     txt = console.inner_text()
     report("верный код: ответ наставника показан", "сравни id кнопки" in txt)
     report("подпись «ИИ может ошибаться» и остаток вопросов", "может ошибаться" in txt and "осталось: 7" in txt)
@@ -134,8 +148,8 @@ with sync_playwright() as p:
     # код запомнен: форма не появляется, но напоминание — каждый раз
     pg.reload(); pg.wait_for_selector(".cm-content"); pg.wait_for_timeout(1200)
     console.get_by_role("button", name="Спросить наставника").first.click(); pg.wait_for_timeout(300)
-    report("код запомнен — сначала напоминание", "Наставник увидит весь твой код" in console.inner_text() and "Наставнику нужен код доступа" not in console.inner_text())
-    console.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
+    report("код запомнен — сначала напоминание", reminder_open(pg) and "Наставнику нужен код доступа" not in console.inner_text())
+    pg.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     report("код запомнен — ответ после «Отправить»", "сравни id кнопки" in console.inner_text())
 
     # «что не так» после непройденной проверки
@@ -143,14 +157,17 @@ with sync_playwright() as p:
     panel = pg.locator('section[aria-label="Урок"]')
     ask_lesson = panel.get_by_role("button", name="Спросить наставника, что не так")
     ask_lesson.wait_for()
-    for n in (2, 3):
-        for gap in (0, 150, 300):
-            check_burst(panel, "Спросить наставника, что не так", 1440, 900, n, gap)
+    for width, height in VIEWPORTS:
+        for n in (2, 3):
+            for gap in (0, 150, 300, 600):
+                check_burst(panel, "Спросить наставника, что не так", width, height, n, gap, "Задание")
 
+    pg.set_viewport_size({"width": 1440, "height": 900})
+    close_reminder(pg)
     ask_lesson = panel.get_by_role("button", name="Спросить наставника, что не так")
     ask_lesson.click(); pg.wait_for_timeout(600)
-    report("напоминание и у непройденной проверки", "Наставник увидит весь твой код" in panel.inner_text())
-    panel.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
+    report("напоминание и у непройденной проверки", reminder_open(pg))
+    pg.get_by_role("button", name="Отправить").click(); pg.wait_for_timeout(800)
     report("«что не так» после проверки отвечает", "сравни id кнопки" in panel.inner_text())
 
     received = json.loads(urllib.request.urlopen(MOCK).read().decode())

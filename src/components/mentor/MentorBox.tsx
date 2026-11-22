@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MENTOR_PARENT_COPY, MENTOR_REMINDER_COPY } from "@/content/pendingOwnerCopy";
 import { askMentor, mentorEnabled, type MentorRequest } from "@/lib/mentor/client";
 import { mentorCode, useMentorCode } from "@/lib/mentor/codeStore";
@@ -23,39 +24,26 @@ function MentorText({ text }: { text: string }) {
   );
 }
 
-/** Первые миллисекунды обе кнопки напоминания не срабатывают: повторный клик по «Спросить» не должен ни отправить код, ни закрыть окно. */
+/** Первые миллисекунды обе кнопки не срабатывают: повторный клик по «Спросить» не отправляет код и не закрывает окно. */
 const BUTTONS_ARM_MS = 500;
 
-/** Нижняя панель вкладок есть только уже `lg` (1024px). На компьютере страницу не прокручиваем. */
-const MOBILE_TABS = "(max-width: 1023px)";
-
-function tabBarTop(): number | null {
-  if (!window.matchMedia(MOBILE_TABS).matches) return null;
-  const nav = document.querySelector('nav[aria-label="Разделы студии"]');
-  if (!(nav instanceof HTMLElement) || getComputedStyle(nav).display === "none") return null;
-  return nav.getBoundingClientRect().top;
-}
-
-/** Поднимает напоминание над панелью вкладок, прокручивая только внутренний список, не окно. */
-function liftAboveTabBar(el: HTMLElement) {
-  const limit = tabBarTop();
-  if (limit == null) return;
-  for (let guard = 0; guard < 6 && el.getBoundingClientRect().bottom > limit - 8; guard++) {
-    let node = el.parentElement;
-    let scroller: HTMLElement | null = null;
-    while (node && node !== document.body) {
-      const style = getComputedStyle(node);
-      if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1) {
-        scroller = node;
-        break;
-      }
-      node = node.parentElement;
+function trapFocus(dialog: HTMLElement, event: KeyboardEvent) {
+  if (event.key === "Tab") {
+    const nodes = [...dialog.querySelectorAll<HTMLElement>("button:not([disabled])")];
+    if (nodes.length === 0) {
+      event.preventDefault();
+      return;
     }
-    if (!scroller) return;
-    const overflow = el.getBoundingClientRect().bottom - (limit - 8);
-    const before = scroller.scrollTop;
-    scroller.scrollTop = before + overflow;
-    if (scroller.scrollTop === before) return;
+    const first = nodes[0]!;
+    const last = nodes[nodes.length - 1]!;
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === dialog)) {
+      event.preventDefault();
+      last.focus({ preventScroll: true });
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
   }
 }
 
@@ -90,21 +78,29 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
       const epoch = ++scrollEpoch.current;
       const y = scrollYRef.current;
       const timer = window.setTimeout(() => setButtonsArmed(true), BUTTONS_ARM_MS);
-      const el = dialogRef.current;
-      el?.focus({ preventScroll: true });
       const keepWindow = () => {
         if (scrollEpoch.current !== epoch) return;
         if (Math.abs(window.scrollY - y) > 0) window.scrollTo(window.scrollX, y);
       };
-      if (el) liftAboveTabBar(el);
+      dialogRef.current?.focus({ preventScroll: true });
       keepWindow();
-      const frame = window.requestAnimationFrame(() => {
-        if (el) liftAboveTabBar(el);
-        keepWindow();
-      });
+      const onKey = (event: KeyboardEvent) => {
+        if (scrollEpoch.current !== epoch) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          setState({ s: "idle" });
+          return;
+        }
+        const dialog = dialogRef.current;
+        if (dialog) trapFocus(dialog, event);
+      };
+      document.addEventListener("keydown", onKey);
+      const frame = window.requestAnimationFrame(keepWindow);
       return () => {
         window.clearTimeout(timer);
         window.cancelAnimationFrame(frame);
+        document.removeEventListener("keydown", onKey);
       };
     }
     if (!wasConfirm.current) return;
@@ -193,53 +189,51 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
     );
   }
 
-  if (state.s === "confirm") {
-    const saved = state.code;
-    return (
-      <div
-        ref={dialogRef}
-        role="alertdialog"
-        aria-labelledby={remindTitleId}
-        tabIndex={-1}
-        className="mt-2 rounded-xl border border-route/30 bg-route-soft p-3 pb-14 font-sans text-sm leading-relaxed text-ink outline-none"
-        onKeyDown={(e) => {
-          if (e.key !== "Escape") return;
-          e.preventDefault();
-          e.stopPropagation();
-          closeConfirm();
-        }}
-      >
-        <p id={remindTitleId}>{MENTOR_REMINDER_COPY.text}</p>
-        {/* Кнопки ниже текста: центр «Спросить наставника» попадает в текст, не в кнопку. */}
-        <div className="mt-3 flex flex-nowrap items-center gap-2">
-          <button
-            type="button"
-            disabled={!buttonsArmed}
-            onClick={() => {
-              if (!buttonsArmed) return;
-              closeConfirm();
-            }}
-            className="inline-flex items-center justify-center rounded-lg px-4 font-semibold disabled:opacity-60"
-            style={{ minHeight: 44, minWidth: 44 }}
-          >
-            {MENTOR_REMINDER_COPY.cancel}
-          </button>
-          <button
-            type="button"
-            disabled={!buttonsArmed}
-            onClick={() => {
-              if (!buttonsArmed) return;
-              void ask(saved);
-            }}
-            className="ml-auto inline-flex items-center justify-center rounded-lg bg-route px-4 font-semibold text-on-accent disabled:opacity-60"
-            style={{ minHeight: 44, minWidth: 44 }}
-          >
-            {MENTOR_REMINDER_COPY.send}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const reminder =
+    state.s === "confirm" && typeof document !== "undefined"
+      ? createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-4">
+            <div className="absolute inset-0 bg-black/50" />
+            <div
+              ref={dialogRef}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby={remindTitleId}
+              tabIndex={-1}
+              className="relative z-10 w-full max-w-md rounded-xl border border-route/30 bg-route-soft p-4 font-sans text-sm leading-relaxed text-ink outline-none"
+            >
+              <p id={remindTitleId}>{MENTOR_REMINDER_COPY.text}</p>
+              <div className="mt-4 flex flex-nowrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={!buttonsArmed}
+                  onClick={() => {
+                    if (!buttonsArmed) return;
+                    closeConfirm();
+                  }}
+                  className="inline-flex items-center justify-center rounded-lg px-4 font-semibold disabled:opacity-60"
+                  style={{ minHeight: 44, minWidth: 44 }}
+                >
+                  {MENTOR_REMINDER_COPY.cancel}
+                </button>
+                <button
+                  type="button"
+                  disabled={!buttonsArmed}
+                  onClick={() => {
+                    if (!buttonsArmed) return;
+                    void ask(state.code);
+                  }}
+                  className="ml-auto inline-flex items-center justify-center rounded-lg bg-route px-4 font-semibold text-on-accent disabled:opacity-60"
+                  style={{ minHeight: 44, minWidth: 44 }}
+                >
+                  {MENTOR_REMINDER_COPY.send}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <div className="mt-1.5 font-sans">
@@ -265,6 +259,7 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
           </p>
         </div>
       )}
+      {reminder}
     </div>
   );
 }
