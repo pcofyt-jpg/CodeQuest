@@ -53,3 +53,5 @@ with sync_playwright() as p:
     report("у задачи блок «Почему так»", "Почему так:" in pg.locator('section[aria-label="Урок"]').inner_text())
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

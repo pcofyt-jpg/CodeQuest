@@ -3,6 +3,7 @@
 Клавиатуру имитируем уменьшением высоты окна: студия считает её открытой,
 когда видимая высота меньше 75 % наибольшей.
 """
+import sys
 from playwright.sync_api import sync_playwright
 from helpers import BASE
 
@@ -65,5 +66,6 @@ with sync_playwright() as p:
     ok("нет ошибок страницы", errors == [])
     b.close()
 
-print("ALL OK:", all(results))
-raise SystemExit(0 if all(results) else 1)
+ok_all = all(results)
+print("ALL OK:", ok_all)
+sys.exit(0 if ok_all else 1)

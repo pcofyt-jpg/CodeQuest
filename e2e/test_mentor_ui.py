@@ -28,19 +28,48 @@ def reminder_open(pg):
     return dialog.count() == 1 and "Наставник увидит весь твой код" in dialog.inner_text()
 
 def buttons_on_screen(pg):
-    """Обе кнопки целиком в окне и верхний элемент в их центре — сама кнопка."""
+    """Кнопки и само окно внутри visualViewport, верхний элемент в центре кнопки — она сама."""
     return pg.evaluate("""() => {
       const d = document.querySelector('[role="alertdialog"]');
       if (!d) return false;
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width : window.innerWidth;
+      const vh = vv ? vv.height : window.innerHeight;
+      const ox = vv ? vv.offsetLeft : 0;
+      const oy = vv ? vv.offsetTop : 0;
+      const box = d.getBoundingClientRect();
+      const dialogInside = box.left >= ox - 1 && box.top >= oy - 1 && box.right <= ox + vw + 1 && box.bottom <= oy + vh + 1;
+      if (!dialogInside) return false;
       const buttons = [...d.querySelectorAll('button')];
       if (buttons.length !== 2) return false;
       return buttons.every((b) => {
         const r = b.getBoundingClientRect();
         const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-        const inside = r.top >= -1 && r.left >= -1 && r.bottom <= window.innerHeight + 1 && r.right <= window.innerWidth + 1;
+        const inside = r.left >= ox - 1 && r.top >= oy - 1 && r.right <= ox + vw + 1 && r.bottom <= oy + vh + 1;
         return inside && r.width >= 44 && r.height >= 44 && !!top && (top === b || b.contains(top));
       });
     }""")
+
+def scroll_snapshot(pg):
+    return pg.evaluate("""() => {
+      const inners = [];
+      const walk = (el) => {
+        if (!el || el.nodeType !== 1) return;
+        const s = getComputedStyle(el);
+        if (/(auto|scroll|hidden)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1)
+          inners.push(Math.round(el.scrollTop));
+        for (const c of el.children) walk(c);
+      };
+      walk(document.body);
+      return { y: Math.round(window.scrollY), inners };
+    }""")
+
+def same_scroll(a, b):
+    if a is None or b is None or abs(a["y"] - b["y"]) > 2:
+        return False
+    if len(a["inners"]) != len(b["inners"]):
+        return False
+    return all(abs(x - y) <= 2 for x, y in zip(a["inners"], b["inners"]))
 
 def burst_at(pg, locator, n, gap_ms, tap=False):
     """n нажатий в центр кнопки «Спросить», без прокрутки между ними."""
@@ -98,7 +127,7 @@ with sync_playwright() as p:
     report("отмена не показывает ответ", "сравни id кнопки" not in console.inner_text())
 
     # Повторные клики и касания не закрывают окно, кнопки целиком на экране, окно не прыгает.
-    VIEWPORTS = [(1280, 720), (1280, 800), (1366, 768), (1440, 900), (1920, 1080), (390, 844), (320, 568)]
+    VIEWPORTS = [(1280, 720), (1280, 800), (1366, 768), (1440, 900), (1920, 1080), (390, 844), (360, 800), (320, 568)]
 
     def check_burst(scope, button_name, width, height, n, gap, tab):
         pg.set_viewport_size({"width": width, "height": height})
@@ -124,10 +153,57 @@ with sync_playwright() as p:
         report(f"{button_name} {width}x{height}: {n} {kind}, пауза {gap} — открыто, кнопки сверху, scrollY, 0 запросов", open_ok)
         close_reminder(pg)
 
+    def check_scroll_lock(scope, button_name, width, height, tab):
+        pg.set_viewport_size({"width": width, "height": height})
+        pg.wait_for_timeout(80)
+        close_reminder(pg)
+        if width < 1024:
+            tab_btn = pg.locator('nav[aria-label="Разделы студии"] button', has_text=tab)
+            if tab_btn.count() and tab_btn.get_attribute("aria-pressed") != "true":
+                tab_btn.click(force=True)
+        ask = scope.get_by_role("button", name=button_name).first
+        ask.wait_for()
+        pg.evaluate("""() => {
+          const walk = (el) => {
+            if (!el || el.nodeType !== 1) return;
+            const s = getComputedStyle(el);
+            if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 40) el.scrollTop = 160;
+            for (const c of el.children) walk(c);
+          };
+          walk(document.body);
+        }""")
+        ask.scroll_into_view_if_needed()
+        pg.wait_for_timeout(40)
+        before = scroll_snapshot(pg)
+        ask.click()
+        pg.wait_for_timeout(80)
+        opened = scroll_snapshot(pg)
+        pg.mouse.move(6, 6)
+        pg.mouse.wheel(0, 900)
+        pg.keyboard.press("PageDown")
+        pg.keyboard.press("Space")
+        pg.keyboard.press("End")
+        pg.evaluate("""() => {
+          document.body.dispatchEvent(new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true }));
+          try { document.body.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, cancelable: true })); } catch (e) {}
+        }""")
+        pg.wait_for_timeout(40)
+        during = scroll_snapshot(pg)
+        close_reminder(pg)
+        pg.wait_for_timeout(80)
+        after = scroll_snapshot(pg)
+        report(
+            f"{button_name} {width}x{height}: прокрутка под окном не двигает и не прыгает",
+            reminder_open(pg) is False and same_scroll(before, opened) and same_scroll(before, during) and same_scroll(before, after),
+        )
+
     for width, height in VIEWPORTS:
         for n in (2, 3):
             for gap in (0, 150, 300, 600):
                 check_burst(console, "Спросить наставника", width, height, n, gap, "Результат")
+
+    check_scroll_lock(console, "Спросить наставника", 1280, 800, "Результат")
+    check_scroll_lock(console, "Спросить наставника", 320, 568, "Результат")
 
     pg.set_viewport_size({"width": 1440, "height": 900})
     pg.wait_for_timeout(150)
@@ -162,6 +238,9 @@ with sync_playwright() as p:
             for gap in (0, 150, 300, 600):
                 check_burst(panel, "Спросить наставника, что не так", width, height, n, gap, "Задание")
 
+    check_scroll_lock(panel, "Спросить наставника, что не так", 1280, 800, "Задание")
+    check_scroll_lock(panel, "Спросить наставника, что не так", 320, 568, "Задание")
+
     pg.set_viewport_size({"width": 1440, "height": 900})
     close_reminder(pg)
     ask_lesson = panel.get_by_role("button", name="Спросить наставника, что не так")
@@ -179,3 +258,4 @@ with sync_playwright() as p:
     report("номер строки ошибки передан (строка 4)", any(r["error"] and r["error"].get("line") == 4 for r in received))
     print("ALL OK:", ok_all)
     b.close()
+sys.exit(0 if ok_all else 1)

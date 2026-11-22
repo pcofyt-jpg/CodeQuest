@@ -81,3 +81,5 @@ with sync_playwright() as p:
     report("ошибок страницы нет", not [e for e in errs if "addEventListner" not in e])
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

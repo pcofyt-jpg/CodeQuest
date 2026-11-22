@@ -54,3 +54,5 @@ with sync_playwright() as p:
     report("за засчитанный проверкой курс сертификата нет", "по входной проверке" in pg.inner_text("body"))
     print("ALL OK:", ok_all)
     b.close()
+import sys
+sys.exit(0 if ok_all else 1)

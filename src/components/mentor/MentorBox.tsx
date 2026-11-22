@@ -27,6 +27,54 @@ function MentorText({ text }: { text: string }) {
 /** Первые миллисекунды обе кнопки не срабатывают: повторный клик по «Спросить» не отправляет код и не закрывает окно. */
 const BUTTONS_ARM_MS = 500;
 
+type ScrollLock = () => void;
+
+/** Замораживает окно и внутренние прокрутки. Возвращает функцию, которая ставит всё как было. */
+function lockBackgroundScroll(): ScrollLock {
+  const html = document.documentElement;
+  const body = document.body;
+  const x = window.scrollX;
+  const y = window.scrollY;
+  const htmlOverflow = html.style.overflow;
+  const bodyOverflow = body.style.overflow;
+  const scrollers: { el: HTMLElement; overflowY: string; top: number }[] = [];
+  const walk = (el: Element) => {
+    if (!(el instanceof HTMLElement) || el === html || el === body) return;
+    const style = getComputedStyle(el);
+    if (/(auto|scroll)/.test(style.overflowY)) {
+      scrollers.push({ el, overflowY: el.style.overflowY, top: el.scrollTop });
+    }
+    for (const child of el.children) walk(child);
+  };
+  walk(body);
+  html.style.overflow = "hidden";
+  body.style.overflow = "hidden";
+  window.scrollTo(x, y);
+  for (const s of scrollers) {
+    s.el.style.overflowY = "hidden";
+    s.el.scrollTop = s.top;
+  }
+  return () => {
+    html.style.overflow = htmlOverflow;
+    body.style.overflow = bodyOverflow;
+    window.scrollTo(x, y);
+    for (const s of scrollers) {
+      s.el.style.overflowY = s.overflowY;
+      s.el.scrollTop = s.top;
+    }
+  };
+}
+
+function readVisualViewport() {
+  const vv = window.visualViewport;
+  return {
+    width: vv?.width ?? window.innerWidth,
+    height: vv?.height ?? window.innerHeight,
+    x: vv?.offsetLeft ?? 0,
+    y: vv?.offsetTop ?? 0,
+  };
+}
+
 function trapFocus(dialog: HTMLElement, event: KeyboardEvent) {
   if (event.key === "Tab") {
     const nodes = [...dialog.querySelectorAll<HTMLElement>("button:not([disabled])")];
@@ -71,12 +119,29 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
   const wasConfirm = useRef(false);
   const scrollEpoch = useRef(0);
   const remindTitleId = useId();
+  const [frame, setFrame] = useState({ width: 0, height: 0, x: 0, y: 0 });
+
+  useEffect(() => {
+    if (state.s !== "confirm") return;
+    const read = () => setFrame(readVisualViewport());
+    read();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", read);
+    vv?.addEventListener("scroll", read);
+    window.addEventListener("resize", read);
+    return () => {
+      vv?.removeEventListener("resize", read);
+      vv?.removeEventListener("scroll", read);
+      window.removeEventListener("resize", read);
+    };
+  }, [state.s]);
 
   useEffect(() => {
     if (state.s === "confirm") {
       wasConfirm.current = true;
       const epoch = ++scrollEpoch.current;
       const y = scrollYRef.current;
+      const unlock = lockBackgroundScroll();
       const timer = window.setTimeout(() => setButtonsArmed(true), BUTTONS_ARM_MS);
       const keepWindow = () => {
         if (scrollEpoch.current !== epoch) return;
@@ -84,6 +149,9 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
       };
       dialogRef.current?.focus({ preventScroll: true });
       keepWindow();
+      const blockGesture = (event: Event) => {
+        event.preventDefault();
+      };
       const onKey = (event: KeyboardEvent) => {
         if (scrollEpoch.current !== epoch) return;
         if (event.key === "Escape") {
@@ -92,15 +160,31 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
           setState({ s: "idle" });
           return;
         }
+        if (event.key === "PageDown" || event.key === "PageUp" || event.key === "Home" || event.key === "End") {
+          event.preventDefault();
+          return;
+        }
+        if (
+          (event.key === " " || event.key === "ArrowDown" || event.key === "ArrowUp") &&
+          !(event.target instanceof HTMLElement && event.target.closest("button"))
+        ) {
+          event.preventDefault();
+          return;
+        }
         const dialog = dialogRef.current;
         if (dialog) trapFocus(dialog, event);
       };
       document.addEventListener("keydown", onKey);
-      const frame = window.requestAnimationFrame(keepWindow);
+      document.addEventListener("wheel", blockGesture, { passive: false, capture: true });
+      document.addEventListener("touchmove", blockGesture, { passive: false, capture: true });
+      const frameId = window.requestAnimationFrame(keepWindow);
       return () => {
         window.clearTimeout(timer);
-        window.cancelAnimationFrame(frame);
+        window.cancelAnimationFrame(frameId);
         document.removeEventListener("keydown", onKey);
+        document.removeEventListener("wheel", blockGesture, true);
+        document.removeEventListener("touchmove", blockGesture, true);
+        unlock();
       };
     }
     if (!wasConfirm.current) return;
@@ -121,6 +205,7 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
 
   const showConfirm = (nextCode: string) => {
     scrollYRef.current = window.scrollY;
+    setFrame(readVisualViewport());
     setButtonsArmed(false);
     setState({ s: "confirm", code: nextCode });
   };
@@ -192,7 +277,10 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
   const reminder =
     state.s === "confirm" && typeof document !== "undefined"
       ? createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-4">
+          <div
+            className="fixed z-50 flex items-center justify-center overscroll-contain px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-4"
+            style={{ top: frame.y, left: frame.x, width: frame.width || "100dvw", height: frame.height || "100dvh" }}
+          >
             <div className="absolute inset-0 bg-black/50" />
             <div
               ref={dialogRef}
@@ -200,7 +288,8 @@ export function MentorBox({ label, buildRequest }: { label: string; buildRequest
               aria-modal="true"
               aria-labelledby={remindTitleId}
               tabIndex={-1}
-              className="relative z-10 w-full max-w-md rounded-xl border border-route/30 bg-route-soft p-4 font-sans text-sm leading-relaxed text-ink outline-none"
+              className="relative z-10 max-w-md rounded-xl border border-route/30 bg-route-soft p-4 font-sans text-sm leading-relaxed text-ink outline-none"
+              style={{ width: "min(28rem, calc(100dvw - 2rem))", maxWidth: Math.max(0, (frame.width || window.innerWidth) - 32) }}
             >
               <p id={remindTitleId}>{MENTOR_REMINDER_COPY.text}</p>
               <div className="mt-4 flex flex-nowrap items-center gap-2">
